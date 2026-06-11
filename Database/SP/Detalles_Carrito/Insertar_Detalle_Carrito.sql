@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 1. CREAR CON VALIDACIONES Y PARÁMETROS DE SALIDA
+
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_CartDetails_Create]
 (
     @cartDetailCartId INT,
@@ -230,17 +230,17 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_CartDetails_Create]
-    @cartDetailCartId = 1, -- Asegúrese de usar un carrito activo
-    @cartDetailProductVariableId = 1, -- Asegúrese de usar una variante activa y con stock
+    @cartDetailCartId = 1, 
+    @cartDetailProductVariableId = 1,
     @cartDetailPrice = 100.00,
     @cartDetailQuantity = 2,
     @cartDetailDiscount = 0.00,
@@ -254,8 +254,14 @@ EXEC [SQM_GENERAL].[sp_CartDetails_Create]
     @o_message = @v_message OUTPUT,
     @o_templateId = @v_templateId OUTPUT;
 
-SELECT 
+select 
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CartDetailIdGenerado;
-*/
+
+
+
+SELECT * FROM [SQM_GENERAL].[Tbl_CartDetails]
+
+select * from [SQM_CATALOGS].[Tbl_Categories] 
+
