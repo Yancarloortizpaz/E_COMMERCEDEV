@@ -71,7 +71,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @o_code = 200;
-        SET @o_message = 'Categoría inactivada (eliminada lógicamente) correctamente.';
+        SET @o_message = 'Categoría  (eliminada ) correctamente.';
         SET @o_templateId = @categoryId;
     END TRY
     BEGIN CATCH
@@ -85,16 +85,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Categories_Delete]
-    @categoryId = 1, -- Asegúrese de usar un ID existente en Tbl_Categories
+    @categoryId = 6, 
     @categoryModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
@@ -104,4 +104,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CategoriaIdInactivada;
-*/

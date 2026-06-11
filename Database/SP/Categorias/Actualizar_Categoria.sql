@@ -115,21 +115,21 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Categories_Update]
-    @categoryId = 1, -- Asegúrese de usar un ID existente en Tbl_Categories
+    @categoryId = 6, 
     @categoryName = 'CALZADOS DEPORTIVOS',
     @categoryDescription = 'Calzado deportivo en general',
     @categoryModificatorId = 1,
     @categoryStatusId = 1,
-    @ForzarRecuperacion = 0,
+    @ForzarRecuperacion = 1, --nota 1 es para activarlo y poder actuazlizar una eliminada y en 0 o null se actualizan las que estan vigentes 
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
     @o_templateId = @v_templateId OUTPUT;
@@ -138,4 +138,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CategoriaIdModificada;
-*/
+
+
+	select * from [SQM_CATALOGS].[Tbl_Categories] 

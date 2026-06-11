@@ -95,17 +95,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Categories_Create]
-    @categoryName = 'ELECTRODOMESTICOS',
-    @categoryDescription = 'Aparatos eléctricos para el hogar',
+    @categoryName = 'computadoras_gamers',
+    @categoryDescription = 'lo mejor en GPU',
     @categoryCreatorId = 1,
     @categoryStatusId = 1,
     @o_code = @v_code OUTPUT,
@@ -116,4 +115,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CategoriaIdGenerada;
-*/
