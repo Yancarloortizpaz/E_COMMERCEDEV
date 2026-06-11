@@ -109,16 +109,15 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_Carts_Update]
-    @cartId = 1, -- Asegúrese de usar un ID existente en Tbl_Carts
+    @cartId = 1, 
     @cartUserId = 1,
     @cartModificatorId = 1,
     @cartStatusId = 0, -- Inactivando el carrito
@@ -130,4 +129,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CartIdModificado;
-*/
+
+
+select * from [SQM_GENERAL].[Tbl_Carts]

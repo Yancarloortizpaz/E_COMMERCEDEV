@@ -85,10 +85,8 @@ BEGIN
 END;
 GO
 
--- ==========================================
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
@@ -104,4 +102,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CartIdInactivado;
-*/
+
+
+SELECT * FROM [SQM_GENERAL].[Tbl_Carts]

@@ -107,16 +107,14 @@ BEGIN
 END;
 GO
 
--- ==========================================
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_Carts_Create]
-    @cartUserId = 1, -- Asegúrese de usar un ID existente en Tbl_Users
+    @cartUserId = 1, 
     @cartCreatorId = 1,
     @cartStatusId = 1,
     @o_code = @v_code OUTPUT,
@@ -127,4 +125,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS CartIdGenerado;
-*/
