@@ -120,7 +120,7 @@ EXEC [SQM_GENERAL].[sp_Carts_Update]
     @cartId = 1, 
     @cartUserId = 1,
     @cartModificatorId = 1,
-    @cartStatusId = 0, -- Inactivando el carrito
+    @cartStatusId = 1, -- Inactivando el carrito1
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
     @o_templateId = @v_templateId OUTPUT;
