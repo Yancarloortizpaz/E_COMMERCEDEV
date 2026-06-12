@@ -18,3 +18,8 @@ AS BEGIN
     OPTION (RECOMPILE);
 END
 GO
+ exec [SQM_CATALOGS].[sp_PaymentMethodTypes_Filter] '1'
+ go
+
+  exec [SQM_CATALOGS].[sp_PaymentMethodTypes_Filter] 'cre'
+ go

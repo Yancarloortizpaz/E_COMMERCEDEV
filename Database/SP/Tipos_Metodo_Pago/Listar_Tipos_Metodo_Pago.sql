@@ -8,3 +8,5 @@ AS BEGIN
     FROM [SQM_CATALOGS].[Tbl_PaymentMethodTypes] (NOLOCK);
 END
 GO
+
+exec [SQM_CATALOGS].[sp_PaymentMethodTypes_List]
