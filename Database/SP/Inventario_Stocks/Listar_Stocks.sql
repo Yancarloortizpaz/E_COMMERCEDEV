@@ -18,3 +18,6 @@ AS BEGIN
     FROM [SQM_GENERAL].[VW_STOCKS] (NOLOCK);
 END
 GO
+
+
+exec  [SQM_GENERAL].[sp_Stocks_List]
