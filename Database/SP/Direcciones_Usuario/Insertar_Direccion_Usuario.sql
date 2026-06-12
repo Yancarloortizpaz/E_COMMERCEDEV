@@ -1,7 +1,6 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 1. CREAR CON VALIDACIONES Y PARÁMETROS DE SALIDA
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_UserAddress_Create]
 (
     @userAddressUserId INT,
@@ -131,10 +130,9 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+-- prueba
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
@@ -155,4 +153,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS AddressIdGenerada;
-*/
+
+
+	select * from [SQM_GENERAL].[Tbl_UserAddress]

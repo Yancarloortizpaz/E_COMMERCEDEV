@@ -85,16 +85,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_UserAddress_Delete]
-    @userAddressId = 1, -- Asegúrese de usar un ID existente en Tbl_UserAddress
+    @userAddressId =5, 
     @userAddressModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
@@ -104,4 +104,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS AddressIdInactivada;
-*/
+
+
+select * from [SQM_GENERAL].[Tbl_UserAddress]

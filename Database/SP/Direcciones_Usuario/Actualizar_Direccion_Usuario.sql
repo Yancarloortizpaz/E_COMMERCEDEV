@@ -134,23 +134,22 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+--  PRUEBA 
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_UserAddress_Update]
-    @userAddressId = 1, -- Asegúrese de usar un ID existente en Tbl_UserAddress
+    @userAddressId = 4, 
     @userAddressCountryId = 1,
     @userAddressZIPCode = 12002,
     @userAddressDescription = 'De los semáforos de la UCA 1 cuadra al este, Managua',
     @userAddressIsPrincipal = 1,
     @userAddressModificatorId = 1,
     @userAddressStatusId = 1,
-    @ForzarRecuperacion = 0,
+    @ForzarRecuperacion = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
     @o_templateId = @v_templateId OUTPUT;
@@ -159,4 +158,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS AddressIdModificada;
-*/
+
+
+select * from [SQM_GENERAL].[Tbl_UserAddress]
