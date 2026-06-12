@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 3. ELIMINAR (BORRADO LÓGICO / INACTIVACIÓN) CON VALIDACIONES Y OUTPUTS
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Currencies_Delete]
 (
     @currencyId INT,
@@ -71,7 +71,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @o_code = 200;
-        SET @o_message = 'Moneda inactivada (eliminada lógicamente) correctamente.';
+        SET @o_message = 'Moneda eliminada correctamente.';
         SET @o_templateId = @currencyId;
     END TRY
     BEGIN CATCH
@@ -85,16 +85,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Currencies_Delete]
-    @currencyId = 1, -- Asegúrese de usar un ID existente en Tbl_Currencies
+    @currencyId = 3,
     @currencyModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
@@ -104,4 +104,4 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MonedaIdInactivada;
-*/
+

@@ -155,16 +155,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
-DECLARE @v_code INT;
+
+-- EJEMPLO DE PRUEBA
+
+
+declare @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Currencies_Update]
-    @currencyId = 1, -- Asegúrese de usar un ID existente en Tbl_Currencies
+    @currencyId = 2, -- Asegúrese de usar un ID existente en Tbl_Currencies
     @currencyName = 'Córdoba Oro',
     @currencyISO = 'NIO',
     @currencyCode = 558,
@@ -180,4 +180,4 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MonedaIdModificada;
-*/
+

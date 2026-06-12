@@ -128,10 +128,10 @@ BEGIN
 END;
 GO
 
--- ==========================================
+
 -- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
@@ -140,7 +140,7 @@ EXEC [SQM_CATALOGS].[sp_Currencies_Create]
     @currencyName = 'Euro',
     @currencyISO = 'EUR',
     @currencyCode = 978,
-    @currencyDescription = 'Moneda oficial de la Eurozona',
+    @currencyDescription = 'Moneda oficial de Europa',
     @currencyCreatorId = 1,
     @currencyStatusId = 1,
     @o_code = @v_code OUTPUT,
@@ -151,4 +151,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MonedaIdGenerada;
-*/
+
+
+	select * from  [SQM_CATALOGS].[Tbl_Currencies]
