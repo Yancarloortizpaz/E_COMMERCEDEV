@@ -31,3 +31,10 @@ AS BEGIN
       AND (@StatusId IS NULL OR statusId = @StatusId);
 END
 GO
+
+EXEC [SQM_GENERAL].[sp_ProductVariables_Filter] 
+    @ProductId = 3;
+   
+
+   EXEC [SQM_GENERAL].[sp_ProductVariables_Filter] 
+    @StatusId = 1;
