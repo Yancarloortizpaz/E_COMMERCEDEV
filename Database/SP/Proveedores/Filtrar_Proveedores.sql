@@ -1,20 +1,29 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 5. FILTRAR (Optimizado)
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Providers_Filter]
-    @SearchTerm VARCHAR(50) = NULL, @StatusId BIT = NULL
+    @SearchTerm VARCHAR(50) = NULL, 
+    @providerId INT = NULL
 AS BEGIN
-    DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
-
-    SELECT providerId, providerName, providerDescription, providerStatusId
+    SELECT 
+        providerId, 
+        providerName, 
+        providerDescription, 
+        providerStatusId
     FROM [SQM_CATALOGS].[Tbl_Providers] (NOLOCK)
     WHERE (
         @SearchTerm IS NULL
-        OR providerId = @SearchId
         OR providerName LIKE '%' + @SearchTerm + '%'
         OR providerDescription LIKE '%' + @SearchTerm + '%'
-    ) AND (@StatusId IS NULL OR providerStatusId = @StatusId)
+    ) AND (@providerId IS NULL OR providerId = @providerId)
     OPTION (RECOMPILE);
 END
+GO
+
+EXEC [SQM_CATALOGS].[sp_Providers_Filter]
+
+EXEC [SQM_CATALOGS].[sp_Providers_Filter] @providerId=2
+
+EXEC [SQM_CATALOGS].[sp_Providers_Filter]
+    @SearchTerm = 'a'
 GO

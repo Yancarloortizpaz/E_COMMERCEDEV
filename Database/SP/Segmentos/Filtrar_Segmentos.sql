@@ -18,3 +18,5 @@ AS BEGIN
     OPTION (RECOMPILE);
 END
 GO
+
+exec  [SQM_CATALOGS].[sp_Segments_Filter]
