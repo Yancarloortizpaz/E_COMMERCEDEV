@@ -8,7 +8,7 @@ AS
 BEGIN
     DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
 
-    SELECT userId, userFullName, userName, userEmail, userPhoneNumber, userBirthDay, userStatusId
+    SELECT userId, userFullName, userPassword, userName, userEmail, userPhoneNumber, userBirthDay, userStatusId
     FROM [SQM_SECURITY].[Tbl_Users] (NOLOCK)
     WHERE (
         @SearchTerm IS NULL
@@ -21,3 +21,4 @@ BEGIN
     OPTION (RECOMPILE);
 END
 GO
+exec [SQM_SECURITY].[sp_Users_Filter] 'hec'
