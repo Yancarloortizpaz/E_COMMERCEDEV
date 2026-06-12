@@ -18,3 +18,6 @@ AS BEGIN
     OPTION (RECOMPILE);
 END
 GO
+
+exec [SQM_CATALOGS].[sp_Categories_Filter] '2'
+select * from  [SQM_CATALOGS].[Tbl_Categories] 

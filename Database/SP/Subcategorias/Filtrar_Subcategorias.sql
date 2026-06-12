@@ -18,3 +18,7 @@ AS BEGIN
     OPTION (RECOMPILE);
 END
 GO
+
+exec  [SQM_CATALOGS].[sp_SubCategories_Filter] 'ropa'
+
+exec  [SQM_CATALOGS].[sp_SubCategories_Filter] 
