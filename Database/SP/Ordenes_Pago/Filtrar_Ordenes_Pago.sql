@@ -1,9 +1,10 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 3. FILTRAR (Integrando Vista)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_PaymentOrders_Filter]
-    @UserId INT = NULL, @StatusId INT = NULL
+    @UserId INT = NULL,
+    @SearchTerm VARCHAR(50) = NULL,
+    @StatusId INT = NULL
 AS BEGIN
     SELECT 
         orderId,
@@ -25,7 +26,21 @@ AS BEGIN
         statusId,
         statusName
     FROM [SQM_GENERAL].[VW_PAYMENT_ORDERS] (NOLOCK)
-    WHERE (@UserId IS NULL OR userId = @UserId) 
-      AND (@StatusId IS NULL OR statusId = @StatusId);
+    WHERE 
+        (@UserId IS NULL OR userId = @UserId) 
+        AND (
+            @SearchTerm IS NULL
+            OR paymentMethodCardHolderName LIKE '%' + @SearchTerm + '%'
+            OR currencyISO LIKE '%' + @SearchTerm + '%'
+            OR statusName LIKE '%' + @SearchTerm + '%'
+        )
+        AND (@StatusId IS NULL OR statusId = @StatusId)
+    OPTION (RECOMPILE);
 END
+GO
+
+exec [SQM_GENERAL].[sp_PaymentOrders_Filter] 2
+go
+
+EXEC [SQM_GENERAL].[sp_PaymentOrders_Filter] @SearchTerm = 'usd';
 GO
