@@ -1,0 +1,19 @@
+# Visual Studio (C#) temporales y configuraciones
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Archivos de dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos del sistema
+Thumbs.db
+ehthumbs.db
+Desktop.ini
