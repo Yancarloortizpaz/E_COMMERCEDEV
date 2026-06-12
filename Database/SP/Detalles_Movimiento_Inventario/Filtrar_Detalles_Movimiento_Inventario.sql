@@ -11,6 +11,7 @@ AS BEGIN
         stockMovementDetailExpirationDate, stockMovementDetailCreationDate, stockMovementDetailStatusId
     FROM [SQM_GENERAL].[Tbl_StockMovementDetails] (NOLOCK)
     WHERE (@MovementId IS NULL OR stockMovementDetailMovementId = @MovementId)
-      AND (@StatusId IS NULL OR stockMovementDetailStatusId = @StatusId);
+      AND (@StatusId IS NULL OR stockMovementDetailStatusId = @StatusId)
+    OPTION (RECOMPILE);
 END
 GO

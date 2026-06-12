@@ -1,14 +1,30 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 2. LISTAR
+-- 2. LISTAR (Integrando Vista)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_PaymentOrderDetails_List]
 AS BEGIN
     SELECT 
-        orderDetailId, orderDetailOrderId, orderDetailProductVariableId, orderDetailPrice, 
-        orderDetailQuantity, orderDetailDiscount, orderDetailSubTotal, orderDetailTAX, 
-        orderDetailTotal, orderDetailCurrencyId, orderDetailCreatorId, orderDetailCreationDate, 
-        orderDetailStatusId
-    FROM [SQM_GENERAL].[Tbl_PaymentOrderDetails] (NOLOCK);
+        orderDetailId,
+        orderId,
+        productVariableId,
+        productName,
+        productDescription,
+        categoryName,
+        subCategoryName,
+        segmentName,
+        markName,
+        providerName,
+        variableValue,
+        price,
+        quantity,
+        discount,
+        subtotal,
+        tax,
+        total,
+        currencyId,
+        currencyISO,
+        statusId
+    FROM [SQM_GENERAL].[VW_PAYMENT_ORDER_DETAILS] (NOLOCK);
 END
 GO

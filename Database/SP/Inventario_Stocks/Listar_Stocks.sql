@@ -1,13 +1,20 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 3. LISTAR
+-- 3. LISTAR (Integrando Vista)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_List]
 AS BEGIN
     SELECT 
-        stockId, stockProductVariableId, stockQuantity, stockFactoryDate, 
-        stockExpirationDate, stockCreatorId, stockCreationDate, 
-        stockModificatorId, stockModificationDate, stockStatusId
-    FROM [SQM_GENERAL].[Tbl_Stocks] (NOLOCK);
+        stockId,
+        productVariableId,
+        productName,
+        variableValue,
+        unitPrice,
+        currencyISO,
+        quantity,
+        factoryDate,
+        expirationDate,
+        statusId
+    FROM [SQM_GENERAL].[VW_STOCKS] (NOLOCK);
 END
 GO

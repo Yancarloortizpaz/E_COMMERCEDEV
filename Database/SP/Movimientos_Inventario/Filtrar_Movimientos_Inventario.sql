@@ -11,6 +11,7 @@ AS BEGIN
     FROM [SQM_GENERAL].[Tbl_StockMovements] (NOLOCK)
     WHERE (@MovementType IS NULL OR stockMovementType = @MovementType)
       AND (@OrderId IS NULL OR stockMovementOrderId = @OrderId) 
-      AND (@StatusId IS NULL OR stockMovementStatusId = @StatusId);
+      AND (@StatusId IS NULL OR stockMovementStatusId = @StatusId)
+    OPTION (RECOMPILE);
 END
 GO
