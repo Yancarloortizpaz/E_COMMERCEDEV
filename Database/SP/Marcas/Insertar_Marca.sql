@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 1. CREAR CON VALIDACIONES Y PARÁMETROS DE SALIDA
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Marks_Create]
 (
     @markName VARCHAR(50),
@@ -94,16 +94,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+-- EJECUCIÓN
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Marks_Create]
-    @markName = 'PUMA',
+    @markName = 'puma',
     @markDescription = 'Marca de calzado y ropa deportiva Puma',
     @markCreatorId = 1,
     @markStatusId = 1,
@@ -115,4 +115,4 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MarcaIdGenerada;
-*/
+*

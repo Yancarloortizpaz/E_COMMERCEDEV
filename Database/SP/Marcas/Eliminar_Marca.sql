@@ -46,7 +46,7 @@ BEGIN
     IF @ExistingStatus = 0
     BEGIN
         SET @o_code = -1;
-        SET @o_message = 'La marca ya se encuentra inactiva (eliminada).';
+        SET @o_message = 'La marca ya se encuentra  (eliminada).';
         RETURN;
     END;
 
@@ -71,7 +71,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @o_code = 200;
-        SET @o_message = 'Marca inactivada (eliminada lógicamente) correctamente.';
+        SET @o_message = 'Marca  eliminada correctamente.';
         SET @o_templateId = @markId;
     END TRY
     BEGIN CATCH
@@ -85,16 +85,15 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+--ejecucion de prueba 
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Marks_Delete]
-    @markId = 1, -- Asegúrese de usar un ID existente en Tbl_Marks
+    @markId = 1, 
     @markModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
@@ -104,4 +103,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MarcaIdInactivada;
-*/

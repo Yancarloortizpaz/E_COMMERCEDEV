@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 2. EDITAR CON VALIDACIONES Y PARÁMETROS DE SALIDA
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Marks_Update]
 (
     @markId INT,
@@ -115,16 +115,16 @@ BEGIN
 END;
 GO
 
--- ==========================================
--- EJEMPLO DE PRUEBA / EJECUCIÓN
--- ==========================================
-/*
+
+-- EJEMPLO 
+
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Marks_Update]
-    @markId = 1, -- Asegúrese de usar un ID existente en Tbl_Marks
+    @markId = 1,
     @markName = 'ADIDAS ORIGINALS',
     @markDescription = 'Línea clásica de calzado y ropa deportiva Adidas',
     @markModificatorId = 1,
@@ -138,4 +138,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MarcaIdModificada;
-*/
+
+
+select * from [SQM_CATALOGS].[Tbl_Marks] 
