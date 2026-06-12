@@ -18,3 +18,4 @@ AS BEGIN
     OPTION (RECOMPILE);
 END
 GO
+exec [SQM_CATALOGS].[sp_Marks_Filter]
