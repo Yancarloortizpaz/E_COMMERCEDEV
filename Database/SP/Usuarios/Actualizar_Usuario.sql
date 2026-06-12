@@ -130,17 +130,16 @@ BEGIN
     END CATCH;
 END;
 GO
+--prueba
 
--- Declaración y ejecución de ejemplo para pruebas
-/*
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_SECURITY].[sp_Users_Update]
-    @userId = 1, -- Asegúrese de usar un ID existente
+    @userId = 1, 
     @userFullName = 'HECTOR JOSE CALERO ALANIZ',
-    @userEmail = 'hcalero@dominio.local',
+    @userEmail = 'hcalero@udem.edu.ni',
     @userPhoneNumber = '88887777',
     @userModificatorId = 1,
     @userStatusId = 1, -- ACTIVO
@@ -153,4 +152,6 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS UsuarioIdModificado;
-*/
+
+
+	select * from [SQM_SECURITY].[Tbl_Users]

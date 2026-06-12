@@ -1,7 +1,6 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 1. CREAR CON VALIDACIONES Y PARÁMETROS DE SALIDA
 CREATE OR ALTER PROCEDURE [SQM_SECURITY].[sp_Users_Create]
 (
     @userFullName VARCHAR(100),
@@ -187,16 +186,16 @@ END;
 GO
 
 -- Declaración y ejecución de ejemplo para pruebas
-/*
+
 DECLARE @v_code INT;
 DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_SECURITY].[sp_Users_Create]
-    @userFullName = 'JUAN RAMON PEREZ LOPEZ',
-    @userName = 'JPEREZ',
-    @userPasswordPlain = 'ClaveSegura123',
-    @userEmail = 'jperez@dominio.local',
+    @userFullName = 'Duclis RAMON Zamora LOPEZ',
+    @userName = 'Rduc',
+    @userPasswordPlain = 'notedirelaclave',
+    @userEmail = 'Dperez@dominio.local',
     @userPhoneNumber = '88889999',
     @userCountryId = 1,
     @userGenderId = 2,
@@ -211,4 +210,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS UsuarioIdGenerado;
-*/
