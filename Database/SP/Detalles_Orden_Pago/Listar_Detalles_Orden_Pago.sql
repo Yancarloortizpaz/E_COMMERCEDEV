@@ -28,3 +28,5 @@ AS BEGIN
     FROM [SQM_GENERAL].[VW_PAYMENT_ORDER_DETAILS] (NOLOCK);
 END
 GO
+
+exec [SQM_GENERAL].[sp_PaymentOrderDetails_List]
