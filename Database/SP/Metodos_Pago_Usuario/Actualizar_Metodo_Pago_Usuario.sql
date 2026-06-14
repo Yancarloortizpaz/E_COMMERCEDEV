@@ -176,7 +176,7 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE name = 'KEY_HASH')
+        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE key_name = 'KEY_HASH')
             CLOSE SYMMETRIC KEY KEY_HASH;
 
         SET @o_code = ERROR_NUMBER();
@@ -185,3 +185,42 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Update]
+    @userPaymentMethodId = 3,
+    @userPaymentMethodPaymentMethodTypeId = 1,
+    @CardNumberPlain = '4111111111111111',
+    @ExpirationDatePlain = '12/31',
+    @CVVPlain = '007',
+    @userPaymentMethodCardHolderName = 'Hector Calero',
+    @userPaymentMethodModificatorId = 1,
+    @userPaymentMethodStatusId = 1,
+    @ForzarRecuperacion = 0,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Modificado];
+GO
+
+
+
+OPEN SYMMETRIC KEY KEY_HASH DECRYPTION BY CERTIFICATE CERT_ECOMMERCE;
+
+SELECT 
+    userPaymentMethodId AS [ID],
+    userPaymentMethodUserId AS [UsuarioID],
+    [SQM_SECURITY].Fn_DecryptByKey(userPaymentMethodCardNumber) AS [Tarjeta Desencriptada],
+    userPaymentMethodStatusId AS [Estado Activo]
+FROM [SQM_GENERAL].[Tbl_UserPaymentMethods]
+WHERE userPaymentMethodUserId = 1;
+
+CLOSE SYMMETRIC KEY KEY_HASH;

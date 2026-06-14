@@ -171,7 +171,7 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE name = 'KEY_HASH')
+        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE key_name = 'KEY_HASH')
             CLOSE SYMMETRIC KEY KEY_HASH;
 
         SET @o_code = ERROR_NUMBER();
@@ -180,3 +180,31 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Create]
+    @userPaymentMethodUserId = 1,
+    @userPaymentMethodPaymentMethodTypeId = 1,
+    @CardNumberPlain = '4111111111111111',
+    @ExpirationDatePlain = '12/30',
+    @CVVPlain = '892',
+    @userPaymentMethodCardHolderName = 'Hector calero',
+    @userPaymentMethodCreatorId = 1,
+    @userPaymentMethodStatusId = 1,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Generado];
+GO
+
+select * from [SQM_SECURITY].[Tbl_Users]
+
+select * from [SQM_GENERAL].[Tbl_UserPaymentMethods]
