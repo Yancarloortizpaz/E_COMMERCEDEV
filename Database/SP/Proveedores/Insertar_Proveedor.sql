@@ -93,3 +93,26 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_CATALOGS].[sp_Providers_Create]
+    @providerName = 'Proveedor Global Tech',
+    @providerDescription = 'Distribuidor mayorista de tecnología y componentes de hardware.',
+    @providerCreatorId = 1,
+    @providerStatusId = 1,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Generado];
+GO
+
+
+select * from [SQM_CATALOGS].[Tbl_Providers]
