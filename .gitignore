@@ -17,3 +17,5 @@ yarn-error.log*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+#md privados 
+*.md
