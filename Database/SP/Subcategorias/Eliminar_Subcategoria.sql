@@ -71,7 +71,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @o_code = 200;
-        SET @o_message = 'Subcategoría inactivada (eliminada) correctamente.';
+        SET @o_message = 'Subcategoría eliminada correctamente.';
         SET @o_templateId = @subCategoryId;
     END TRY
     BEGIN CATCH
@@ -83,4 +83,22 @@ BEGIN
         SET @o_templateId = NULL;
     END CATCH;
 END;
+GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_CATALOGS].[sp_SubCategories_Delete]
+    @subCategoryId = 96,
+    @subCategoryModificatorId = 1,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Inactivado];
 GO

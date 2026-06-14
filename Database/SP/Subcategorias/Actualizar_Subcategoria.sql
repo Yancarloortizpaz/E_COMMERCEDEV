@@ -118,3 +118,27 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_CATALOGS].[sp_SubCategories_Update]
+    @subCategoryId = 7,
+    @subCategoryName = 'Hardware y Periféricos',
+    @subCategoryDescription = 'Componentes internos y dispositivos externos actualizados.',
+    @subCategoryModificatorId = 1,
+    @subCategoryStatusId = 1,
+    @ForzarRecuperacion = 0,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Modificado];
+GO
+
+select * from [SQM_CATALOGS].[Tbl_SubCategories]

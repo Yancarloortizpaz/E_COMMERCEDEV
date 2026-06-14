@@ -93,3 +93,25 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_CATALOGS].[sp_SubCategories_Create]
+    @subCategoryName = 'Componentes de Laptop',
+    @subCategoryDescription = 'Memorias RAM, discos sólidos, pantallas y teclados.',
+    @subCategoryCreatorId = 1,
+    @subCategoryStatusId = 1,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Generado];
+GO
+
+select * from [SQM_CATALOGS].[Tbl_SubCategories]
