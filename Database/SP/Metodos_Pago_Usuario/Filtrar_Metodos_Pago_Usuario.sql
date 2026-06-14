@@ -48,7 +48,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         -- Asegurar el cierre de la clave simétrica ante cualquier fallo
-        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE name = 'KEY_HASH')
+        IF EXISTS (SELECT 1 FROM sys.openkeys WHERE KEY_NAME = 'KEY_HASH')
             CLOSE SYMMETRIC KEY KEY_HASH;
 
         DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
@@ -56,3 +56,11 @@ BEGIN
     END CATCH;
 END;
 GO
+
+EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Filter]
+    @SearchTerm = 'Hector',
+    @StatusId = 1;
+
+	EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Filter]
+    @SearchTerm = '5678',
+    @StatusId = 1;
