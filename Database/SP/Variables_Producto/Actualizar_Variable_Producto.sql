@@ -188,3 +188,29 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_GENERAL].[sp_ProductVariables_Update]
+    @productVariableId = 5,
+    @productVariableProductId = 1,
+    @productVariableValue = '8GB RAM - 256GB SSD',
+    @productVariablePrice = 450.00,
+    @productVariableCurrencyId = 1,
+    @productVariableModificatorId = 1,
+    @productVariableStatusId = 1,
+    @ForzarRecuperacion = 0,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Modificado];
+GO
+
+select * from [SQM_GENERAL].[Tbl_ProductVariables]

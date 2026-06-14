@@ -46,7 +46,7 @@ BEGIN
     IF @ExistingStatus = 0
     BEGIN
         SET @o_code = -1;
-        SET @o_message = 'La variante de producto ya se encuentra inactiva (eliminada).';
+        SET @o_message = 'La variante de producto ya se encuentra (eliminada).';
         RETURN;
     END;
 
@@ -71,7 +71,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @o_code = 200;
-        SET @o_message = 'Variante de producto inactivada (eliminada) correctamente.';
+        SET @o_message = 'Variante de producto (eliminada) correctamente.';
         SET @o_templateId = @productVariableId;
     END TRY
     BEGIN CATCH
@@ -83,4 +83,24 @@ BEGIN
         SET @o_templateId = NULL;
     END CATCH;
 END;
+GO
+
+
+
+
+DECLARE @o_code INT;
+DECLARE @o_message VARCHAR(255);
+DECLARE @o_templateId INT;
+
+EXEC [SQM_GENERAL].[sp_ProductVariables_Delete]
+    @productVariableId = 5,
+    @productVariableModificatorId = 1,
+    @o_code = @o_code OUTPUT,
+    @o_message = @o_message OUTPUT,
+    @o_templateId = @o_templateId OUTPUT;
+
+SELECT 
+    @o_code AS [Código Respuesta], 
+    @o_message AS [Mensaje del SP], 
+    @o_templateId AS [ID Inactivado];
 GO
