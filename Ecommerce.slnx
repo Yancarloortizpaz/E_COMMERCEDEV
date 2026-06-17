@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Ecom_Aplication/Ecom_Aplication.csproj" />
+  <Project Path="Ecom_Domain/Ecom_Domain.csproj" />
+  <Project Path="Ecom_Infraestructure/Ecom_Infraestructure.csproj" />
+  <Project Path="Ecom_Presentation/Ecom_Presentation.csproj" />
+</Solution>
