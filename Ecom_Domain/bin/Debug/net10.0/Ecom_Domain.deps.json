@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Ecom_Domain/1.0.0": {
+        "runtime": {
+          "Ecom_Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Ecom_Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
