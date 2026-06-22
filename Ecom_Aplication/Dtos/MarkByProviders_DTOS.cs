@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain
+namespace Ecom_Aplication.Dtos
 {
     public class MarkByProviders_DTOS
     {

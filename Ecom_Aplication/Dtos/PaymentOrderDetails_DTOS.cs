@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain
+namespace Ecom_Aplication.Dtos
 {
-    public class PaymentOrderDetails
+    public class PaymentOrderDetails_DTOS
     {
         public int? orderDetailId { get; set; }
         public int? orderDetailOrderId { get; set; }

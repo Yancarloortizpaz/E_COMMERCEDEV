@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain
+namespace Ecom_Aplication.Dtos
 {
-    public class PaymentMethodTypes
+    public class PaymentMethodTypes_DTOS
     {
         public int? paymentMethodTypeId { get; set; }
         public string? paymentMethodTypeName { get; set; }

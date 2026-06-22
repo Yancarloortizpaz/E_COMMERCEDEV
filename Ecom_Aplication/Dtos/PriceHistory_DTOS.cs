@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain
+namespace Ecom_Aplication.Dtos
 {
-    public class PriceHistory
+    public class PriceHistory_DTOS
     {
         public int? priceHistoryId { get; set; }
         public int? priceHistoryProductVariableId { get; set; }

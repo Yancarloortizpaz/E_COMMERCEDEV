@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain
+namespace Ecom_Aplication.Dtos
 {
-    public class StockMovementTypes
+    public class StockMovementTypes_DTOS
     {
         public int? stockMovementTypeId { get; set; }
         public string? stockMovementTypeName { get; set; }
