@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ecom_Aplication.Dtos
 {
-    public class ProductVariableTypes_DTOSS
+    public class ProductVariableTypes_DTOS
     {
         public int? productVariableTypeId { get; set; }
         public string? productVariableTypeName { get; set; }
