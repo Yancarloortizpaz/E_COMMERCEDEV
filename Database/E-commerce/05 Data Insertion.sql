@@ -180,3 +180,163 @@ VALUES
 (1, 1, 180.00, 2, 10.00, 350.00, 52.50, 402.50, 1, 1, GETDATE(), 1), 
 (2, 4, 650.00, 1, 00.00, 650.00, 97.50, 747.50, 1, 1, GETDATE(), 1); 
 GO
+
+
+
+
+-- 1. Nuevas Marcas
+INSERT INTO [SQM_CATALOGS].[Tbl_Marks] 
+(markName, markDescription, markCreatorId, markCreationDate, markStatusId)
+VALUES 
+('Nike', 'Marca deportiva global', 1, GETDATE(), 1),
+('Sony', 'Electrónica y entretenimiento', 1, GETDATE(), 1);
+
+-- 2. Nuevos Proveedores
+INSERT INTO [SQM_CATALOGS].[Tbl_Providers] 
+(providerName, providerDescription, providerCreatorId, providerCreationDate, providerStatusId)
+VALUES 
+('Distribuidora Intermex S.A.', 'Proveedor de ropa y calzado premium', 1, GETDATE(), 1),
+('Sony Latam Corp', 'Proveedor directo de tecnología japonesa', 1, GETDATE(), 1);
+
+-- 3. Nuevas Subcategorías y Segmentos (Si aplica)
+INSERT INTO [SQM_CATALOGS].[Tbl_SubCategories] 
+(subCategoryName, subCategoryDescription, subCategoryCreatorId, subCategoryCreationDate, subCategoryStatusId)
+VALUES 
+('Calzado Deportivo', 'Zapatillas para correr y entrenamiento', 1, GETDATE(), 1),
+('Consolas de Videojuegos', 'Sistemas de entretenimiento interactivo', 1, GETDATE(), 1);
+
+INSERT INTO [SQM_CATALOGS].[Tbl_Segments] 
+(segmentName, segmentDescription, segmentCreatorId, segmentCreationDate, segmentStatusId)
+VALUES 
+('Premium', 'Productos de gama alta y ediciones especiales', 1, GETDATE(), 1);
+GO
+
+
+INSERT INTO [SQM_CATALOGS].[Tbl_MarkByProviders] 
+(markByProviderMarkId, markByProviderProviderId, markByProviderCreatorId, markByProviderCreationDate, markByProviderStatusId)
+VALUES 
+(2, 2, 1, GETDATE(), 1), -- Nike con Intermex
+(3, 3, 1, GETDATE(), 1); -- Sony con Sony Latam ( IDs 3)
+
+
+INSERT INTO [SQM_CATALOGS].[Tbl_ProductIdentificators] 
+(productIdentificatorCategoryId, productIdentificatorSubCategoryId, productIdentificatorSegmentId, productIdentificatorCreatorId, productIdentificatorCreationDate, productIdentificatorStatusId)
+VALUES 
+(2, 2, 2, 1, GETDATE(), 1); 
+GO
+
+
+INSERT INTO [SQM_GENERAL].[Tbl_Products] 
+(productName, productDescription, productProductIdentificatorId, productMarkByProviderId, productCreatorId, productCreationDate, productStatusId)
+VALUES 
+('Zapatillas Nike Air Max 2026', 'Calzado deportivo con amortiguación máxima', 2, 2, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_ProductVariables] 
+(productVariableProductId, productVariableValue, productVariablePrice, productVariableCurrencyId, productVariableCreatorId, productVariableCreationDate, productVariableStatusId)
+VALUES 
+(2, 'Talla 9.5 US - Color Negro', 180.00, 1, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_Stocks] 
+(stockProductVariableId, stockQuantity, stockFactoryDate, stockExpirationDate, stockCreatorId, stockCreationDate, stockStatusId)
+VALUES 
+(2, 50, '2026-01-10', '2031-01-10', 1, GETDATE(), 1);
+GO
+
+
+INSERT INTO [SQM_GENERAL].[Tbl_Products] 
+(productName, productDescription, productProductIdentificatorId, productMarkByProviderId, productCreatorId, productCreationDate, productStatusId)
+VALUES 
+('Zapatillas Nike Air Max 90 Casual v2', 'Calzado urbano con amortiguación mejorada', 2, 2, 1, GETDATE(), 1),
+('Laptop Dell Vostro 3500 Office', 'Laptop enfocada en productividad de oficina', 11, 3, 1, GETDATE(), 1),
+('Zapatillas Adidas Originals Forum', 'Zapatillas de perfil clásico retro urbano', 1, 1, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_ProductVariables] 
+(productVariableProductId, productVariableValue, productVariablePrice, productVariableCurrencyId, productVariableCreatorId, productVariableCreationDate, productVariableStatusId)
+VALUES 
+(6, 'TALLA 40 (7.5 US) - Blanco/Negro', 145.00, 1, 1, GETDATE(), 1),
+(6, 'TALLA 41 (8.5 US) - Total Negro', 145.00, 1, 1, GETDATE(), 1),
+(7, '16GB RAM - 512GB SSD - Intel i5', 720.00, 1, 1, GETDATE(), 1),
+(8, 'TALLA 42 (9.5 US) - Azul Clásico', 120.00, 1, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_Stocks] 
+(stockProductVariableId, stockQuantity, stockFactoryDate, stockExpirationDate, stockCreatorId, stockCreationDate, stockStatusId)
+VALUES 
+(6, 40, '2026-02-15', '2031-02-15', 1, GETDATE(), 1),
+(7, 35, '2026-02-15', '2031-02-15', 1, GETDATE(), 1),
+(8, 15, '2026-01-20', '2031-01-20', 1, GETDATE(), 1),
+(9, 25, '2026-03-10', '2031-03-10', 1, GETDATE(), 1);
+GO
+
+
+INSERT INTO [SQM_GENERAL].[Tbl_Products] 
+(productName, productDescription, productProductIdentificatorId, productMarkByProviderId, productCreatorId, productCreationDate, productStatusId)
+VALUES 
+('Zapatillas Nike DefyAllDay Casual', 'Calzado urbano de cuero cómodo para uso diario', 2, 2, 1, GETDATE(), 1),
+('Zapatillas Nike Air Max SYSTM', 'Estilo retro de los 80 con amortiguación Air visible', 2, 2, 1, GETDATE(), 1),
+('Zapatillas Nike Court Vision Low', 'Diseño clásico de baloncesto adaptado para el día a día', 2, 2, 1, GETDATE(), 1),
+('Zapatillas Nike Downshifter 12', 'Calzado ligero para iniciación al running y entrenamientos', 1, 2, 1, GETDATE(), 1),
+('Zapatillas Adidas Runfalcon 3.0', 'Zapatillas para correr con mediasuela Cloudfoam suave', 1, 1, 1, GETDATE(), 1),
+('Zapatillas Adidas Grand Court TD', 'Diseño clásico con las 3 franjas icónicas en los costados', 1, 1, 1, GETDATE(), 1),
+('Zapatillas Adidas Duramo RC', 'Zapatillas de running duraderas para entrenamientos diarios', 1, 1, 1, GETDATE(), 1),
+('Zapatillas Adidas Galaxy 6', 'Calzado con máxima ventilación para caminatas largas', 1, 1, 1, GETDATE(), 1),
+('Laptop Dell Vostro 3400 Intel i3', 'Laptop eficiente para tareas básicas de oficina y estudio', 11, 3, 1, GETDATE(), 1),
+('Laptop Dell Inspiron 3520 120Hz', 'Pantalla fluida con procesador Core i5 para multitarea', 11, 3, 1, GETDATE(), 1),
+('Laptop Dell Latitude 3420 Pro', 'Equipo corporativo con seguridad avanzada y chasis robusto', 11, 3, 1, GETDATE(), 1),
+('Laptop Dell G15 Gaming Edition', 'Potencia gráfica con refrigeración avanzada para jugadores', 12, 3, 1, GETDATE(), 1),
+('Zapatillas Nike Revolution 6 Flyease', 'Sistema de cierre fácil sin cordones para mayor comodidad', 1, 2, 1, GETDATE(), 1),
+('Zapatillas Nike Pegasus 40 Premium', 'Calzado de running de alto rendimiento con espuma React', 1, 2, 1, GETDATE(), 1),
+('Zapatillas Adidas Superstar Classic', 'El ícono urbano con puntera de caucho estriada', 1, 1, 1, GETDATE(), 1),
+('Zapatillas Adidas Stan Smith Eco', 'Estilo minimalista fabricado con materiales reciclados', 1, 1, 1, GETDATE(), 1),
+('Laptop Dell Inspiron 16 Ryzen 5', 'Pantalla grande con procesador AMD para creadores de contenido', 11, 3, 1, GETDATE(), 1),
+('Laptop Dell Precision 3580 Workstation', 'Estación de trabajo optimizada para diseño CAD y arquitectura', 11, 3, 1, GETDATE(), 1),
+('Zapatillas Nike Air Max Excee', 'Homenaje al Air Max 90 con líneas de diseño modernas', 2, 2, 1, GETDATE(), 1),
+('Laptop Dell XPS 13 Ultrabook', 'Diseño ultradelgado premium con pantalla InfinityEdge', 11, 3, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_ProductVariables] 
+(productVariableProductId, productVariableValue, productVariablePrice, productVariableCurrencyId, productVariableCreatorId, productVariableCreationDate, productVariableStatusId)
+VALUES 
+(6, 'TALLA 40 (7.5 US) - Blanco', 85.00, 1, 1, GETDATE(), 1),
+(7, 'TALLA 41 (8.5 US) - Negro/Gris', 110.00, 1, 1, GETDATE(), 1),
+(8, 'TALLA 42 (9.5 US) - Blanco Total', 90.00, 1, 1, GETDATE(), 1),
+(9, 'TALLA 43 (10 US) - Azul Marino', 95.00, 1, 1, GETDATE(), 1),
+(10, 'TALLA 40 (7.5 US) - Negro', 75.00, 1, 1, GETDATE(), 1),
+(11, 'TALLA 41 (8.5 US) - Blanco/Negro', 80.00, 1, 1, GETDATE(), 1),
+(12, 'TALLA 42 (9.5 US) - Gris', 70.00, 1, 1, GETDATE(), 1),
+(13, 'TALLA 43 (10 US) - Negro/Azul', 65.00, 1, 1, GETDATE(), 1),
+(14, '8GB RAM - 256GB SSD - Core i3', 420.00, 1, 1, GETDATE(), 1),
+(15, '16GB RAM - 512GB SSD - Core i5', 680.00, 1, 1, GETDATE(), 1),
+(16, '16GB RAM - 512GB SSD - Windows Pro', 790.00, 1, 1, GETDATE(), 1),
+(17, '16GB RAM - 512GB SSD - RTX 3050', 1150.00, 1, 1, GETDATE(), 1),
+(18, 'TALLA 41 (8.5 US) - Rojo Deportivo', 85.00, 1, 1, GETDATE(), 1),
+(19, 'TALLA 42 (9.5 US) - Edición Pegasus', 160.00, 1, 1, GETDATE(), 1),
+(20, 'TALLA 42 (9.5 US) - Blanco Original', 100.00, 1, 1, GETDATE(), 1),
+(21, 'TALLA 40 (7.5 US) - Verde/Blanco', 95.00, 1, 1, GETDATE(), 1),
+(22, '16GB RAM - 512GB SSD - Ryzen 5', 750.00, 1, 1, GETDATE(), 1),
+(23, '32GB RAM - 1TB SSD - T550 Video', 1450.00, 1, 1, GETDATE(), 1),
+(24, 'TALLA 41 (8.5 US) - Negro/Blanco', 105.00, 1, 1, GETDATE(), 1),
+(25, '16GB RAM - 1TB SSD - Pantalla Tactil', 1350.00, 1, 1, GETDATE(), 1);
+
+INSERT INTO [SQM_GENERAL].[Tbl_Stocks] 
+(stockProductVariableId, stockQuantity, stockFactoryDate, stockExpirationDate, stockCreatorId, stockCreationDate, stockStatusId)
+VALUES 
+(6, 15, '2026-01-10', '2031-01-10', 1, GETDATE(), 1),
+(7, 20, '2026-02-12', '2031-02-12', 1, GETDATE(), 1),
+(8, 25, '2026-01-15', '2031-01-15', 1, GETDATE(), 1),
+(9, 18, '2026-03-01', '2031-03-01', 1, GETDATE(), 1),
+(10, 30, '2026-02-20', '2031-02-20', 1, GETDATE(), 1),
+(11, 22, '2026-01-18', '2031-01-18', 1, GETDATE(), 1),
+(12, 14, '2026-02-05', '2031-02-05', 1, GETDATE(), 1),
+(13, 19, '2026-03-10', '2031-03-10', 1, GETDATE(), 1),
+(14, 8, '2026-01-22', '2031-01-22', 1, GETDATE(), 1),
+(15, 12, '2026-02-15', '2031-02-15', 1, GETDATE(), 1),
+(16, 10, '2026-02-28', '2031-02-28', 1, GETDATE(), 1),
+(17, 6, '2026-03-05', '2031-03-05', 1, GETDATE(), 1),
+(18, 16, '2026-01-30', '2031-01-30', 1, GETDATE(), 1),
+(19, 11, '2026-02-14', '2031-02-14', 1, GETDATE(), 1),
+(20, 24, '2026-01-25', '2031-01-25', 1, GETDATE(), 1),
+(21, 17, '2026-02-11', '2031-02-11', 1, GETDATE(), 1),
+(22, 7, '2026-03-02', '2031-03-02', 1, GETDATE(), 1),
+(23, 5, '2026-02-25', '2031-02-25', 1, GETDATE(), 1),
+(24, 13, '2026-01-29', '2031-01-29', 1, GETDATE(), 1),
+(25, 4, '2026-03-12', '2031-03-12', 1, GETDATE(), 1);
+GO
