@@ -4,10 +4,13 @@ USE [DB_EcommerceAgent]
 GO
 
 CREATE OR ALTER PROCEDURE dbo.SP_ListarGeneralProducts_Filtro
-    @01_FilterText VARCHAR(100)
+    @01_FilterText VARCHAR(100) = NULL -- Permitimos que por defecto sea NULL si no mandan filtro
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    -- Si el parámetro viene vacío o con espacios, lo tratamos como NULL
+    SET @01_FilterText = NULLIF(TRIM(@01_FilterText), '');
 
     SELECT 
         ProductID,
@@ -46,8 +49,7 @@ END
 GO
 
 
-
-EXEC dbo.SP_ListarGeneralProducts_Filtro @01_FilterText = 'Dell';
+EXEC dbo.SP_ListarGeneralProducts_Filtro @01_FilterText = 'air negro';
 
 
 
