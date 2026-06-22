@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ecom_Aplication.Dtos
 {
-    public class UserPaymentMethods
+    public class UserPaymentMethods_DTOS
     {
         public int? userPaymentMethodId { get; set; }
         public int? userPaymentMethodUserId { get; set; }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Ecom_Domain.Entities
+namespace Ecom_Aplication.Dtos
 {
     public class CartDetail
     {
