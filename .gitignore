@@ -19,3 +19,6 @@ ehthumbs.db
 Desktop.ini
 #md privados 
 *.md
+.vs/
+**/obj/
+**/bin/
