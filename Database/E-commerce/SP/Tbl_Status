@@ -1,0 +1,148 @@
+USE [DB_ECOMMERCE]
+GO
+
+-- 1. CREAR
+CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_Create]
+(
+    @statusName VARCHAR(50),
+    @statusDescription VARCHAR(100),
+    @statusCreatorId INT,
+    @statusStatusId INT,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_templateId INT = NULL OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    IF EXISTS (SELECT 1 FROM [SQM_CATALOGS].[Tbl_Status] WHERE statusName = TRIM(@statusName))
+    BEGIN
+        SET @o_code = -1; SET @o_message = 'Ya existe un estado con ese nombre.'; RETURN;
+    END;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO [SQM_CATALOGS].[Tbl_Status] 
+            (statusName, statusDescription, statusCreatorId, statusCreationDate, statusStatusId)
+        VALUES 
+            (TRIM(@statusName), TRIM(@statusDescription), @statusCreatorId, GETDATE(), @statusStatusId);
+
+        SET @o_templateId = SCOPE_IDENTITY();
+        COMMIT TRANSACTION;
+        SET @o_code = 200; SET @o_message = 'Estado creado exitosamente.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @o_code = ERROR_NUMBER(); SET @o_message = ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- 2. ACTUALIZAR
+CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_Update]
+(
+    @statusId INT,
+    @statusName VARCHAR(50),
+    @statusDescription VARCHAR(100),
+    @statusCreatorId INT, -- Mapeado al creador original por falta de ModificatorId en DDL
+    @statusStatusId INT,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_templateId INT = NULL OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM [SQM_CATALOGS].[Tbl_Status] WHERE statusId = @statusId)
+    BEGIN
+        SET @o_code = -1; SET @o_message = 'El estado especificado no existe.'; RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM [SQM_CATALOGS].[Tbl_Status] WHERE statusName = TRIM(@statusName) AND statusId <> @statusId)
+    BEGIN
+        SET @o_code = -1; SET @o_message = 'Ya existe otro estado con ese mismo nombre.'; RETURN;
+    END;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE [SQM_CATALOGS].[Tbl_Status]
+        SET statusName = TRIM(@statusName),
+            statusDescription = TRIM(@statusDescription),
+            statusCreatorId = @statusCreatorId,
+            statusStatusId = @statusStatusId
+        WHERE statusId = @statusId;
+
+        COMMIT TRANSACTION;
+        SET @o_code = 200; SET @o_message = 'Estado actualizado.'; SET @o_templateId = @statusId;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @o_code = ERROR_NUMBER(); SET @o_message = ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- 3. ELIMINAR (Borrado lógico simulado por Update de Estado a 0 u otro indicador inactivo)
+CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_Delete]
+(
+    @statusId INT,
+    @statusCreatorId INT,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_templateId INT = NULL OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Lógica: Validar que no esté en uso (ejemplo hipotético con productos)
+    IF EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_Products] WHERE productStatusId = @statusId)
+    BEGIN
+        SET @o_code = -1; SET @o_message = 'No se puede desactivar el estado: está asignado a productos vigentes.'; RETURN;
+    END;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE [SQM_CATALOGS].[Tbl_Status]
+        SET statusStatusId = 0, -- 0 como inactivo estándar
+            statusCreatorId = @statusCreatorId
+        WHERE statusId = @statusId;
+
+        COMMIT TRANSACTION;
+        SET @o_code = 200; SET @o_message = 'Estado dado de baja.'; SET @o_templateId = @statusId;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        SET @o_code = ERROR_NUMBER(); SET @o_message = ERROR_MESSAGE();
+    END CATCH;
+END;
+GO
+
+-- 4. FILTRAR
+CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_Filter]
+    @statusName VARCHAR(50) = NULL,
+    @statusId INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT statusId, statusName, statusDescription, statusStatusId
+    FROM [SQM_CATALOGS].[Tbl_Status] (NOLOCK)
+    WHERE (@statusName IS NULL OR statusName LIKE '%' + TRIM(@statusName) + '%')
+      AND (@statusId IS NULL OR statusId = @statusId)
+    OPTION (RECOMPILE);
+END;
+GO
+
+-- 5. LISTAR
+CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_List]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT statusId, statusName, statusDescription, statusCreatorId, statusCreationDate, statusStatusId
+    FROM [SQM_CATALOGS].[Tbl_Status] (NOLOCK);
+END;
+GO
