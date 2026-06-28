@@ -1,3 +1,8 @@
+USE [DB_ECOMMERCE]
+GO
+
+
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_AttributeProducts_Create]
 (
     @AttributeProductAttributesTypeId INT,

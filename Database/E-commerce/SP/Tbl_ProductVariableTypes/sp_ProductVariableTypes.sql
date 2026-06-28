@@ -1,3 +1,6 @@
+USE [DB_ECOMMERCE]
+GO
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_Create]
 (
     @productVariableTypeName VARCHAR(50),

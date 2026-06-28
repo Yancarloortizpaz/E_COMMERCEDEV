@@ -1,3 +1,7 @@
+USE [DB_ECOMMERCE]
+GO
+
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_AttributesTypes_Create]
 (
     @attributeTypeName VARCHAR(50),

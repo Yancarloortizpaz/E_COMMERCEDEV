@@ -1,3 +1,6 @@
+USE [DB_ECOMMERCE]
+GO
+
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_PriceHistory_Create]
 (
     @priceHistoryProductVariableId INT,

@@ -1,3 +1,7 @@
+
+USE [DB_ECOMMERCE]
+GO
+
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Create]
 (
     @attributeProductVariableProductVariableId INT,

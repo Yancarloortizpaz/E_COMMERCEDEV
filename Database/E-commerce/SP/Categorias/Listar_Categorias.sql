@@ -8,3 +8,4 @@ AS BEGIN
     FROM [SQM_CATALOGS].[Tbl_Categories] (NOLOCK);
 END
 GO
+exec [SQM_CATALOGS].[sp_Categories_List]

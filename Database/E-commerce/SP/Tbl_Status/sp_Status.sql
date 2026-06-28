@@ -1,6 +1,9 @@
 USE [DB_ECOMMERCE]
 GO
 
+USE [DB_ECOMMERCE]
+GO
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Status_Create]
 (
     @statusName VARCHAR(50),

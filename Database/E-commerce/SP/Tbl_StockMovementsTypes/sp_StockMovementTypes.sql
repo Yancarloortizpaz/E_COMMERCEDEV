@@ -1,3 +1,6 @@
+USE [DB_ECOMMERCE]
+GO
+
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_StockMovementTypes_Filter]
     @stockMovementTypeId INT = NULL,
     @stockMovementTypeName VARCHAR(50) = NULL,
