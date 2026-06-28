@@ -1,6 +1,12 @@
+using Ecom_Infraestructure.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+//coneccion a la base de datos
+var connectionString = builder.Configuration.GetConnectionString("Default");
+builder.Services.AddSingleton(new DB_conection(connectionString!));
 
 // Configuración de CORS 
 builder.Services.AddCors(op =>

@@ -14,3 +14,19 @@ C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Aplication\obj\Debu
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\refint\Ecom_Aplication.dll
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.pdb
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\ref\Ecom_Aplication.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\bin\Debug\net10.0\Ecom_Aplication.deps.json
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\bin\Debug\net10.0\Ecom_Aplication.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\bin\Debug\net10.0\Ecom_Aplication.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\bin\Debug\net10.0\Ecom_Domain.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\bin\Debug\net10.0\Ecom_Domain.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.csproj.AssemblyReference.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.AssemblyInfoInputs.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.AssemblyInfo.cs
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.csproj.CoreCompileInputs.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.sourcelink.json
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Apl.7FBC044A.Up2Date
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\refint\Ecom_Aplication.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\Ecom_Aplication.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Aplication\obj\Debug\net10.0\ref\Ecom_Aplication.dll
