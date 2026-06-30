@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ecom_Domain
 {
-    public class Categories
+    public class CATEGORIES
     {
         public int? CategoryId { get; set; }
         public string? CategoryName { get; set; }

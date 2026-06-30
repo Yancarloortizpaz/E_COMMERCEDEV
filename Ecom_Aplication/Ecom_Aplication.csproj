@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Ecom_Domain\Ecom_Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

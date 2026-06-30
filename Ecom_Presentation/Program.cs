@@ -1,4 +1,7 @@
+using Ecom_Aplication.Interfaces;
+using Ecom_Aplication.Services;
 using Ecom_Infraestructure.Database;
+using Ecom_Infraestructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,10 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "ECommerce", Version = "v1" });
 });
 
+// Inyección de servicios
+builder.Services.AddScoped<IAttributeProductsRepository, AttributeProducts_Repository>();
+builder.Services.AddScoped<AttributeProducts_Services>();
+
 var app = builder.Build();
 
 
@@ -40,6 +47,7 @@ if (app.Environment.IsDevelopment())
         s.RoutePrefix = string.Empty; // Swagger en la raíz 
     });
 }
+
 
 app.UseHttpsRedirection();
 
