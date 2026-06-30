@@ -1,5 +1,15 @@
 [
   {
+    "ContainingType": "Ecom_Presentation.Controllers.AttributeProducts_Controller",
+    "Method": "LISTAR_ATTRIBUTEPRODUCTS",
+    "RelativePath": "api/AttributeProducts_/Listar",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Ecom_Presentation.Controllers.WeatherForecastController",
     "Method": "Get",
     "RelativePath": "WeatherForecast",

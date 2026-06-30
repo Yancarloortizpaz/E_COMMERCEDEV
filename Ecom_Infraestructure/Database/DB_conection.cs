@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+
+
 namespace Ecom_Infraestructure.Database
 { 
         

@@ -5,6 +5,18 @@
     "version": "v1"
   },
   "paths": {
+    "/api/AttributeProducts_/Listar": {
+      "get": {
+        "tags": [
+          "AttributeProducts_"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/WeatherForecast": {
       "get": {
         "tags": [
@@ -73,6 +85,9 @@
     }
   },
   "tags": [
+    {
+      "name": "AttributeProducts_"
+    },
     {
       "name": "WeatherForecast"
     }

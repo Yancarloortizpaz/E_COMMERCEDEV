@@ -9,7 +9,7 @@ namespace Ecom_Aplication.Dtos
         public int? productVariableId { get; set; }
         public int? productVariableProductId { get; set; }
         public string? productVariableValue { get; set; }
-        public decimal productVariablePrice { get; set; }
+        public decimal? productVariablePrice { get; set; }
         public int? productVariableCurrencyId { get; set; }
         public int? productVariableCreatorId { get; set; }
         public DateTime? productVariableCreationDate { get; set; }

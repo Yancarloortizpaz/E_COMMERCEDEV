@@ -2,15 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace modu.application.Interface
+namespace Ecom_Aplication.Interfaces
 {
     public interface ICategoryRepository
     {
-        Task<IEnumerable<Categories>> LISTAR_CATEGORY_ASYNC();
+        Task<IEnumerable<CATEGORIES>> LISTAR_CATEGORY_ASYNC();
 
-        Task<IEnumerable<Categories>> FILTRAR_CATEGORY_ASYNC(string searchTerm, bool? statusId);
+        Task<IEnumerable<CATEGORIES>> FILTRAR_CATEGORY_ASYNC(string searchTerm, bool? statusId);
 
         Task<(int code, string message, int? templateId)> NUEVO_CATEGORY_ASYNC(
             string categoryName,
