@@ -36,7 +36,7 @@ namespace Ecom_Aplication.Services
                 dto.AttributeProductDescription,
                 dto.AttributeProductModificatorId ?? 0,
                 dto.AttributeProductStatusId ?? false,
-                false // Por defecto mandamos false para ForzarRecuperacion
+                false 
             );
         }
 

@@ -8,14 +8,13 @@ namespace modu.application.Interface
 {
     public interface IUserRepository
     {
-        // Trae todos los usuarios (Desencripta contraseñas con la llave simétrica)
+        
         Task<IEnumerable<User>> LISTAR_USER_ASYNC();
 
         // Busca usuarios por ID, Nombre, Nombre de usuario, Email o Teléfono
         Task<IEnumerable<User>> FILTRAR_USER_ASYNC(string searchTerm);
 
-        // Registra un nuevo usuario y valida que no se repita el correo o username
-        // Retorna: code (200 OK o -1 Error), message (Validación de SQL) y templateId (ID generado)
+        
         Task<(int code, string message, int? templateId)> NUEVO_USER_ASYNC(
             string userFullName,
             string userName,

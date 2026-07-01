@@ -1,5 +1,5 @@
 ﻿using Ecom_Aplication.Interfaces;
-using Ecom_Domain; // Asegura que aquí esté tu clase de dominio ProductVariableTypes
+using Ecom_Domain; 
 using Ecom_Infraestructure.Database;
 using Microsoft.Data.SqlClient;
 using System;

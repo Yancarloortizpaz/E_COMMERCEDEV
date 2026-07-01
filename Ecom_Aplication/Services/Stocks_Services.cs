@@ -1,97 +1,70 @@
-﻿using Ecom_Aplication.Dtos;
-using Ecom_Aplication.Interfaces;
+﻿using Ecom_Aplication.Interfaces;
+using Ecom_Domain;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ecom_Aplication.Services
 {
-    public class Stocks_Services
+    public class Stocks_Services : IStocksRepository
     {
-        private readonly IStocksRepository _repository;
+        private readonly IStocksRepository _stocksRepository;
 
-        public Stocks_Services(IStocksRepository repository)
+        public Stocks_Services(IStocksRepository stocksRepository)
         {
-            _repository = repository;
+            _stocksRepository = stocksRepository;
         }
 
-        public async Task<(int code, string message, bool? templateId)> NUEVO_STOCK_ASYNC(Stocks_DTOS dto)
+        public async Task<IEnumerable<Stocks>> LISTAR_STOCKS_ASYNC()
         {
-            return await _repository.NUEVO_STOCK_ASYNC(
-                dto.stockproductvariableid ?? 0,
-                dto.stockquantity ?? 0,
-                dto.stockcreatorid ?? 0,
-                dto.stockstatusid ?? false
+            return await _stocksRepository.LISTAR_STOCKS_ASYNC();
+        }
+
+        public async Task<IEnumerable<Stocks>> FILTRAR_STOCKS_ASYNC(string searchTerm, bool? statusId)
+        {
+            return await _stocksRepository.FILTRAR_STOCKS_ASYNC(searchTerm, statusId);
+        }
+
+        public async Task<IEnumerable<Stocks>> OBTENER_POR_PRODUCTVARIABLE_STOCKS_ASYNC(int ProductVariableId)
+        {
+            return await _stocksRepository.OBTENER_POR_PRODUCTVARIABLE_STOCKS_ASYNC(ProductVariableId);
+        }
+
+        public async Task<(int code, string message, int? templateId)> NUEVO_STOCKS_ASYNC(
+            int stockProductVariableId,
+            int stockQuantity,
+            DateTime stockFactoryDate,
+            DateTime stockExpirationDate,
+            int stockCreatorId,
+            bool stockStatusId)
+        {
+            return await _stocksRepository.NUEVO_STOCKS_ASYNC(
+                stockProductVariableId,
+                stockQuantity,
+                stockFactoryDate,
+                stockExpirationDate,
+                stockCreatorId,
+                stockStatusId
             );
         }
 
-        public async Task<(int code, string message, bool? templateId)> ACTUALIZAR_STOCK_ASYNC(Stocks_DTOS dto)
+        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_STOCKS_ASYNC(
+            int stockId,
+            int stockQuantityAdjustment,
+            int stockModificatorId)
         {
-            return await _repository.ACTUALIZAR_STOCK_ASYNC(
-                dto.stockid ?? 0,
-                dto.stockproductvariableid ?? 0,
-                dto.stockquantity ?? 0,
-                dto.stockmodificatorid ?? 0,
-                dto.stockstatusid ?? false,
-                dto.forzarrecuperacion ?? false
+            return await _stocksRepository.ACTUALIZAR_STOCKS_ASYNC(
+                stockId,
+                stockQuantityAdjustment,
+                stockModificatorId
             );
         }
 
-        public async Task<IEnumerable<Stocks_DTOS>> LISTAR_STOCK()
+        public async Task<(int code, string message, int? templateId)> ELIMINAR_STOCKS_ASYNC(
+            int stockId,
+            int stockModificatorId)
         {
-            var data = await _repository.LISTAR_STOCK_ASYNC();
-
-            return data.Select(s => new Stocks_DTOS
-            {
-                stockid = s.StockId,
-                stockproductvariableid = s.StockProductVariableId,
-                stockquantity = s.StockQuantity,
-                stockcreatorid = s.StockCreatorId,
-                stockcreationdate = s.StockCreationDate,
-                stockmodificatorid = s.StockModificatorId,
-                stockmodificationdate = s.StockModificationDate,
-                stockstatusid = s.StockStatusId
-            });
-        }
-
-        public async Task<Stocks_DTOS?> Obtener_Stock_Por_Id(string searchTerm, bool? statusId)
-        {
-            var data = await _repository.FILTRAR_STOCK_ASYNC(searchTerm, statusId);
-
-            return data.Select(s => new Stocks_DTOS
-            {
-                Stockid = s.StockId,
-                Stockproductvariableid = s.StockProductVariableId,
-                Stockquantity = s.StockQuantity,
-                Stockcreatorid = s.StockCreatorId,
-                Stockcreationdate = s.StockCreationDate,
-                Stockmodificatorid = s.StockModificatorId,
-                Stockmodificationdate = s.StockModificationDate,
-                Stockstatusid = s.StockStatusId
-            }).FirstOrDefault();
-        }
-
-        public async Task<IEnumerable<Stocks_DTOS>> Obtener_Por_Variable_Producto(int productVariableId)
-        {
-            var data = await _repository.OBTENER_POR_VARIABLE_PRODUCTVARIABLES_ASYNC(productVariableId);
-
-            return data.Select(s => new Stocks_DTOS
-            {
-                stockid = s.StockId,
-                stockproductvariableid = s.StockProductVariableId,
-                stockquantity = s.StockQuantity,
-                stockcreatorid = s.StockCreatorId,
-                stockcreationdate = s.StockCreationDate,
-                stockmodificatorid = s.StockModificatorId,
-                stockmodificationdate = s.StockModificationDate,
-                stockstatusid = s.StockStatusId
-            });
-        }
-
-        public async Task<(int code, string message, bool? templateId)> Eliminar_Stock(int stockId)
-        {
-            return await _repository.ELIMINAR_STOCK_ASYNC(stockId);
+            return await _stocksRepository.ELIMINAR_STOCKS_ASYNC(stockId, stockModificatorId);
         }
     }
 }

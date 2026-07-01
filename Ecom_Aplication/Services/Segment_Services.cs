@@ -1,4 +1,4 @@
-﻿using Ecom_Aplication.Dtos; // Asegúrate de que apunte a tus DTOs (ej. Segments_DTOS)
+﻿using Ecom_Aplication.Dtos; 
 using Ecom_Aplication.Interfaces;
 using modu.application.Interface;
 using System;

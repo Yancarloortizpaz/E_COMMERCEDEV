@@ -16,3 +16,21 @@ C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Infraestructure\obj
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\refint\Ecom_Infraestructure.dll
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.pdb
 C:\Users\Enderson López\Documents\GitHub\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\ref\Ecom_Infraestructure.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Infraestructure.deps.json
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Infraestructure.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Infraestructure.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Aplication.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Domain.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Aplication.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\bin\Debug\net10.0\Ecom_Domain.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.csproj.AssemblyReference.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.AssemblyInfoInputs.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.AssemblyInfo.cs
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.csproj.CoreCompileInputs.cache
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.sourcelink.json
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Inf.AD83C523.Up2Date
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\refint\Ecom_Infraestructure.dll
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\Ecom_Infraestructure.pdb
+C:\Users\usuario\Desktop\ENtrega Final H\E_COMMERCEDEV\Ecom_Infraestructure\obj\Debug\net10.0\ref\Ecom_Infraestructure.dll

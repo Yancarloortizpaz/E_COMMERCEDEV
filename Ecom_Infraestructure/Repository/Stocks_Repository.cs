@@ -80,7 +80,7 @@ namespace Ecom_Infraestructure.Repository
                 using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_Stocks_GetByProductVariable]", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new SqlParameter("@productVariableId", ProductVariableId));
+                    cmd.Parameters.Add(new SqlParameter("@ProductVariableId", ProductVariableId));
 
                     using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
                     {
@@ -95,7 +95,13 @@ namespace Ecom_Infraestructure.Repository
             catch (SqlException) { throw; }
         }
 
-        public async Task<(int code, string message, bool? templateId)> NUEVO_STOCKS_ASYNC(int stockProductVariableId,int stockQuantity,DateTime stockFactoryDate, DateTime stockExpirationDate,int stockCreatorId, bool stockStatusId)
+        public async Task<(int code, string message, int? templateId)> NUEVO_STOCKS_ASYNC(
+            int stockProductVariableId,
+            int stockQuantity,
+            DateTime stockFactoryDate,
+            DateTime stockExpirationDate,
+            int stockCreatorId,
+            bool stockStatusId)
         {
             try
             {
@@ -108,6 +114,8 @@ namespace Ecom_Infraestructure.Repository
 
                     cmd.Parameters.Add(new SqlParameter("@stockProductVariableId", stockProductVariableId));
                     cmd.Parameters.Add(new SqlParameter("@stockQuantity", stockQuantity));
+                    cmd.Parameters.Add(new SqlParameter("@stockFactoryDate", stockFactoryDate));
+                    cmd.Parameters.Add(new SqlParameter("@stockExpirationDate", stockExpirationDate));
                     cmd.Parameters.Add(new SqlParameter("@stockCreatorId", stockCreatorId));
                     cmd.Parameters.Add(new SqlParameter("@stockStatusId", stockStatusId));
 
@@ -122,25 +130,20 @@ namespace Ecom_Infraestructure.Repository
                     await cmd.ExecuteNonQueryAsync();
 
                     int code = oCode.Value != DBNull.Value ? (int)oCode.Value : 200;
-                    string message = oMessage.Value != DBNull.Value ? oMessage.Value.ToString()! : "Stock registrado exitosamente.";
-
-                    bool? templateId = null;
-                    if (oTemplate.Value != DBNull.Value)
-                    {
-                        templateId = Convert.ToInt32(oTemplate.Value) > 0;
-                    }
+                    string message = oMessage.Value != DBNull.Value ? oMessage.Value.ToString()! : "Stock creado exitosamente.";
+                    int? templateId = oTemplate.Value != DBNull.Value ? (int?)oTemplate.Value : null;
 
                     return (code, message, templateId);
                 }
             }
             catch (SqlException) { throw; }
+            catch (Exception ex) { throw new Exception("Error de infraestructura al insertar el stock", ex); }
         }
 
-        public async Task<(int code, string message, bool? templateId)> ACTUALIZAR_STOCKS_ASYNC(
+        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_STOCKS_ASYNC(
             int stockId,
             int stockQuantityAdjustment,
-            int stockModificatorId
-        )
+            int stockModificatorId)
         {
             try
             {
@@ -153,9 +156,7 @@ namespace Ecom_Infraestructure.Repository
 
                     cmd.Parameters.Add(new SqlParameter("@stockId", stockId));
                     cmd.Parameters.Add(new SqlParameter("@stockQuantityAdjustment", stockQuantityAdjustment));
-                   
                     cmd.Parameters.Add(new SqlParameter("@stockModificatorId", stockModificatorId));
-                
 
                     SqlParameter oCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
                     SqlParameter oMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
@@ -169,23 +170,18 @@ namespace Ecom_Infraestructure.Repository
 
                     int code = oCode.Value != DBNull.Value ? (int)oCode.Value : 200;
                     string message = oMessage.Value != DBNull.Value ? oMessage.Value.ToString()! : "Stock actualizado exitosamente.";
-
-                    bool? templateId = null;
-                    if (oTemplate.Value != DBNull.Value)
-                    {
-                        templateId = Convert.ToInt32(oTemplate.Value) > 0;
-                    }
+                    int? templateId = oTemplate.Value != DBNull.Value ? (int?)oTemplate.Value : null;
 
                     return (code, message, templateId);
                 }
             }
             catch (SqlException) { throw; }
+            catch (Exception ex) { throw new Exception("Error de infraestructura al actualizar el stock", ex); }
         }
 
-        public async Task<(int code, string message, bool? templateId)> ELIMINAR_STOCKS_ASYNC(
+        public async Task<(int code, string message, int? templateId)> ELIMINAR_STOCKS_ASYNC(
             int stockId,
-            int stockModificatorId
-        )
+            int stockModificatorId)
         {
             try
             {
@@ -196,6 +192,7 @@ namespace Ecom_Infraestructure.Repository
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@stockId", stockId));
+                    cmd.Parameters.Add(new SqlParameter("@stockModificatorId", stockModificatorId));
 
                     SqlParameter oCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
                     SqlParameter oMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
@@ -209,17 +206,13 @@ namespace Ecom_Infraestructure.Repository
 
                     int code = oCode.Value != DBNull.Value ? (int)oCode.Value : 200;
                     string message = oMessage.Value != DBNull.Value ? oMessage.Value.ToString()! : "Stock eliminado exitosamente.";
-
-                    bool? templateId = null;
-                    if (oTemplate.Value != DBNull.Value)
-                    {
-                        templateId = Convert.ToInt32(oTemplate.Value) > 0;
-                    }
+                    int? templateId = oTemplate.Value != DBNull.Value ? (int?)oTemplate.Value : null;
 
                     return (code, message, templateId);
                 }
             }
             catch (SqlException) { throw; }
+            catch (Exception ex) { throw new Exception("Error al eliminar el stock", ex); }
         }
 
         private Stocks MapearEntidadDominio(SqlDataReader dr)
@@ -228,7 +221,9 @@ namespace Ecom_Infraestructure.Repository
             {
                 stockId = dr["stockId"] as int?,
                 stockProductVariableId = dr["stockProductVariableId"] as int?,
-                stockQuantity = dr["stockQuantity"] as int? ?? 0,
+                stockQuantity = dr["stockQuantity"] as int?,
+                stockFactoryDate = dr["stockFactoryDate"] as DateTime?,
+                stockExpirationDate = dr["stockExpirationDate"] as DateTime?,
                 stockCreatorId = dr["stockCreatorId"] as int?,
                 stockCreationDate = dr["stockCreationDate"] as DateTime?,
                 stockModificatorId = dr["stockModificatorId"] as int?,
