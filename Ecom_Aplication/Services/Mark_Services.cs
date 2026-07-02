@@ -35,7 +35,7 @@ namespace Ecom_Aplication.Services
                 dto.MarkDescription,
                 dto.MarkModificatorId ?? 0,
                 dto.MarkStatusId ?? false,
-                false // forzarRecuperacion por defecto en false
+                false 
             );
         }
 

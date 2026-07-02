@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ecom_Aplication.Dtos
 {
-    public class CartDetail
+    public class CartDetail_DTO
     {
         public int? Id { get; set; }
         public int? CartId { get; set; }

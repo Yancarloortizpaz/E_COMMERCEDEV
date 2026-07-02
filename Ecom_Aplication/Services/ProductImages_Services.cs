@@ -1,4 +1,4 @@
-﻿using Ecom_Aplication.Dtos; // Asegura que apunte a donde tienes tu ProductImages_DTOS
+﻿using Ecom_Aplication.Dtos; 
 using Ecom_Aplication.Interfaces;
 using System;
 using System.Collections.Generic;

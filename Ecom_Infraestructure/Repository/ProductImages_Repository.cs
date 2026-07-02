@@ -115,7 +115,7 @@ namespace Ecom_Infraestructure.Repository
                     cmd.Parameters.Add(new SqlParameter("@productImageURL", productImageURL ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@productImageDescription", productImageDescription ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@productImageIsPrincipal", productImageIsPrincipal));
-                    cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageModificatorId)); // Mapeado por requerimiento del SP
+                    cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageModificatorId)); 
                     cmd.Parameters.Add(new SqlParameter("@productImageModificatorId", productImageModificatorId));
                     cmd.Parameters.Add(new SqlParameter("@productImageStatusId", productImageStatusId));
 
