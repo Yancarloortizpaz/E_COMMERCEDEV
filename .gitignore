@@ -1,13 +1,17 @@
-# Visual Studio (C#) temporales y configuraciones
+# Visual Studio / VS Code
 .vs/
-[Bb]in/
-[Oo]bj/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
 
-# Archivos de dependencias
+# Compilación y Temporales de .NET (C#)
+[Bb]in/
+[Oo]bj/
+**/[Bb]in/
+**/[Oo]bj/
+
+# Node / Dependencias (si aplica)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -17,8 +21,6 @@ yarn-error.log*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-#md privados 
+
+# Notas privadas
 *.md
-.vs/
-**/obj/
-**/bin/
