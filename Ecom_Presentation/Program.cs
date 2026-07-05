@@ -71,7 +71,7 @@ builder.Services.AddScoped<PaymentMethodTypes_Services>();
 
 // PaymentOrderDetails
 builder.Services.AddScoped<IPaymentOrderDetails, PaymentOrderDetails_Repository>();
-builder.Services.AddScoped<PaymentOrderDetails>(); // Respetando el typo de tu archivo "_Sevices"
+builder.Services.AddScoped<PaymentOrderDetails_Services>(); 
 
 // PaymentOrders
 builder.Services.AddScoped<IPaymentOrders, PaymentOrders_Repository>();

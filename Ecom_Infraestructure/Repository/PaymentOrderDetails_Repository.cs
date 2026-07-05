@@ -127,25 +127,38 @@ namespace Ecom_Infraestructure.Repository
 
         private PaymentOrderDetails_DTOS MapearDTO(SqlDataReader dr)
         {
+            
+            object? GetValueSafe(string columnName)
+            {
+                try
+                {
+                    int ordinal = dr.GetOrdinal(columnName);
+                    return dr.IsDBNull(ordinal) ? null : dr.GetValue(ordinal);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return null;
+                }
+            }
+
             return new PaymentOrderDetails_DTOS
             {
-                orderDetailId = dr["orderDetailId"] as int?,
-                orderDetailOrderId = dr["orderId"] as int?,
-                orderDetailProductVariableId = dr["productVariableId"] as int?,
-                orderDetailPrice = dr["orderDetailPrice"] as decimal?,
-                orderDetailQuantity = dr["orderDetailQuantity"] as int?,
-                orderDetailDiscount = dr["orderDetailDiscount"] as decimal?,
-                orderDetailSubTotal = dr["orderDetailSubTotal"] as decimal?,
-                orderDetailTAX = dr["orderDetailTAX"] as decimal?,
-                orderDetailTotal = dr["orderDetailTotal"] as decimal?,
-                orderDetailCurrencyId = dr["orderDetailCurrencyId"] as int?,
-                orderDetailCreatorId = dr["orderDetailCreatorId"] as int?,
-                orderDetailCreationDate = dr["orderDetailCreationDate"] as DateTime?,
-                orderDetailModificatorId = dr["orderDetailModificatorId"] as int?,
-                orderDetailModificationDate = dr["orderDetailModificationDate"] as DateTime?,
-                orderDetailStatusId = dr["orderDetailStatusId"] as bool?
-               
+                orderDetailId = GetValueSafe("orderDetailId") as int?,
+                orderDetailOrderId = GetValueSafe("orderId") as int?,
+                orderDetailProductVariableId = GetValueSafe("productVariableId") as int?,
+                orderDetailPrice = GetValueSafe("orderDetailPrice") as decimal?, 
+                orderDetailQuantity = GetValueSafe("orderDetailQuantity") as int?,
+                orderDetailDiscount = GetValueSafe("orderDetailDiscount") as decimal?,
+                orderDetailSubTotal = GetValueSafe("orderDetailSubTotal") as decimal?,
+                orderDetailTAX = GetValueSafe("orderDetailTAX") as decimal?,
+                orderDetailTotal = GetValueSafe("orderDetailTotal") as decimal?,
+                orderDetailCurrencyId = GetValueSafe("orderDetailCurrencyId") as int?,
+                orderDetailCreatorId = GetValueSafe("orderDetailCreatorId") as int?,
+                orderDetailCreationDate = GetValueSafe("orderDetailCreationDate") as DateTime?,
+                orderDetailModificatorId = GetValueSafe("orderDetailModificatorId") as int?,
+                orderDetailModificationDate = GetValueSafe("orderDetailModificationDate") as DateTime?,
+                orderDetailStatusId = GetValueSafe("orderDetailStatusId") as bool?
             };
         }
     }
-}
+    }
