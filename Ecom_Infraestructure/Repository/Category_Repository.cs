@@ -155,19 +155,32 @@ namespace Ecom_Infraestructure.Repository
             catch (SqlException) { throw; }
         }
 
-        
+
         private CATEGORIES MapearEntidadDominio(SqlDataReader dr)
         {
+            object? GetValueSafe(string columnName)
+            {
+                try
+                {
+                    int ordinal = dr.GetOrdinal(columnName);
+                    return dr.IsDBNull(ordinal) ? null : dr.GetValue(ordinal);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return null; // Si la columna no viene en el SP, devuelve null en vez de romper la API
+                }
+            }
+
             return new CATEGORIES
             {
-                CategoryId = dr["CategoryId"] as int?,
-                CategoryName = dr["CategoryName"]?.ToString() ?? string.Empty,
-                CategoryDescription = dr["CategoryDescription"]?.ToString() ?? string.Empty,
-                CategoryCreatorId = dr["CategoryCreatorId"] as int?,
-                CategoryCreationDate = dr["CategoryCreationDate"] as DateTime?,
-                CategoryModificatorId = dr["CategoryModificatorId"] as int?,
-                CategoryModificationDate = dr["CategoryModificationDate"] as DateTime?,
-                CategoryStatusId = dr["CategoryStatusId"] as bool?
+                CategoryId = GetValueSafe("CategoryId") as int?,
+                CategoryName = GetValueSafe("CategoryName")?.ToString() ?? string.Empty,
+                CategoryDescription = GetValueSafe("CategoryDescription")?.ToString() ?? string.Empty,
+                CategoryCreatorId = GetValueSafe("CategoryCreatorId") as int?,
+                CategoryCreationDate = GetValueSafe("CategoryCreationDate") as DateTime?,
+                CategoryModificatorId = GetValueSafe("CategoryModificatorId") as int?,
+                CategoryModificationDate = GetValueSafe("CategoryModificationDate") as DateTime?,
+                CategoryStatusId = GetValueSafe("CategoryStatusId") as bool?
             };
         }
     }

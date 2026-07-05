@@ -1,5 +1,5 @@
 ﻿using Ecom_Aplication.Interfaces;
-using Ecom_Domain; 
+using Ecom_Domain;
 using Ecom_Infraestructure.Database;
 using Microsoft.Data.SqlClient;
 using System;
@@ -18,6 +18,33 @@ namespace Ecom_Infraestructure.Repository
             _conection = conection;
         }
 
+       
+        public async Task<IEnumerable<ProductImages>> LISTAR_PRODUCTIMAGES_ASYNC()
+        {
+            var list = new List<ProductImages>();
+            try
+            {
+                using var con = _conection.CreateConnection();
+                await con.OpenAsync();
+
+
+                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_ProductImages_Filter]", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            list.Add(MapearEntidadDominio(dr));
+                        }
+                    }
+                }
+                return list;
+            }
+            catch (SqlException) { throw; }
+        }
+
         public async Task<IEnumerable<ProductImages>> OBTENER_POR_PRODUCTO_PRODUCTIMAGES_ASYNC(int ProductId)
         {
             var list = new List<ProductImages>();
@@ -26,7 +53,6 @@ namespace Ecom_Infraestructure.Repository
                 using var con = _conection.CreateConnection();
                 await con.OpenAsync();
 
-                
                 using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_ProductImages_Filter]", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -69,7 +95,6 @@ namespace Ecom_Infraestructure.Repository
                     cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageCreatorId));
                     cmd.Parameters.Add(new SqlParameter("@productImageStatusId", productImageStatusId));
 
-                    
                     SqlParameter oCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
                     SqlParameter oMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
                     SqlParameter oTemplate = new SqlParameter("@o_templateId", SqlDbType.Int) { Direction = ParameterDirection.Output };
@@ -115,7 +140,7 @@ namespace Ecom_Infraestructure.Repository
                     cmd.Parameters.Add(new SqlParameter("@productImageURL", productImageURL ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@productImageDescription", productImageDescription ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@productImageIsPrincipal", productImageIsPrincipal));
-                    cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageModificatorId)); 
+                    cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageModificatorId));
                     cmd.Parameters.Add(new SqlParameter("@productImageModificatorId", productImageModificatorId));
                     cmd.Parameters.Add(new SqlParameter("@productImageStatusId", productImageStatusId));
 
@@ -147,7 +172,6 @@ namespace Ecom_Infraestructure.Repository
                 using var con = _conection.CreateConnection();
                 await con.OpenAsync();
 
-               
                 int productId = 0;
                 string url = string.Empty;
                 string desc = string.Empty;
@@ -169,7 +193,6 @@ namespace Ecom_Infraestructure.Repository
                     }
                 }
 
-                
                 using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_ProductImages_Delete]", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -181,7 +204,7 @@ namespace Ecom_Infraestructure.Repository
                     cmd.Parameters.Add(new SqlParameter("@productImageIsPrincipal", isPrincipal));
                     cmd.Parameters.Add(new SqlParameter("@productImageCreatorId", productImageModificatorId));
                     cmd.Parameters.Add(new SqlParameter("@productImageModificatorId", productImageModificatorId));
-                    cmd.Parameters.Add(new SqlParameter("@productImageStatusId", false)); // Deshabilitamos
+                    cmd.Parameters.Add(new SqlParameter("@productImageStatusId", false));
 
                     SqlParameter oCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
                     SqlParameter oMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };

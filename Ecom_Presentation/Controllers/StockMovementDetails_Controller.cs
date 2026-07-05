@@ -1,6 +1,8 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -8,11 +10,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class StockMovementDetails_Controller : ControllerBase
     {
-        private readonly StockMovementDetails_Services _service;
+        private readonly StockMovementDetails_Services _detailsService;
 
         public StockMovementDetails_Controller(StockMovementDetails_Services service)
         {
-            _service = service;
+            _detailsService = service;
         }
 
         [HttpGet("Listar")]
@@ -20,7 +22,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_STOCKMOVEMENTDETAILS_ASYNC();
+                var result = await _detailsService.LISTAR_STOCKMOVEMENTDETAILS_ASYNC();
 
                 return Ok(new
                 {
@@ -31,48 +33,18 @@ namespace Ecom_Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpGet("Obtener/{id}")]
-        public async Task<IActionResult> Obtener(int id)
-        {
-            try
-            {
-                var result = await _service.OBTENER_STOCKMOVEMENTDETAIL_BY_ID_ASYNC(id);
-
-                if (result == null)
-                {
-                    return NotFound(new
-                    {
-                        code = 404,
-                        message = "Registro no encontrado."
-                    });
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
         [HttpGet("Filtrar")]
-        public async Task<IActionResult> Filtrar(int stockMovementId)
+
+        public async Task<IActionResult> Filtrar(int? movementId, string searchTerm)
         {
             try
             {
-                var result = await _service.FILTRAR_STOCKMOVEMENTDETAILS_ASYNC(stockMovementId);
+
+                var result = await _detailsService.FILTRAR_STOCKMOVEMENTDETAILS_ASYNC(movementId, searchTerm ?? "");
 
                 return Ok(new
                 {
@@ -83,11 +55,7 @@ namespace Ecom_Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -96,70 +64,23 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_STOCKMOVEMENTDETAILS_ASYNC(dto);
+                var (code, message, templateId) = await _detailsService.NUEVO_STOCKMOVEMENTDETAILS_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new { code, message });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] StockMovementDetails_DTOS dto)
-        {
-            try
-            {
-                var result = await _service.ACTUALIZAR_STOCKMOVEMENTDETAILS_ASYNC(dto);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpDelete("Eliminar/{id}/{modificatorId}")]
-        public async Task<IActionResult> Eliminar(int id, int modificatorId)
-        {
-            try
-            {
-                var result = await _service.ELIMINAR_STOCKMOVEMENTDETAILS_ASYNC(id, modificatorId);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
     }

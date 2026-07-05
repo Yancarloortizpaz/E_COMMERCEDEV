@@ -1,6 +1,7 @@
-using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -8,11 +9,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class StockMovementTypes_Controller : ControllerBase
     {
-        private readonly StockMovementTypes_Services _service;
+        private readonly StockMovementTypes_Services _services;
 
-        public StockMovementTypes_Controller(StockMovementTypes_Services service)
+        public StockMovementTypes_Controller(StockMovementTypes_Services services)
         {
-            _service = service;
+            _services = services;
         }
 
         [HttpGet("Listar")]
@@ -20,7 +21,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_STOCKMOVEMENTTYPES_ASYNC();
+                var result = await _services.LISTAR_STOCKMOVEMENTTYPES_ASYNC();
 
                 return Ok(new
                 {
@@ -31,11 +32,7 @@ namespace Ecom_Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -44,98 +41,23 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_STOCKMOVEMENTTYPE_BY_ID_ASYNC(id);
+                var result = await _services.OBTENER_STOCKMOVEMENTTYPE_BY_ID_ASYNC(id);
 
                 if (result == null)
                 {
-                    return NotFound(new
-                    {
-                        code = 404,
-                        message = "Registro no encontrado."
-                    });
+                    return NotFound(new { code = 404, message = "Registro no encontrado." });
                 }
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo([FromBody] StockMovementTypes_DTOS dto)
-        {
-            try
-            {
-                var result = await _service.NUEVO_STOCKMOVEMENTTYPES_ASYNC(dto);
-
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] StockMovementTypes_DTOS dto)
-        {
-            try
-            {
-                var result = await _service.ACTUALIZAR_STOCKMOVEMENTTYPES_ASYNC(dto);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpDelete("Eliminar/{id}/{modificatorId}")]
-        public async Task<IActionResult> Eliminar(int id, int modificatorId)
-        {
-            try
-            {
-                var result = await _service.ELIMINAR_STOCKMOVEMENTTYPES_ASYNC(id, modificatorId);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
     }

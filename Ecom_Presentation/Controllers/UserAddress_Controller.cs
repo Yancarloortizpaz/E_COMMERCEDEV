@@ -1,6 +1,8 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -8,11 +10,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class UserAddress_Controller : ControllerBase
     {
-        private readonly UserAddress_Services _service;
+        private readonly UserAddress_Services _services;
 
-        public UserAddress_Controller(UserAddress_Services service)
+        public UserAddress_Controller(UserAddress_Services services)
         {
-            _service = service;
+            _services = services;
         }
 
         [HttpGet("Listar")]
@@ -20,7 +22,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_USERADDRESS_ASYNC();
+                var result = await _services.LISTAR_USERADDRESS_ASYNC();
 
                 return Ok(new
                 {
@@ -44,7 +46,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_USERADDRESS_BY_ID_ASYNC(id);
+                var result = await _services.OBTENER_USERADDRESS_BY_ID_ASYNC(id);
 
                 if (result == null)
                 {
@@ -55,7 +57,12 @@ namespace Ecom_Presentation.Controllers
                     });
                 }
 
-                return Ok(result);
+                return Ok(new
+                {
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -72,7 +79,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.FILTRAR_USERADDRESS_ASYNC(userId);
+                var result = await _services.FILTRAR_USERADDRESS_ASYNC(userId);
 
                 return Ok(new
                 {
@@ -96,13 +103,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_USERADDRESS_ASYNC(dto);
+                var (code, message, templateId) = await _services.NUEVO_USERADDRESS_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -120,13 +136,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ACTUALIZAR_USERADDRESS_ASYNC(dto);
+                var (code, message, templateId) = await _services.ACTUALIZAR_USERADDRESS_ASYNC(dto);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -144,13 +169,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_USERADDRESS_ASYNC(id, modificatorId);
+                var (code, message, templateId) = await _services.ELIMINAR_USERADDRESS_ASYNC(id, modificatorId);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)

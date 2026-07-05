@@ -1,4 +1,4 @@
-﻿using Ecom_Aplication.Dtos; 
+﻿using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -16,34 +16,9 @@ namespace Ecom_Aplication.Services
             _repository = repository;
         }
 
-        public async Task<(int code, string message, int? templateId)> NUEVO_CURRENCIES_ASYNC(Currencies_DTOS dto)
+        public async Task<IEnumerable<Currencies_DTOS>> LISTAR_CURRENCIES_ASYNC()
         {
-            return await _repository.NUEVO_CURRENCIES_ASYNC(
-                dto.currencyName,
-                dto.currencyISO,
-                dto.currencyCode ?? 0,
-                dto.currencyDescription,
-                dto.currencyCreatorId ?? 0,
-                dto.currencyStatusId ?? false
-            );
-        }
-
-        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_CURRENCIES_ASYNC(Currencies_DTOS dto)
-        {
-            return await _repository.ACTUALIZAR_CURRENCIES_ASYNC(
-                dto.currencyId ?? 0,
-                dto.currencyName,
-                dto.currencyISO,
-                dto.currencyCode ?? 0,
-                dto.currencyDescription,
-                dto.currencyModificatorId ?? 0,
-                dto.currencyStatusId ?? false,
-                false 
-            );
-        }
-
-        public async Task<IEnumerable<Currencies_DTOS>> LISTAR_CURRENCIES()
-        {
+       
             var data = await _repository.LISTAR_CURRENCIES_ASYNC();
 
             return data.Select(c => new Currencies_DTOS
@@ -61,9 +36,10 @@ namespace Ecom_Aplication.Services
             });
         }
 
-        public async Task<Currencies_DTOS?> Obtener_Currencies_Por_Id(string searchTerm, bool? statusId)
+        public async Task<Currencies_DTOS?> OBTENER_CURRENCY_BY_ID_ASYNC(int id)
         {
-            var data = await _repository.FILTRAR_CURRENCIES_ASYNC(searchTerm, statusId);
+          
+            var data = await _repository.FILTRAR_CURRENCIES_ASYNC(id.ToString(), null);
 
             return data.Select(c => new Currencies_DTOS
             {
@@ -77,11 +53,38 @@ namespace Ecom_Aplication.Services
                 currencyModificatorId = c.currencyModificatorId,
                 currencyModificationDate = c.currencyModificationDate,
                 currencyStatusId = c.currencyStatusId
-            }).FirstOrDefault();
+            }).FirstOrDefault(c => c.currencyId == id); 
         }
 
-        public async Task<(int code, string message, int? templateId)> Eliminar_Currencies(int currencyId, int currencyModificatorId)
+        public async Task<(int code, string message, int? templateId)> NUEVO_CURRENCIES_ASYNC(Currencies_DTOS dto)
         {
+            return await _repository.NUEVO_CURRENCIES_ASYNC(
+                dto.currencyName ?? "",
+                dto.currencyISO ?? "",
+                dto.currencyCode ?? 0,
+                dto.currencyDescription ?? "",
+                dto.currencyCreatorId ?? 0,
+                dto.currencyStatusId ?? false
+            );
+        }
+
+        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_CURRENCIES_ASYNC(Currencies_DTOS dto)
+        {
+            return await _repository.ACTUALIZAR_CURRENCIES_ASYNC(
+                dto.currencyId ?? 0,
+                dto.currencyName ?? "",
+                dto.currencyISO ?? "",
+                dto.currencyCode ?? 0,
+                dto.currencyDescription ?? "",
+                dto.currencyModificatorId ?? 0,
+                dto.currencyStatusId ?? false,
+                false
+            );
+        }
+
+        public async Task<(int code, string message, int? templateId)> ELIMINAR_CURRENCIES_ASYNC(int currencyId, int currencyModificatorId)
+        {
+           
             return await _repository.ELIMINAR_CURRENCIES_ASYNC(currencyId, currencyModificatorId);
         }
     }

@@ -200,19 +200,34 @@ namespace Ecom_Infraestructure.Repository
 
         private Products MapearEntidadDominio(SqlDataReader dr)
         {
+  
+            object? GetValueSafe(string columnName)
+            {
+                try
+                {
+                    int ordinal = dr.GetOrdinal(columnName);
+                    return dr.IsDBNull(ordinal) ? null : dr.GetValue(ordinal);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return null; // Si el SP de productos no trae la columna, se le asigna null sin romper el sistema
+                }
+            }
+
             return new Products
             {
-                productId = dr["productId"] as int?,
-                productName = dr["productName"]?.ToString() ?? string.Empty,
-                productDescription = dr["productDescription"]?.ToString() ?? string.Empty,
-                productProductIdentificatorId = dr["productProductIdentificatorId"] as int?,
-                productMarkByProviderId = dr["productMarkByProviderId"] as int?,
-                productCreatorId = dr["productCreatorId"] as int?,
-                productCreationDate = dr["productCreationDate"] as DateTime?,
-                productModificatorId = dr["productModificatorId"] as int?,
-                productModificationDate = dr["productModificationDate"] as DateTime?,
-                productStatusId = dr["productStatusId"] as bool?
+                productId = GetValueSafe("productId") as int?,
+                productName = GetValueSafe("productName")?.ToString() ?? string.Empty,
+                productDescription = GetValueSafe("productDescription")?.ToString() ?? string.Empty,
+                productProductIdentificatorId = GetValueSafe("productProductIdentificatorId") as int?,
+                productMarkByProviderId = GetValueSafe("productMarkByProviderId") as int?,
+                productCreatorId = GetValueSafe("productCreatorId") as int?,
+                productCreationDate = GetValueSafe("productCreationDate") as DateTime?,
+                productModificatorId = GetValueSafe("productModificatorId") as int?,
+                productModificationDate = GetValueSafe("productModificationDate") as DateTime?,
+                productStatusId = GetValueSafe("productStatusId") as bool?
             };
-        }
+        
+    }
     }
 }

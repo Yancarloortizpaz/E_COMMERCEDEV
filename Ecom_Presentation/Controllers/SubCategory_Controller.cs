@@ -1,6 +1,8 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -21,21 +23,11 @@ namespace Ecom_Presentation.Controllers
             try
             {
                 var result = await _service.LISTAR_SUBCATEGORY_ASYNC();
-
-                return Ok(new
-                {
-                    code = 200,
-                    message = "Consulta realizada correctamente.",
-                    data = result
-                });
+                return Ok(new { code = 200, message = "Consulta realizada correctamente.", data = result });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -48,94 +40,71 @@ namespace Ecom_Presentation.Controllers
 
                 if (result == null)
                 {
-                    return NotFound(new
-                    {
-                        code = 404,
-                        message = "Registro no encontrado."
-                    });
+                    return NotFound(new { code = 404, message = "Registro no encontrado." });
                 }
 
-                return Ok(result);
+                // Estandarizado: Ahora devuelve la misma estructura con 'data' que Listar
+                return Ok(new { code = 200, message = "Consulta realizada correctamente.", data = result });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
         [HttpGet("Filtrar")]
-        public async Task<IActionResult> Filtrar(string searchTerm, bool? statusId)
+        // Es buena práctica ponerle [FromQuery] para asegurar que lea los parámetros desde la URL (?searchTerm=abc)
+        public async Task<IActionResult> Filtrar([FromQuery] string? searchTerm, [FromQuery] bool? statusId)
         {
             try
             {
-                var result = await _service.FILTRAR_SUBCATEGORY_ASYNC(searchTerm, statusId);
-
-                return Ok(new
-                {
-                    code = 200,
-                    message = "Consulta realizada correctamente.",
-                    data = result
-                });
+                var result = await _service.FILTRAR_SUBCATEGORY_ASYNC(searchTerm ?? "", statusId);
+                return Ok(new { code = 200, message = "Consulta realizada correctamente.", data = result });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo([FromBody] SubCategory_DTOS dto)
+        public async Task<IActionResult> Nuevo([FromBody] SubCategories_DTOS dto)
         {
             try
             {
-                var result = await _service.NUEVO_SUBCATEGORY_ASYNC(dto);
+                var (code, message, templateId) = await _service.NUEVO_SUBCATEGORY_ASYNC(dto);
 
-                return Ok(new
+                // Si el SP reporta un error (ej: 400, 404, 500), respondemos con ese estado real en el HTTP
+                if (code != 200 && code != 201)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
         [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] SubCategory_DTOS dto)
+        public async Task<IActionResult> Actualizar([FromBody] SubCategories_DTOS dto)
         {
             try
             {
-                var result = await _service.ACTUALIZAR_SUBCATEGORY_ASYNC(dto);
+                var (code, message, templateId) = await _service.ACTUALIZAR_SUBCATEGORY_ASYNC(dto);
 
-                return Ok(new
+                if (code != 200)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -144,22 +113,18 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_SUBCATEGORY_ASYNC(subCategoryId, modificatorId);
+                var (code, message, templateId) = await _service.ELIMINAR_SUBCATEGORY_ASYNC(subCategoryId, modificatorId);
 
-                return Ok(new
+                if (code != 200)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
     }

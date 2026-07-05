@@ -1,6 +1,8 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -8,11 +10,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class Stocks_Controller : ControllerBase
     {
-        private readonly Stocks_Services _service;
+        private readonly Stocks_Services _services;
 
-        public Stocks_Controller(Stocks_Services service)
+        public Stocks_Controller(Stocks_Services services)
         {
-            _service = service;
+            _services = services;
         }
 
         [HttpGet("Listar")]
@@ -20,7 +22,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_STOCKS_ASYNC();
+                var result = await _services.LISTAR_STOCKS_ASYNC();
 
                 return Ok(new
                 {
@@ -44,7 +46,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_STOCK_BY_ID_ASYNC(id);
+                var result = await _services.OBTENER_STOCK_BY_ID_ASYNC(id);
 
                 if (result == null)
                 {
@@ -55,7 +57,12 @@ namespace Ecom_Presentation.Controllers
                     });
                 }
 
-                return Ok(result);
+                return Ok(new
+                {
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -72,7 +79,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.FILTRAR_STOCKS_ASYNC(searchTerm, statusId);
+                var result = await _services.FILTRAR_STOCKS_ASYNC(searchTerm, statusId);
 
                 return Ok(new
                 {
@@ -96,13 +103,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_STOCKS_ASYNC(dto);
+                var (code, message, templateId) = await _services.NUEVO_STOCKS_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -120,13 +136,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ACTUALIZAR_STOCKS_ASYNC(dto);
+                var (code, message, templateId) = await _services.ACTUALIZAR_STOCKS_ASYNC(dto);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -144,13 +169,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_STOCKS_ASYNC(stockId, modificatorId);
+                var (code, message, templateId) = await _services.ELIMINAR_STOCKS_ASYNC(stockId, modificatorId);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)

@@ -24,6 +24,12 @@ namespace Ecom_Aplication.Services
             return await _userPaymentMethodsRepository.FILTRAR_USERPAYMENTMETHODS_ASYNC(searchTerm, statusId);
         }
 
+        // ¡CORREGIDO! Nombre sincronizado con el Controlador
+        public async Task<IEnumerable<UserPaymentMethods_DTOS>> OBTENER_USERPAYMENTMETHOD_BY_ID_ASYNC(int id)
+        {
+            return await _userPaymentMethodsRepository.FILTRAR_USERPAYMENTMETHODS_ASYNC(id.ToString(), null);
+        }
+
         public async Task<(int code, string message, int? templateId)> NUEVO_USERPAYMENTMETHODS_ASYNC(
             int userPaymentMethodUserId,
             int userPaymentMethodPaymentMethodTypeId,
@@ -43,6 +49,20 @@ namespace Ecom_Aplication.Services
                 userPaymentMethodCardHolderName,
                 userPaymentMethodCreatorId,
                 userPaymentMethodStatusId
+            );
+        }
+
+        public async Task<(int code, string message, int? templateId)> NUEVO_USERPAYMENTMETHODS_ASYNC(UserPaymentMethods_DTOS dto)
+        {
+            return await _userPaymentMethodsRepository.NUEVO_USERPAYMENTMETHODS_ASYNC(
+                dto.userPaymentMethodUserId ?? 0,
+                dto.userPaymentMethodPaymentMethodTypeId ?? 0,
+                dto.userPaymentMethodCardNumber != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodCardNumber) : "",
+                dto.userPaymentMethodExpirationDate != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodExpirationDate) : "",
+                dto.userPaymentMethodCVV != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodCVV) : "",
+                dto.userPaymentMethodCardHolderName ?? "",
+                dto.userPaymentMethodCreatorId ?? 0,
+                dto.userPaymentMethodStatusId ?? false
             );
         }
 
@@ -67,6 +87,21 @@ namespace Ecom_Aplication.Services
                 userPaymentMethodModificatorId,
                 userPaymentMethodStatusId,
                 forzarRecuperacion
+            );
+        }
+
+        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_USERPAYMENTMETHODS_ASYNC(UserPaymentMethods_DTOS dto)
+        {
+            return await _userPaymentMethodsRepository.ACTUALIZAR_USERPAYMENTMETHODS_ASYNC(
+                dto.userPaymentMethodId ?? 0,
+                dto.userPaymentMethodPaymentMethodTypeId ?? 0,
+                dto.userPaymentMethodCardNumber != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodCardNumber) : "",
+                dto.userPaymentMethodExpirationDate != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodExpirationDate) : "",
+                dto.userPaymentMethodCVV != null ? System.Text.Encoding.UTF8.GetString(dto.userPaymentMethodCVV) : "",
+                dto.userPaymentMethodCardHolderName ?? "",
+                dto.userPaymentMethodModificatorId ?? 0,
+                dto.userPaymentMethodStatusId ?? false,
+                false
             );
         }
 

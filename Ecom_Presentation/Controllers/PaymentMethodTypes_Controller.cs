@@ -47,13 +47,20 @@ namespace Ecom_Presentation.Controllers
                 var result = await _service.OBTENER_PAYMENTMETHODTYPE_BY_ID_ASYNC(id);
 
                 if (result == null)
+                {
                     return NotFound(new
                     {
                         code = 404,
                         message = "Registro no encontrado."
                     });
+                }
 
-                return Ok(result);
+                return Ok(new
+                {
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -70,13 +77,21 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_PAYMENTMETHODTYPES_ASYNC(dto);
+                var (code, message) = await _service.NUEVO_PAYMENTMETHODTYPES_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message
                 });
             }
             catch (Exception ex)
@@ -94,13 +109,21 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ACTUALIZAR_PAYMENTMETHODTYPES_ASYNC(dto);
+                var (code, message) = await _service.ACTUALIZAR_PAYMENTMETHODTYPES_ASYNC(dto);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message
                 });
             }
             catch (Exception ex)
@@ -118,13 +141,21 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_PAYMENTMETHODTYPES_ASYNC(id, modificatorId);
+                var (code, message) = await _service.ELIMINAR_PAYMENTMETHODTYPES_ASYNC(id, modificatorId);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message
                 });
             }
             catch (Exception ex)

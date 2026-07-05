@@ -1,3 +1,4 @@
+using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,9 +8,9 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class PaymentOrderDetails_Controller : ControllerBase
     {
-        private readonly PaymentOrderDetails_Sevices _service;
+        private readonly PaymentOrderDetails_Services _service;
 
-        public PaymentOrderDetails_Controller(PaymentOrderDetails_Sevices service)
+        public PaymentOrderDetails_Controller(PaymentOrderDetails_Services service)
         {
             _service = service;
         }
@@ -39,11 +40,12 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpGet("Filtrar")]
-        public async Task<IActionResult> Filtrar(int paymentOrderId)
+        public async Task<IActionResult> Filtrar([FromQuery] int? paymentOrderId, [FromQuery] string? searchTerm)
         {
             try
             {
-                var result = await _service.FILTRAR_PAYMENTORDERDETAILS_ASYNC(paymentOrderId);
+                // Ahora está sincronizado con la interfaz: recibe ID y término de búsqueda opcional
+                var result = await _service.FILTRAR_PAYMENTORDERDETAILS_ASYNC(paymentOrderId, searchTerm ?? "");
 
                 return Ok(new
                 {
@@ -63,95 +65,27 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo(
-            int paymentOrderId,
-            int productVariableId,
-            decimal price,
-            int quantity,
-            decimal discount,
-            decimal subtotal,
-            decimal tax,
-            decimal total,
-            int creatorId,
-            int statusId)
+        public async Task<IActionResult> Nuevo([FromBody] PaymentOrderDetails_DTOS dto)
         {
             try
             {
-                var result = await _service.NUEVO_PAYMENTORDERDETAILS_ASYNC(
-                    paymentOrderId,
-                    productVariableId,
-                    price,
-                    quantity,
-                    discount,
-                    subtotal,
-                    tax,
-                    total,
-                    creatorId,
-                    statusId);
+                
+                var (code, message, templateId) = await _service.NUEVO_PAYMENTORDERDETAILS_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar(
-            int paymentOrderDetailId,
-            int quantity,
-            decimal discount,
-            int modificatorId)
-        {
-            try
-            {
-                var result = await _service.ACTUALIZAR_PAYMENTORDERDETAILS_ASYNC(
-                    paymentOrderDetailId,
-                    quantity,
-                    discount,
-                    modificatorId);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpDelete("Eliminar/{paymentOrderDetailId}/{modificatorId}")]
-        public async Task<IActionResult> Eliminar(int paymentOrderDetailId, int modificatorId)
-        {
-            try
-            {
-                var result = await _service.ELIMINAR_PAYMENTORDERDETAILS_ASYNC(
-                    paymentOrderDetailId,
-                    modificatorId);
-
-                return Ok(new
-                {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)

@@ -55,10 +55,10 @@ namespace Ecom_Aplication.Services
                 MarkStatusId = m.MarkStatusId
             });
         }
-
-        public async Task<Marks_DTOS?> Obtener_Mark_Por_Id(string searchTerm, bool? statusId)
+        public async Task<IEnumerable<Marks_DTOS>> Filtrar_Marks(string? searchTerm, bool? statusId)
         {
-            var data = await _repository.FILTRAR_MARK_ASYNC(searchTerm, statusId);
+          
+            var data = await _repository.FILTRAR_MARK_ASYNC(searchTerm ?? "", statusId);
 
             return data.Select(m => new Marks_DTOS
             {
@@ -70,7 +70,7 @@ namespace Ecom_Aplication.Services
                 MarkModificatorId = m.MarkModificatorId,
                 MarkModificationDate = m.MarkModificationDate,
                 MarkStatusId = m.MarkStatusId
-            }).FirstOrDefault();
+            });
         }
 
         public async Task<(int code, string message, int? templateId)> Eliminar_Mark(int markId, int markModificatorId)

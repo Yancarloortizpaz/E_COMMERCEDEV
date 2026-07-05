@@ -20,7 +20,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_CATEGORY_ASYNC();
+                var result = await _service.LISTAR_CATEGORY();
 
                 return Ok(new
                 {
@@ -44,7 +44,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_CATEGORY_BY_ID_ASYNC(id);
+                var result = await _service.Obtener_Categories_Por_Id(id.ToString(), true);
 
                 if (result == null)
                     return NotFound(new
@@ -66,7 +66,7 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo([FromBody] Category_DTOS dto)
+        public async Task<IActionResult> Nuevo([FromBody] Categories_DTOS dto)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] Category_DTOS dto)
+        public async Task<IActionResult> Actualizar([FromBody] Categories_DTOS dto)
         {
             try
             {
@@ -118,7 +118,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_CATEGORY_ASYNC(id, modificatorId);
+                var result = await _service.Eliminar_Category(id, modificatorId);
 
                 return Ok(new
                 {

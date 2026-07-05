@@ -56,10 +56,10 @@ namespace Ecom_Aplication.Services
             });
         }
 
-        public async Task<Segments_DTOS?> Obtener_Segment_Por_Id(string searchTerm, bool? statusId)
+       
+        public async Task<Segments_DTOS?> Obtener_Segment_Por_Id(int segmentId)
         {
-            var data = await _repository.FILTRAR_SEGMENT_ASYNC(searchTerm, statusId);
-
+            var data = await _repository.FILTRAR_SEGMENT_ASYNC(segmentId.ToString(), null);
             return data.Select(s => new Segments_DTOS
             {
                 SegmentId = s.SegmentId,

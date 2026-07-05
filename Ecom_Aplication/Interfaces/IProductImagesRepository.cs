@@ -8,6 +8,8 @@ namespace Ecom_Aplication.Interfaces
 {
     public interface IProductImagesRepository
     {
+        Task<IEnumerable<ProductImages>> LISTAR_PRODUCTIMAGES_ASYNC();
+
         Task<IEnumerable<ProductImages>> OBTENER_POR_PRODUCTO_PRODUCTIMAGES_ASYNC(int ProductId);
 
         Task<(int code, string message, int? templateId)> NUEVO_PRODUCTIMAGES_ASYNC(

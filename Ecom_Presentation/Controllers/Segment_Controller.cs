@@ -8,9 +8,9 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class Segment_Controller : ControllerBase
     {
-        private readonly Segment_Services _service;
+        private readonly Segments_Services _service;
 
-        public Segment_Controller(Segment_Services service)
+        public Segment_Controller(Segments_Services service)
         {
             _service = service;
         }
@@ -20,7 +20,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_SEGMENT_ASYNC();
+                var result = await _service.LISTAR_SEGMENT();
 
                 return Ok(new
                 {
@@ -44,7 +44,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_SEGMENT_BY_ID_ASYNC(segmentId);
+                var result = await _service.Obtener_Segment_Por_Id(segmentId);
 
                 if (result == null)
                 {
@@ -68,7 +68,7 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo([FromBody] Segment_DTOS dto)
+        public async Task<IActionResult> Nuevo([FromBody] Segments_DTOS dto)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] Segment_DTOS dto)
+        public async Task<IActionResult> Actualizar([FromBody] Segments_DTOS dto)
         {
             try
             {
@@ -120,7 +120,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_SEGMENT_ASYNC(segmentId, modificatorId);
+                var result = await _service.Eliminar_Segment(segmentId, modificatorId);
 
                 return Ok(new
                 {

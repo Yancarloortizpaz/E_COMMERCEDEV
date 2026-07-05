@@ -1,4 +1,5 @@
-﻿using Ecom_Aplication.Interfaces;
+﻿using Ecom_Aplication.Dtos;
+using Ecom_Aplication.Interfaces;
 using Ecom_Domain;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace Ecom_Aplication.Services
             return await _stockMovementDetailsRepository.FILTRAR_STOCKMOVEMENTDETAILS_ASYNC(movementId, searchTerm);
         }
 
+        
         public async Task<(int code, string message, int? templateId)> NUEVO_STOCKMOVEMENTDETAILS_ASYNC(
             int stockMovementDetailMovementId,
             int? stockMovementDetailOrderDetailId,
@@ -44,6 +46,21 @@ namespace Ecom_Aplication.Services
                 stockMovementDetailExpirationDate,
                 stockMovementDetailCreatorId,
                 stockMovementDetailStatusId
+            );
+        }
+
+        public async Task<(int code, string message, int? templateId)> NUEVO_STOCKMOVEMENTDETAILS_ASYNC(StockMovementDetails_DTOS dto)
+        {
+         
+            return await _stockMovementDetailsRepository.NUEVO_STOCKMOVEMENTDETAILS_ASYNC(
+                dto.stockMovementDetailMovementId ?? 0,
+                dto.stockMovementDetailOrderDetailId,
+                dto.stockMovementDetailStockId,
+                dto.stockMovementDetailQuantity ?? 0,
+                dto.stockMovementDetailFactoryDate,
+                dto.stockMovementDetailExpirationDate,
+                dto.stockMovementDetailCreatorId ?? 0,
+                dto.stockMovementDetailStatusId ?? false
             );
         }
     }

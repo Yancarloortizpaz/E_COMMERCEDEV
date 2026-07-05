@@ -1,11 +1,10 @@
-﻿using Ecom_Domain;
+﻿using Ecom_Aplication.Dtos;
+using Ecom_Domain;
 using modu.application.Interface;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Ecom_Aplication.Services
 {
-    public class UserAddress_Services : IUserAddressRepository
+    public class UserAddress_Services
     {
         private readonly IUserAddressRepository _userAddressRepository;
 
@@ -14,61 +13,52 @@ namespace Ecom_Aplication.Services
             _userAddressRepository = userAddressRepository;
         }
 
-        public async Task<IEnumerable<UserAddress>> LISTAR_USER_ADDRESS_ASYNC()
+        public async Task<IEnumerable<UserAddress>> LISTAR_USERADDRESS_ASYNC()
         {
             return await _userAddressRepository.LISTAR_USER_ADDRESS_ASYNC();
         }
 
-        public async Task<IEnumerable<UserAddress>> FILTRAR_USER_ADDRESS_ASYNC(int? userId, string searchTerm, bool? statusId)
+        public async Task<UserAddress?> OBTENER_USERADDRESS_BY_ID_ASYNC(int id)
         {
-            return await _userAddressRepository.FILTRAR_USER_ADDRESS_ASYNC(userId, searchTerm, statusId);
+            var data = await _userAddressRepository.FILTRAR_USER_ADDRESS_ASYNC(null, id.ToString(), null);
+            return data.FirstOrDefault();
         }
 
-        public async Task<(int code, string message, int? templateId)> NUEVO_USER_ADDRESS_ASYNC(
-            int userAddressUserId,
-            int userAddressCountryId,
-            int userAddressZIPCode,
-            string userAddressDescription,
-            bool userAddressIsPrincipal,
-            int userAddressCreatorId,
-            bool userAddressStatusId)
+        public async Task<IEnumerable<UserAddress>> FILTRAR_USERADDRESS_ASYNC(int userId)
+        {
+            return await _userAddressRepository.FILTRAR_USER_ADDRESS_ASYNC(userId, "", null);
+        }
+
+        public async Task<(int code, string message, int? templateId)> NUEVO_USERADDRESS_ASYNC(UserAddress_DTOS dto)
         {
             return await _userAddressRepository.NUEVO_USER_ADDRESS_ASYNC(
-                userAddressUserId,
-                userAddressCountryId,
-                userAddressZIPCode,
-                userAddressDescription,
-                userAddressIsPrincipal,
-                userAddressCreatorId,
-                userAddressStatusId
+                dto.UserAddressUserId ?? 0,
+                dto.UserAddressCountryId ?? 0,
+                dto.UserAddressZIPCode ?? 0,
+                dto.UserAddressDescription ?? "",
+                dto.UserAddressIsPrincipal ?? false,
+                dto.UserAddressCreatorId ?? 0,
+                dto.UserAddressStatusId ?? false
             );
         }
 
-        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_USER_ADDRESS_ASYNC(
-            int userAddressId,
-            int userAddressCountryId,
-            int userAddressZIPCode,
-            string userAddressDescription,
-            bool userAddressIsPrincipal,
-            int userAddressModificatorId,
-            bool userAddressStatusId,
-            bool forzarRecuperacion)
+        public async Task<(int code, string message, int? templateId)> ACTUALIZAR_USERADDRESS_ASYNC(UserAddress_DTOS dto)
         {
             return await _userAddressRepository.ACTUALIZAR_USER_ADDRESS_ASYNC(
-                userAddressId,
-                userAddressCountryId,
-                userAddressZIPCode,
-                userAddressDescription,
-                userAddressIsPrincipal,
-                userAddressModificatorId,
-                userAddressStatusId,
-                forzarRecuperacion
+                dto.UserAddressId ?? 0,
+                dto.UserAddressCountryId ?? 0,
+                dto.UserAddressZIPCode ?? 0,
+                dto.UserAddressDescription ?? "",
+                dto.UserAddressIsPrincipal ?? false,
+                dto.UserAddressModificatorId ?? 0,
+                dto.UserAddressStatusId ?? false,
+                false
             );
         }
 
-        public async Task<(int code, string message, int? templateId)> ELIMINAR_USER_ADDRESS_ASYNC(int userAddressId, int userAddressModificatorId)
+        public async Task<(int code, string message, int? templateId)> ELIMINAR_USERADDRESS_ASYNC(int id, int modificatorId)
         {
-            return await _userAddressRepository.ELIMINAR_USER_ADDRESS_ASYNC(userAddressId, userAddressModificatorId);
+            return await _userAddressRepository.ELIMINAR_USER_ADDRESS_ASYNC(id, modificatorId);
         }
     }
 }

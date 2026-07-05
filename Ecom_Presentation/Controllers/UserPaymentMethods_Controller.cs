@@ -1,6 +1,9 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -8,11 +11,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class UserPaymentMethods_Controller : ControllerBase
     {
-        private readonly UserPaymentMethods_Services _service;
+        private readonly UserPaymentMethods_Services _services;
 
-        public UserPaymentMethods_Controller(UserPaymentMethods_Services service)
+        public UserPaymentMethods_Controller(UserPaymentMethods_Services services)
         {
-            _service = service;
+            _services = services;
         }
 
         [HttpGet("Listar")]
@@ -20,7 +23,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_USERPAYMENTMETHODS_ASYNC();
+                var result = await _services.LISTAR_USERPAYMENTMETHODS_ASYNC();
 
                 return Ok(new
                 {
@@ -31,11 +34,7 @@ namespace Ecom_Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -44,33 +43,14 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.OBTENER_USERPAYMENTMETHOD_BY_ID_ASYNC(id);
+ 
+                var lista = await _services.OBTENER_USERPAYMENTMETHOD_BY_ID_ASYNC(id);
+                var result = lista.FirstOrDefault();
 
                 if (result == null)
-                    return NotFound(new
-                    {
-                        code = 404,
-                        message = "Registro no encontrado."
-                    });
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
                 {
-                    code = 500,
-                    message = ex.Message
-                });
-            }
-        }
-
-        [HttpGet("Filtrar")]
-        public async Task<IActionResult> Filtrar(int userId)
-        {
-            try
-            {
-                var result = await _service.FILTRAR_USERPAYMENTMETHODS_ASYNC(userId);
+                    return NotFound(new { code = 404, message = "Registro no encontrado." });
+                }
 
                 return Ok(new
                 {
@@ -81,11 +61,27 @@ namespace Ecom_Presentation.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                return StatusCode(500, new { code = 500, message = ex.Message });
+            }
+        }
+
+        [HttpGet("Filtrar")]
+        public async Task<IActionResult> Filtrar(string searchTerm, bool? statusId)
+        {
+            try
+            {
+                var result = await _services.FILTRAR_USERPAYMENTMETHODS_ASYNC(searchTerm ?? "", statusId);
+
+                return Ok(new
                 {
-                    code = 500,
-                    message = ex.Message
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
                 });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -94,22 +90,18 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_USERPAYMENTMETHODS_ASYNC(dto);
+                var (code, message, templateId) = await _services.NUEVO_USERPAYMENTMETHODS_ASYNC(dto);
 
-                return Ok(new
+                if (code != 200 && code != 201)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -118,22 +110,18 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ACTUALIZAR_USERPAYMENTMETHODS_ASYNC(dto);
+                var (code, message, templateId) = await _services.ACTUALIZAR_USERPAYMENTMETHODS_ASYNC(dto);
 
-                return Ok(new
+                if (code != 200)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
@@ -142,22 +130,18 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_USERPAYMENTMETHODS_ASYNC(id, modificatorId);
+                var (code, message, templateId) = await _services.ELIMINAR_USERPAYMENTMETHODS_ASYNC(id, modificatorId);
 
-                return Ok(new
+                if (code != 200)
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
-                });
+                    return StatusCode(code, new { code, message });
+                }
+
+                return Ok(new { code, message, templateId });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
     }

@@ -55,7 +55,12 @@ namespace Ecom_Presentation.Controllers
                     });
                 }
 
-                return Ok(result);
+                return Ok(new
+                {
+                    code = 200,
+                    message = "Consulta realizada correctamente.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -96,13 +101,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.NUEVO_PRODUCTVARIABLES_ASYNC(dto);
+                var (code, message, templateId) = await _service.NUEVO_PRODUCTVARIABLES_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -120,13 +134,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ACTUALIZAR_PRODUCTVARIABLES_ASYNC(dto);
+                var (code, message, templateId) = await _service.ACTUALIZAR_PRODUCTVARIABLES_ASYNC(dto);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)
@@ -144,13 +167,22 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_PRODUCTVARIABLES_ASYNC(productVariableId, modificatorId);
+                var (code, message, templateId) = await _service.ELIMINAR_PRODUCTVARIABLES_ASYNC(productVariableId, modificatorId);
+
+                if (code != 200)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)

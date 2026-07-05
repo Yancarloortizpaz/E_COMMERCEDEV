@@ -1,6 +1,8 @@
 using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -72,7 +74,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.FILTRAR_PRODUCTS_ASYNC(searchTerm, statusId);
+                var result = await _service.FILTRAR_PRODUCTS_ASYNC(searchTerm ?? "", statusId);
 
                 return Ok(new
                 {

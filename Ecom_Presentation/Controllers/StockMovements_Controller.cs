@@ -1,5 +1,8 @@
+using Ecom_Aplication.Dtos;
 using Ecom_Aplication.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ecom_Presentation.Controllers
 {
@@ -7,11 +10,11 @@ namespace Ecom_Presentation.Controllers
     [ApiController]
     public class StockMovements_Controller : ControllerBase
     {
-        private readonly StockMovements_Services _service;
+        private readonly StockMovements_Services _stockService;
 
         public StockMovements_Controller(StockMovements_Services service)
         {
-            _service = service;
+            _stockService = service;
         }
 
         [HttpGet("Listar")]
@@ -19,7 +22,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_STOCKMOVEMENTS_ASYNC();
+                var result = await _stockService.LISTAR_STOCKMOVEMENTS_ASYNC();
 
                 return Ok(new
                 {
@@ -43,7 +46,8 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.FILTRAR_STOCKMOVEMENTS_ASYNC(searchTerm);
+                // Agregamos ?? "" para evitar que el buscador truene si envían null
+                var result = await _stockService.FILTRAR_STOCKMOVEMENTS_ASYNC(searchTerm ?? "");
 
                 return Ok(new
                 {
@@ -63,29 +67,27 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo(
-            int stockMovementType,
-            int? stockMovementOrderId,
-            string stockMovementReference,
-            DateTime stockMovementDate,
-            int stockMovementCreatorId,
-            int stockMovementStatusId)
+        public async Task<IActionResult> Nuevo([FromBody] StockMovements_DTOS dto)
         {
             try
             {
-                var result = await _service.NUEVO_STOCKMOVEMENTS_ASYNC(
-                    stockMovementType,
-                    stockMovementOrderId,
-                    stockMovementReference,
-                    stockMovementDate,
-                    stockMovementCreatorId,
-                    stockMovementStatusId);
+                // Ahora usamos el DTO limpio y directo
+                var (code, message, templateId) = await _stockService.NUEVO_STOCKMOVEMENTS_ASYNC(dto);
+
+                if (code != 200 && code != 201)
+                {
+                    return StatusCode(code, new
+                    {
+                        code,
+                        message
+                    });
+                }
 
                 return Ok(new
                 {
-                    result.code,
-                    result.message,
-                    result.templateId
+                    code,
+                    message,
+                    templateId
                 });
             }
             catch (Exception ex)

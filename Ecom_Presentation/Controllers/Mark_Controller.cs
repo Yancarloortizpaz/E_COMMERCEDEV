@@ -20,7 +20,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.LISTAR_MARK_ASYNC();
+                var result = await _service.LISTAR_MARK();
 
                 return Ok(new
                 {
@@ -39,34 +39,28 @@ namespace Ecom_Presentation.Controllers
             }
         }
 
-        [HttpGet("Obtener/{id}")]
-        public async Task<IActionResult> Obtener(int id)
+        [HttpGet("Buscar")]
+        public async Task<IActionResult> Buscar([FromQuery] string? searchTerm, [FromQuery] bool? statusId)
         {
             try
             {
-                var result = await _service.OBTENER_MARK_BY_ID_ASYNC(id);
+                var result = await _service.Filtrar_Marks(searchTerm, statusId);
 
-                if (result == null)
-                    return NotFound(new
-                    {
-                        code = 404,
-                        message = "Registro no encontrado."
-                    });
-
-                return Ok(result);
+                return Ok(new
+                {
+                    code = 200,
+                    message = "Búsqueda realizada correctamente.",
+                    data = result
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    code = 500,
-                    message = ex.Message
-                });
+                return StatusCode(500, new { code = 500, message = ex.Message });
             }
         }
 
         [HttpPost("Nuevo")]
-        public async Task<IActionResult> Nuevo([FromBody] Mark_DTOS dto)
+        public async Task<IActionResult> Nuevo([FromBody] Marks_DTOS dto)
         {
             try
             {
@@ -90,7 +84,7 @@ namespace Ecom_Presentation.Controllers
         }
 
         [HttpPut("Actualizar")]
-        public async Task<IActionResult> Actualizar([FromBody] Mark_DTOS dto)
+        public async Task<IActionResult> Actualizar([FromBody] Marks_DTOS dto)
         {
             try
             {
@@ -118,7 +112,7 @@ namespace Ecom_Presentation.Controllers
         {
             try
             {
-                var result = await _service.ELIMINAR_MARK_ASYNC(markId, modificatorId);
+                var result = await _service.Eliminar_Mark(markId, modificatorId);
 
                 return Ok(new
                 {

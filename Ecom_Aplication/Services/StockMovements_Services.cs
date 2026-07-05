@@ -1,4 +1,5 @@
-﻿using Ecom_Aplication.Interfaces;
+﻿using Ecom_Aplication.Dtos;
+using Ecom_Aplication.Interfaces;
 using Ecom_Domain;
 using System;
 using System.Collections.Generic;
@@ -8,21 +9,21 @@ namespace Ecom_Aplication.Services
 {
     public class StockMovements_Services : IStockMovements
     {
-        private readonly IStockMovements _stockMovementsRepository;
+        private readonly IStockMovements _repository;
 
-        public StockMovements_Services(IStockMovements stockMovementsRepository)
+        public StockMovements_Services(IStockMovements repository)
         {
-            _stockMovementsRepository = stockMovementsRepository;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<StockMovements>> LISTAR_STOCKMOVEMENTS_ASYNC()
         {
-            return await _stockMovementsRepository.LISTAR_STOCKMOVEMENTS_ASYNC();
+            return await _repository.LISTAR_STOCKMOVEMENTS_ASYNC();
         }
 
         public async Task<IEnumerable<StockMovements>> FILTRAR_STOCKMOVEMENTS_ASYNC(string searchTerm)
         {
-            return await _stockMovementsRepository.FILTRAR_STOCKMOVEMENTS_ASYNC(searchTerm);
+            return await _repository.FILTRAR_STOCKMOVEMENTS_ASYNC(searchTerm);
         }
 
         public async Task<(int code, string message, int? templateId)> NUEVO_STOCKMOVEMENTS_ASYNC(
@@ -33,13 +34,27 @@ namespace Ecom_Aplication.Services
             int stockMovementCreatorId,
             int stockMovementStatusId)
         {
-            return await _stockMovementsRepository.NUEVO_STOCKMOVEMENTS_ASYNC(
+            return await _repository.NUEVO_STOCKMOVEMENTS_ASYNC(
                 stockMovementType,
                 stockMovementOrderId,
                 stockMovementReference,
                 stockMovementDate,
                 stockMovementCreatorId,
                 stockMovementStatusId
+            );
+        }
+
+ 
+        public async Task<(int code, string message, int? templateId)> NUEVO_STOCKMOVEMENTS_ASYNC(StockMovements_DTOS dto)
+        {
+          
+            return await _repository.NUEVO_STOCKMOVEMENTS_ASYNC(
+                dto.stockMovementType ?? 0,
+                dto.stockMovementOrderId,
+                dto.stockMovementReference ?? "",
+                dto.stockMovementDate ?? DateTime.Now,
+                dto.stockMovementCreatorId ?? 0,
+                dto.stockMovementStatusId ?? 0
             );
         }
     }
