@@ -219,17 +219,33 @@ namespace Ecom_Infraestructure.Repository
 
         private MarkByProviders MapearEntidadDominio(SqlDataReader dr)
         {
+          
+            object? GetValueSafe(string columnName)
+            {
+                try
+                {
+                    int ordinal = dr.GetOrdinal(columnName);
+                    return dr.IsDBNull(ordinal) ? null : dr.GetValue(ordinal);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return null; 
+                }
+            }
+
+       
             return new MarkByProviders
             {
-                MarkByProviderId = dr["markByProviderId"] as int?,
-                MarkByProviderMarkId = dr["markByProviderMarkId"] as int?,
-                MarkByProviderProviderId = dr["markByProviderProviderId"] as int?,
-                MarkByProviderCreatorId = dr["markByProviderCreatorId"] as int?,
-                MarkByProviderCreationDate = dr["markByProviderCreationDate"] as DateTime?,
-                MarkByProviderModificatorId = dr["markByProviderModificatorId"] as int?,
-                MarkByProviderModificationDate = dr["markByProviderModificationDate"] as DateTime?,
-                MarkByProviderStatusId = dr["markByProviderStatusId"] as bool?
+                MarkByProviderId = GetValueSafe("markByProviderId") as int?,
+                MarkByProviderMarkId = GetValueSafe("markByProviderMarkId") as int?,
+                MarkByProviderProviderId = GetValueSafe("markByProviderProviderId") as int?,
+                MarkByProviderCreatorId = GetValueSafe("markByProviderCreatorId") as int?,
+                MarkByProviderCreationDate = GetValueSafe("markByProviderCreationDate") as DateTime?,
+                MarkByProviderModificatorId = GetValueSafe("markByProviderModificatorId") as int?,
+                MarkByProviderModificationDate = GetValueSafe("markByProviderModificationDate") as DateTime?,
+                MarkByProviderStatusId = GetValueSafe("markByProviderStatusId") as bool?
             };
         }
     }
-}
+    }
+
