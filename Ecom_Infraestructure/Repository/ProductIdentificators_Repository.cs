@@ -227,17 +227,30 @@ namespace Ecom_Infraestructure.Repository
 
         private ProductIdentificators_DTOS MapearDTO(SqlDataReader dr)
         {
+            object? GetValueSafe(string columnName)
+            {
+                try
+                {
+                    int ordinal = dr.GetOrdinal(columnName);
+                    return dr.IsDBNull(ordinal) ? null : dr.GetValue(ordinal);
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return null; // Si la columna no viene en el SP, devuelve null en vez de romper la API
+                }
+            }
+    
             return new ProductIdentificators_DTOS
             {
-                ProductIdentificatorId = dr["productIdentificatorId"] as int?,
-                ProductIdentificatorCategoryId = dr["productIdentificatorCategoryId"] as int?,
-                ProductIdentificatorSubCategoryId = dr["productIdentificatorSubCategoryId"] as int?,
-                ProductIdentificatorSegmentId = dr["productIdentificatorSegmentId"] as int?,
-                ProductIdentificatorCreatorId = dr["productIdentificatorCreatorId"] as int?,
-                ProductIdentificatorCreationDate = dr["productIdentificatorCreationDate"] as DateTime?,
-                ProductIdentificatorModificatorId = dr["productIdentificatorModificatorId"] as int?,
-                ProductIdentificatorModificationDate = dr["productIdentificatorModificationDate"] as DateTime?,
-                ProductIdentificatorStatusId = dr["productIdentificatorStatusId"] as bool?
+                ProductIdentificatorId = GetValueSafe("productIdentificatorId") as int?,
+                ProductIdentificatorCategoryId = GetValueSafe("productIdentificatorCategoryId") as int?,
+                ProductIdentificatorSubCategoryId = GetValueSafe("productIdentificatorSubCategoryId") as int?,
+                ProductIdentificatorSegmentId = GetValueSafe("productIdentificatorSegmentId") as int?,
+                ProductIdentificatorCreatorId = GetValueSafe("productIdentificatorCreatorId") as int?,
+                ProductIdentificatorCreationDate = GetValueSafe("productIdentificatorCreationDate") as DateTime?,
+                ProductIdentificatorModificatorId = GetValueSafe("productIdentificatorModificatorId") as int?,
+                ProductIdentificatorModificationDate = GetValueSafe("productIdentificatorModificationDate") as DateTime?,
+                ProductIdentificatorStatusId = GetValueSafe("productIdentificatorStatusId") as bool?
             };
         }
     }
