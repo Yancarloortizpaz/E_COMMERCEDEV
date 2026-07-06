@@ -16,6 +16,7 @@ AS BEGIN
         OR providerName LIKE '%' + @SearchTerm + '%'
         OR providerDescription LIKE '%' + @SearchTerm + '%'
     ) AND (@providerId IS NULL OR providerId = @providerId)
+	and providerStatusId =1
     OPTION (RECOMPILE);
 END
 GO

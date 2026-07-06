@@ -1,0 +1,9 @@
+[Tbl_Providers] los 5 sp ya probasdos actulice los sp de listar y filtrar para que 
+no listarn lo que estaban en id 0 eso no lo habia hecho anteriormente y 
+nadie lo habia notado 
+
+
+2. 
+tabla e usario ha consumido los 6 sp correctamnete
+tambien aqui habia la debulidad que listaba y filtraba los que estaban eliminados 
+agregue un nuevo sp para hacer el cambio de contraseña por que tampoc eso estaba 

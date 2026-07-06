@@ -66,7 +66,7 @@ BEGIN
     SELECT 
         @ConversacionID,
         rol,
-        CAST(fecha_hora AS DATETIME),
+        CAST(fecha_hora AS DATETIME2),
         intencion,
         contenido,
         metadata
