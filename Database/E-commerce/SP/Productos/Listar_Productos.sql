@@ -27,3 +27,4 @@ GO
 
 
 exec [SQM_GENERAL].[sp_Products_List]
+SELECT * FROM [SQM_GENERAL].[Tbl_Products]

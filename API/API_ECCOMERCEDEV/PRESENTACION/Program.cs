@@ -32,6 +32,12 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<UsersServices>();
 builder.Services.AddScoped<IPaymentMethodTypesRepository, PaymentMethodTypesRepository>();
 builder.Services.AddScoped<PaymentMethodTypesServices>();
+builder.Services.AddScoped<ISubCategoriesRepository, SubCategoriesRepository>();
+builder.Services.AddScoped<SubCategoriesServices>();
+builder.Services.AddScoped<ISegmentsRepository, SegmentsRepository>();
+builder.Services.AddScoped<SegmentsServices>();
+builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
+builder.Services.AddScoped<ProductsServices>();
 
 
 

@@ -7,3 +7,12 @@ nadie lo habia notado
 tabla e usario ha consumido los 6 sp correctamnete
 tambien aqui habia la debulidad que listaba y filtraba los que estaban eliminados 
 agregue un nuevo sp para hacer el cambio de contraseña por que tampoc eso estaba 
+
+
+3.TABLA DE SEGMENTO REALIZADA CORRECTAMNETE CON TODO SUS FLUJOS  [SQM_CATALOGS].[Tbl_Segments]
+
+4.TABLA DE SUB CATEGORIA REALIZADA CORRECTAMENTE CON TODOS SUS FLUJOS [SQM_CATALOGS].[Tbl_SubCategories]
+
+5.TABLA PAYMENTMETHODTYPES REALIZADA CORRECTAMENTE CON TODOS SUS FLUJOS [SQM_CATALOGS].[Tbl_PaymentMethodTypes]
+
+6. TABLA DE PRODUCTO REALIZADA CORRECTAMENTE CON TODOS SUS FLUJOS [SQM_CATALOGS].[Tbl_Products]

@@ -1,10 +1,11 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 5. FILTRAR (Integrando Vista y Optimizado)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_Filter]
-    @SearchTerm VARCHAR(50) = NULL, @StatusId BIT = NULL
+    @SearchTerm VARCHAR(50) = NULL
 AS BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
 
     SELECT 
@@ -34,11 +35,11 @@ AS BEGIN
         OR subCategoryName LIKE '%' + @SearchTerm + '%'
         OR markName LIKE '%' + @SearchTerm + '%'
         OR providerName LIKE '%' + @SearchTerm + '%'
-    ) AND (@StatusId IS NULL OR statusId = @StatusId)
+    ) 
+    AND statusId = 1
     OPTION (RECOMPILE);
 END
 GO
-
 
 -- Caso 1: Sin parámetros (Debería traer todo el universo de productos sin restricciones)
 EXEC [SQM_GENERAL].[sp_Products_Filter];
