@@ -5,6 +5,9 @@ GO
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Providers_List]
 AS BEGIN
     SELECT providerId, providerName, providerDescription, providerCreatorId, providerStatusId
-    FROM [SQM_CATALOGS].[Tbl_Providers] (NOLOCK);
+    FROM [SQM_CATALOGS].[Tbl_Providers] (NOLOCK)
+	WHERE providerStatusId = 1;
 END
 GO
+
+EXEC  [SQM_CATALOGS].[sp_Providers_List]

@@ -2,7 +2,7 @@
 GO
 
 CREATE OR ALTER PROCEDURE dbo.SP_ProcesarMensajeChatbot
-    @w_ConversacionID BIGINT,
+    @w_ConversacionID VARCHAR(50),
     @w_TextoUsuario VARCHAR(1000),
     @o_TextoRespuesta NVARCHAR(MAX) OUTPUT,
     @o_ReglaActivadaID INT OUTPUT
@@ -140,7 +140,7 @@ DECLARE @RespuestaChatbot NVARCHAR(MAX);
 DECLARE @ReglaID INT;
 
 EXEC dbo.SP_ProcesarMensajeChatbot 
-    @w_ConversacionID = 1, 
+    @w_ConversacionID = 'sesion_usuario_1001', 
     @w_TextoUsuario = 'zapatillas blanco', 
     @o_TextoRespuesta = @RespuestaChatbot OUTPUT,
     @o_ReglaActivadaID = @ReglaID OUTPUT;
