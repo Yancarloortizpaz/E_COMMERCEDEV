@@ -8,24 +8,34 @@ AS BEGIN
     DECLARE @SearchDate DATETIME = TRY_CAST(@SearchTerm AS DATETIME);
 
     SELECT 
-        stockMovementId, 
-        stockMovementType, 
-        stockMovementOrderId, 
-        stockMovementReference, 
-        stockMovementDate, 
-        stockMovementCreationDate, 
-        stockMovementStatusId
-    FROM [SQM_GENERAL].[Tbl_StockMovements] (NOLOCK)
+        MovimientoID,
+        Referencia,
+        FechaMovimiento,
+        FechaRegistro,
+        TipoMovimientoID,
+        TipoMovimiento,
+        DescripcionTipo,
+        OrdenPagoID,
+        DetalleOrden,
+        CreadorID,
+        CreadorNombre,
+        CreadorUsuario,
+        ModificadorID,
+        ModificadorNombre,
+        FechaModificacion,
+        EstadoID,
+        Estado
+    FROM [SQM_GENERAL].[vw_StockMovements_Detailed] (NOLOCK)
     WHERE 
         @SearchTerm IS NULL
-        OR stockMovementId = @SearchId
-        OR stockMovementType = @SearchId
-        OR stockMovementOrderId = @SearchId
-        OR stockMovementStatusId = @SearchId
-        OR stockMovementReference LIKE '%' + @SearchTerm + '%'
+        OR MovimientoID = @SearchId
+        OR TipoMovimientoID = @SearchId
+        OR OrdenPagoID = @SearchId
+        OR EstadoID = @SearchId
+        OR Referencia LIKE '%' + @SearchTerm + '%'
         OR (@SearchDate IS NOT NULL AND (
-            CONVERT(DATE, stockMovementDate) = CONVERT(DATE, @SearchDate)
-            OR CONVERT(DATE, stockMovementCreationDate) = CONVERT(DATE, @SearchDate)
+            CONVERT(DATE, FechaMovimiento) = CONVERT(DATE, @SearchDate)
+            OR CONVERT(DATE, FechaRegistro) = CONVERT(DATE, @SearchDate)
         ))
     OPTION (RECOMPILE);
 END

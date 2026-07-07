@@ -3,10 +3,31 @@ GO
 
 -- 2. LISTAR
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_StockMovements_List]
-AS BEGIN
+AS 
+BEGIN
+    SET NOCOUNT ON;
+
     SELECT 
-        stockMovementId, stockMovementType, stockMovementOrderId, stockMovementReference, 
-        stockMovementDate, stockMovementCreatorId, stockMovementCreationDate, stockMovementStatusId
-    FROM [SQM_GENERAL].[Tbl_StockMovements] (NOLOCK);
+        MovimientoID,
+        Referencia,
+        FechaMovimiento,
+        FechaRegistro,
+        TipoMovimientoID,
+        TipoMovimiento,
+        DescripcionTipo,
+        OrdenPagoID,
+        DetalleOrden,
+        CreadorID,
+        CreadorNombre,
+        CreadorUsuario,
+        ModificadorID,
+        ModificadorNombre,
+        FechaModificacion,
+        EstadoID,
+        Estado
+    FROM [SQM_GENERAL].[vw_StockMovements_Detailed] (NOLOCK);
+
 END
 GO
+
+exec[SQM_GENERAL].[sp_StockMovements_List]

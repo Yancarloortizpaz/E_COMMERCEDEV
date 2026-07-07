@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 1. CREAR ORDEN DE PAGO CON CHECKOUT AUTOMATIZADO, FEFO Y KARDEX
+
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_PaymentOrders_Create]
 (
     @orderUserId INT,
@@ -416,4 +416,55 @@ BEGIN
         SET @o_templateId = NULL;
     END CATCH;
 END;
+GO
+
+
+
+
+
+
+
+SELECT * FROM [SQM_SECURITY].[Tbl_Users];
+
+-- 2. Tabla de Direcciones (Esquema GENERAL)
+SELECT * FROM [SQM_GENERAL].[Tbl_UserAddress];
+
+-- 3. Tabla de Métodos de Pago (Esquema GENERAL)
+SELECT * FROM [SQM_GENERAL].[Tbl_UserPaymentMethods];
+
+-- 4. Tabla de Monedas (Esquema CATALOGS)
+SELECT * FROM [SQM_CATALOGS].[Tbl_Currencies];
+
+-- 5. Tabla de Estados/Estatus (Esquema CATALOGS)
+SELECT * FROM [SQM_CATALOGS].[Tbl_Status];
+
+
+DECLARE @v_code INT;
+DECLARE @v_message VARCHAR(255);
+DECLARE @v_templateId INT;
+
+-- 2. Ejecutar el procedimiento almacenado con los datos de la imagen
+EXEC  [SQM_GENERAL].[sp_PaymentOrders_Create]
+    @orderUserId = 1,                 -- HECTOR JOSE CALERO ALANIZ (userId = 1)
+    @orderDeliveryAddress = 2,        -- Ciudad Sandino, Managua (userAddressId = 2)
+    @orderPaymentMethodId = 1,        -- Método de pago del usuario (userPaymentMethodId = 1)
+    @orderSubtotal = NULL,            -- NULL para que lo calcule automáticamente del carrito
+    @orderDiscount = NULL,            -- NULL para que lo calcule automáticamente del carrito
+    @orderShipping = 50.00,           -- se pues  definir un costo de envío fijo o bien le mentemos logica para la ditancia a esto vaina 
+    @orderTAX = NULL,                 -- NULL para que lo calcule automáticamente del carrito
+    @orderTotal = NULL,               -- NULL para que sume Subtotal + Shipping automáticamente
+    @orderCurrencyId = 2,             -- Córdoba Oro (currencyId = 2)
+    @orderCreatorId = 1,              -- Creador: HECTOR JOSE CALERO (userId = 1)
+    @orderStatusId = 1,               -- Estado: ACTIVO (statusId = 1)
+    
+    -- Pasar los parámetros de salida
+    @o_code = @v_code OUTPUT,
+    @o_message = @v_message OUTPUT,
+    @o_templateId = @v_templateId OUTPUT;
+
+-- 3. Mostrar los resultados de la ejecución
+SELECT 
+    @v_code AS [CodigoRespuesta],
+    @v_message AS [MensajeRespuesta],
+    @v_templateId AS [OrderIdGenerado];
 GO

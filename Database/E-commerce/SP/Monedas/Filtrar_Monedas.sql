@@ -1,24 +1,41 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 5. FILTRAR (Optimizado)
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Currencies_Filter]
-    @SearchTerm VARCHAR(50) = NULL, @StatusId BIT = NULL
+    @SearchTerm VARCHAR(50) = NULL, 
+    @StatusId BIT = NULL
 AS BEGIN
+    SET NOCOUNT ON;
+
     DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
 
-    SELECT currencyId, currencyName, currencyISO, currencyCode, currencyStatusId
-    FROM [SQM_CATALOGS].[Tbl_Currencies] (NOLOCK)
+    SELECT 
+        MonedaID, 
+        Moneda, 
+        ISO, 
+        CodigoNumerico, 
+        Descripcion, 
+        CreadorID, 
+        CreadorNombre, 
+        FechaCreacion, 
+        ModificadorID, 
+        ModificadorNombre, 
+        FechaModificacion, 
+        EstadoID, 
+        Estado
+    FROM [SQM_CATALOGS].[vw_Currencies_Detailed] (NOLOCK)
     WHERE (
         @SearchTerm IS NULL
-        OR currencyId = @SearchId
-        OR currencyName LIKE '%' + @SearchTerm + '%'
-        OR currencyISO LIKE '%' + @SearchTerm + '%'
-        OR currencyCode LIKE '%' + @SearchTerm + '%'
-    ) AND (@StatusId IS NULL OR currencyStatusId = @StatusId)
+        OR MonedaID = @SearchId
+        OR Moneda LIKE '%' + @SearchTerm + '%'
+        OR ISO LIKE '%' + @SearchTerm + '%'
+        OR CodigoNumerico LIKE '%' + @SearchTerm + '%'
+    ) AND (@StatusId IS NULL OR EstadoID = @StatusId)
     OPTION (RECOMPILE);
-END
+END;
 GO
 
-exec [SQM_CATALOGS].[sp_Currencies_Filter]
-exec [SQM_CATALOGS].[sp_Currencies_Filter]'nio'
+-- Pruebas de ejecución
+EXEC [SQM_CATALOGS].[sp_Currencies_Filter];
+EXEC [SQM_CATALOGS].[sp_Currencies_Filter] 'nio';
+GO

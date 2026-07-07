@@ -1,10 +1,27 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 4. LISTAR
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Currencies_List]
 AS BEGIN
-    SELECT currencyId, currencyName, currencyISO, currencyCode, currencyDescription, currencyCreatorId, currencyCreationDate, currencyModificatorId, currencyModificationDate, currencyStatusId
-    FROM [SQM_CATALOGS].[Tbl_Currencies] (NOLOCK);
-END
+    SET NOCOUNT ON;
+
+    SELECT 
+        MonedaID, 
+        Moneda, 
+        ISO, 
+        CodigoNumerico, 
+        Descripcion, 
+        CreadorID, 
+        CreadorNombre, 
+        FechaCreacion, 
+        ModificadorID, 
+        ModificadorNombre, 
+        FechaModificacion, 
+        EstadoID, 
+        Estado
+    FROM [SQM_CATALOGS].[vw_Currencies_Detailed] (NOLOCK);
+END;
+GO
+
+EXEC [SQM_CATALOGS].[sp_Currencies_List];
 GO
