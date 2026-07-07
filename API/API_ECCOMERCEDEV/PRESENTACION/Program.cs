@@ -38,6 +38,12 @@ builder.Services.AddScoped<ISegmentsRepository, SegmentsRepository>();
 builder.Services.AddScoped<SegmentsServices>();
 builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
 builder.Services.AddScoped<ProductsServices>();
+builder.Services.AddScoped<IPaymentOrdersRepository, PaymentOrdersRepository>();
+builder.Services.AddScoped<PaymentOrdersServices>();
+builder.Services.AddScoped<IStockMovementsRepository, StockMovementsRepository>();
+builder.Services.AddScoped<StockMovementsServices>();
+builder.Services.AddScoped<ICurrenciesRepository, CurrenciesRepository>();
+builder.Services.AddScoped<CurrenciesServices>();
 
 
 

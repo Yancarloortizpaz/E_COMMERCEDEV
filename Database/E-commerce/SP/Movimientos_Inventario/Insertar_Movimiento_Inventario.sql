@@ -125,3 +125,42 @@ BEGIN
     END CATCH;
 END;
 GO
+
+
+
+
+DECLARE @v_code INT;
+DECLARE @v_message VARCHAR(255);
+DECLARE @v_templateId INT;
+
+-- Ejecutar el procedimiento
+EXEC [SQM_GENERAL].[sp_StockMovements_Create]
+    @stockMovementType = 1,                         -- ID del catálogo Tbl_StockMovementTypes
+    @stockMovementOrderId = NULL,                    -- NULL si es un ajuste manual / ID si pertenece a una Ordenen este caso tenemos 1 y 2
+    @stockMovementReference = 'Ajuste inicial ', 
+    @stockMovementDate = '2026-07-06 20:00:00',     -- Fecha del movimiento
+    @stockMovementCreatorId = 1,                    -- Héctor Calero (userId = 1) 
+    @stockMovementStatusId = 1,                     -- Estado: ACTIVO (statusId = 1)
+    
+    -- Parámetros de salida
+    @o_code = @v_code OUTPUT,
+    @o_message = @v_message OUTPUT,
+    @o_templateId = @v_templateId OUTPUT;
+
+-- Mostrar los resultados en consola
+SELECT 
+    @v_code AS [CodigoRespuesta],
+    @v_message AS [MensajeRespuesta],
+    @v_templateId AS [MovementIdGenerado];
+GO
+
+
+
+SELECT * FROM [SQM_CATALOGS].[Tbl_StockMovementTypes];
+
+SELECT * FROM [SQM_GENERAL].[Tbl_PaymentOrders];
+
+SELECT * FROM [SQM_SECURITY].[Tbl_Users];
+
+
+SELECT * FROM [SQM_CATALOGS].[Tbl_Status];
