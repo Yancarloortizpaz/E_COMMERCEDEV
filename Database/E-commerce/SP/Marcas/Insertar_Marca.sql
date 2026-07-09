@@ -115,4 +115,3 @@ SELECT
     @v_code AS CodigoResultado, 
     @v_message AS MensajeResultado, 
     @v_templateId AS MarcaIdGenerada;
-*

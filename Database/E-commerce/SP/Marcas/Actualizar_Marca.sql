@@ -124,7 +124,7 @@ DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Marks_Update]
-    @markId = 1,
+    @markId = 69,
     @markName = 'ADIDAS ORIGINALS',
     @markDescription = 'Línea clásica de calzado y ropa deportiva Adidas',
     @markModificatorId = 1,

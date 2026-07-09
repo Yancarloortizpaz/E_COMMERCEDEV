@@ -28,3 +28,12 @@ para evitar los  sql inyeccion segun lo que dijo el doente
 tabla de modenas incluida correctamente con vista aqui tenog una idea para 
 el cliente vamos a hacer una selecion multiple para que solo selccione el nombre de la moneda 
 en caso que la queramos mostrar 
+
+
+----  metodo de pago usuario actualizado correctamnete con sus 5 sp en funcionamiento
+
+
+---tabla de marcas atulizada correctamente con sus 5 sp en funcionamiento
+
+
+me quedo frustado con la duda ; PaymentOrderDetails   el de listar y filtrar se hizo correctamente pero el de insertar no se me bloququie 

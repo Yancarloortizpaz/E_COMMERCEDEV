@@ -4,8 +4,7 @@ GO
 -- 5. FILTRAR CON PARÁMETRO ÚNICO MULTICOLUMNA Y APERTURA SEGURA DE LLAVE
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_UserPaymentMethods_Filter]
 (
-    @SearchTerm VARCHAR(100) = NULL,
-    @StatusId BIT = NULL
+    @SearchTerm VARCHAR(100) = NUll
 )
 AS
 BEGIN
@@ -41,7 +40,6 @@ BEGIN
             OR cardNumberDecrypted LIKE '%' + @SearchTerm + '%'
             OR RIGHT(cardNumberDecrypted, 4) = @SearchTerm
         )
-        AND (@StatusId IS NULL OR statusId = @StatusId)
         OPTION (RECOMPILE);
 
         CLOSE SYMMETRIC KEY KEY_HASH;
@@ -58,9 +56,7 @@ END;
 GO
 
 EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Filter]
-    @SearchTerm = 'Hector',
-    @StatusId = 1;
+    @SearchTerm = 'Hector'
 
 	EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Filter]
-    @SearchTerm = '5678',
-    @StatusId = 1;
+    @SearchTerm = '5678'

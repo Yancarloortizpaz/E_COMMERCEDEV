@@ -90,7 +90,7 @@ DECLARE @o_message VARCHAR(255);
 DECLARE @o_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_UserPaymentMethods_Delete]
-    @userPaymentMethodId = 3,
+    @userPaymentMethodId = 35,
     @userPaymentMethodModificatorId = 1,
     @o_code = @o_code OUTPUT,
     @o_message = @o_message OUTPUT,

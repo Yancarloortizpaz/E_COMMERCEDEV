@@ -94,7 +94,7 @@ DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_UserAddress_Delete]
-    @userAddressId =5, 
+    @userAddressId =55, 
     @userAddressModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
