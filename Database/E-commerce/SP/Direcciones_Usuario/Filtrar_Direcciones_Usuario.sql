@@ -4,8 +4,7 @@ GO
 -- 5. FILTRAR DIRECCIONES (Seguro para Usuario Logueado + Búsqueda por Texto)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_UserAddress_Filter]
     @UserId INT = NULL,           -- El ID del usuario logueado (Filtro estricto numérico)
-    @SearchTerm VARCHAR(50) = NULL, -- El texto que escribe en el buscador (Nombre, dirección, zip, etc.)
-    @StatusId BIT = NULL
+    @SearchTerm VARCHAR(50) = NULL
 AS 
 BEGIN
     SELECT 
@@ -35,8 +34,6 @@ BEGIN
             OR addressDescription LIKE '%' + @SearchTerm + '%'
         )
         
-        -- 3. Estado
-        AND (@StatusId IS NULL OR statusId = @StatusId)
     OPTION (RECOMPILE);
 END
 GO

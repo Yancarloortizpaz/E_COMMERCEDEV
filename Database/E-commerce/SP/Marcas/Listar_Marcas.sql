@@ -1,10 +1,26 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 4. LISTAR
 CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_Marks_List]
 AS BEGIN
-    SELECT markId, markName, markDescription, markCreatorId, markCreationDate, markModificatorId, markModificationDate, markStatusId
-    FROM [SQM_CATALOGS].[Tbl_Marks] (NOLOCK);
-END
+    SET NOCOUNT ON;
+
+    SELECT 
+        MarcaID,
+        Marca,
+        Descripcion,
+        CreadorID,
+        CreadorNombre,
+        FechaCreacion,
+        ModificadorID,
+        ModificadorNombre,
+        FechaModificacion,
+        EstadoID,
+        Estado
+    FROM [SQM_CATALOGS].[vw_Marks_Detailed] (NOLOCK)
+    WHERE EstadoID = 1;
+END;
+GO
+
+EXEC [SQM_CATALOGS].[sp_Marks_List];
 GO

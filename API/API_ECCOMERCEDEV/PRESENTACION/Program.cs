@@ -44,6 +44,18 @@ builder.Services.AddScoped<IStockMovementsRepository, StockMovementsRepository>(
 builder.Services.AddScoped<StockMovementsServices>();
 builder.Services.AddScoped<ICurrenciesRepository, CurrenciesRepository>();
 builder.Services.AddScoped<CurrenciesServices>();
+builder.Services.AddScoped<IUserPaymentMethodsRepository, UserPaymentMethodsRepository>();
+builder.Services.AddScoped<UserPaymentMethodsServices>();
+builder.Services.AddScoped<IMarksRepository, MarksRepository>();
+builder.Services.AddScoped<MarksServices>();
+builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+builder.Services.AddScoped<UserAddressServices>();
+builder.Services.AddScoped<IPaymentOrderDetailsRepository, PaymentOrderDetailsRepository>();
+builder.Services.AddScoped<PaymentOrderDetailsServices>();
+
+
+
+
 
 
 

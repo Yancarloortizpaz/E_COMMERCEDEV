@@ -93,7 +93,7 @@ DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_CATALOGS].[sp_Marks_Delete]
-    @markId = 1, 
+    @markId = 16, 
     @markModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,
