@@ -73,23 +73,6 @@ namespace APLICATION.Services
             });
         }
 
-        public async Task<OUTPUT> Insertar_PaymentOrderDetails_async(PaymentOrderDetailsinsertarDTOs dto)
-        {
-            var modelo = new DM_PaymentOrderDetails_insertar
-            {
-                orderDetailOrderId = dto.orderDetailOrderId,
-                orderDetailProductVariableId = dto.orderDetailProductVariableId,
-                orderDetailPrice = dto.orderDetailPrice,
-                orderDetailQuantity = dto.orderDetailQuantity,
-                orderDetailDiscount = dto.orderDetailDiscount,
-                orderDetailSubTotal = dto.orderDetailSubTotal,
-                orderDetailTAX = dto.orderDetailTAX,
-                orderDetailTotal = dto.orderDetailTotal,
-                orderDetailCurrencyId = dto.orderDetailCurrencyId,
-                orderDetailCreatorId = dto.orderDetailCreatorId,
-                orderDetailStatusId = dto.orderDetailStatusId
-            };
-            return await _repository.Insertar_PaymentOrderDetailsAsync(modelo);
-        }
+        
     }
 }

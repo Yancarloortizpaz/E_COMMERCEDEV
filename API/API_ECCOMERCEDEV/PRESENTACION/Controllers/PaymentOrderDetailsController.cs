@@ -60,33 +60,6 @@ namespace PRESENTACION.Controllers
 
         #endregion
 
-        #region escritura_paymentorderdetails
 
-        [HttpPost("insertar")]
-        public async Task<IActionResult> Ingresar_PaymentOrderDetails([FromBody] PaymentOrderDetailsinsertarDTOs model)
-        {
-            try
-            {
-                if (!ModelState.IsValid || model == null)
-                {
-                    return BadRequest(new { codigo = 400, msj = "Datos enviados no válidos." });
-                }
-
-                OUTPUT resultado = await _service.Insertar_PaymentOrderDetails_async(model);
-
-                if (!resultado.IsSuccess)
-                {
-                    return BadRequest(new { codigo = resultado.Code, msj = resultado.Message });
-                }
-
-                return Ok(new { codigo = resultado.Code, msj = resultado.Message, templateId = resultado.TemplateId });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { codigo = 500, msj = ex.Message });
-            }
-        }
-
-        #endregion
     }
 }

@@ -52,6 +52,8 @@ builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<UserAddressServices>();
 builder.Services.AddScoped<IPaymentOrderDetailsRepository, PaymentOrderDetailsRepository>();
 builder.Services.AddScoped<PaymentOrderDetailsServices>();
+builder.Services.AddScoped<IStockMovementDetailsRepository, StockMovementDetailsRepository>();
+builder.Services.AddScoped<StockMovementDetailsServices>();
 
 
 

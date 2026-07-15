@@ -289,3 +289,6 @@ SELECT
     @v_message AS MensajeResultado, 
     @v_templateId AS CartDetailIdGenerado;
 GO
+
+
+select * from [SQM_GENERAL].[Tbl_Carts]

@@ -19,60 +19,7 @@ namespace INFRASTRUCTURE.Repository
             _connection = connection;
         }
 
-        #region escritura_paymentorderdetails
-
-        public async Task<OUTPUT> Insertar_PaymentOrderDetailsAsync(DM_PaymentOrderDetails_insertar modelo)
-        {
-            var result = new OUTPUT();
-            try
-            {
-                using var con = _connection.CreateConnection();
-                await con.OpenAsync();
-
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_PaymentOrderDetails_Create]", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailOrderId", modelo.orderDetailOrderId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailProductVariableId", modelo.orderDetailProductVariableId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailPrice", modelo.orderDetailPrice ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailQuantity", modelo.orderDetailQuantity ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailDiscount", modelo.orderDetailDiscount ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailSubTotal", modelo.orderDetailSubTotal ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailTAX", modelo.orderDetailTAX ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailTotal", modelo.orderDetailTotal ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailCurrencyId", modelo.orderDetailCurrencyId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailCreatorId", modelo.orderDetailCreatorId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderDetailStatusId", modelo.orderDetailStatusId ?? (object)DBNull.Value));
-
-                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
-                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
-                    SqlParameter pTemplate = new SqlParameter("@o_templateId", SqlDbType.Int) { Direction = ParameterDirection.Output };
-
-                    cmd.Parameters.Add(pCode);
-                    cmd.Parameters.Add(pMessage);
-                    cmd.Parameters.Add(pTemplate);
-
-                    await cmd.ExecuteNonQueryAsync();
-
-                    result.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
-                    result.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
-                    result.TemplateId = pTemplate.Value != DBNull.Value ? (int?)pTemplate.Value : null;
-                }
-                return result;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception("Error en el motor SQL al registrar el detalle de la orden de pago.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error crítico de infraestructura al registrar el detalle de la orden de pago.", ex);
-            }
-        }
-
-        #endregion
-
+      
         #region lectura_paymentorderdetails
 
         public async Task<IEnumerable<DM_PaymentOrderDetails_listar>> Listar_PaymentOrderDetailsAsync()

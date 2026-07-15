@@ -435,7 +435,7 @@ DECLARE @v_templateId INT;
 
 EXEC  [SQM_GENERAL].[sp_PaymentOrders_Create]
     @orderUserId = 1,                 
-    @orderDeliveryAddress = 2,        
+    @orderDeliveryAddress = 3,        
     @orderPaymentMethodId = 1,    
     @orderSubtotal = NULL,           
     @orderDiscount = NULL,            -- NULL para que lo calcule automáticamente
