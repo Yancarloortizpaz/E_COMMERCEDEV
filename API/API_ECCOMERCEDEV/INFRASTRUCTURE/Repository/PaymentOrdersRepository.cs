@@ -36,8 +36,7 @@ namespace INFRASTRUCTURE.Repository
                     cmd.Parameters.Add(new SqlParameter("@orderUserId", modelo.orderUserId ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@orderDeliveryAddress", modelo.orderDeliveryAddress ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@orderPaymentMethodId", modelo.orderPaymentMethodId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderCurrencyId", modelo.orderCurrencyId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@orderCreatorId", modelo.orderCreatorId ?? (object)DBNull.Value));
+                     cmd.Parameters.Add(new SqlParameter("@orderCreatorId", modelo.orderCreatorId ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@orderStatusId", modelo.orderStatusId ?? (object)DBNull.Value));
 
                     SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };

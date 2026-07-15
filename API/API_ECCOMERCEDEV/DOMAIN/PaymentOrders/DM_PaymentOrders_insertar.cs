@@ -7,6 +7,5 @@ namespace DOMAIN.PaymentOrders
         public int? orderPaymentMethodId { get; set; }
         public int? orderCreatorId { get; set; }
         public int? orderStatusId { get; set; }
-        public int? orderCurrencyId { get; set; }
     }
 }
