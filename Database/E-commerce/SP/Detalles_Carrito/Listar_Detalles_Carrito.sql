@@ -12,3 +12,6 @@ AS BEGIN
     FROM [SQM_GENERAL].[Tbl_CartDetails] (NOLOCK);
 END
 GO
+
+
+exec  [SQM_GENERAL].[sp_CartDetails_List]
