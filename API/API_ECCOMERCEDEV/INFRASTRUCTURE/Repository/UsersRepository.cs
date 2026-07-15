@@ -10,10 +10,12 @@ namespace INFRASTRUCTURE.Repository
     public class UsersRepository : IUsersRepository
     {
         private readonly DBconexionfactory _connection;
+        private readonly IJwtService _jwtService;
 
-        public UsersRepository(DBconexionfactory connection)
+        public UsersRepository(DBconexionfactory connection, IJwtService jwtService)
         {
             _connection = connection;
+            _jwtService = jwtService;
         }
 
         #region escritura_users
@@ -290,5 +292,63 @@ namespace INFRASTRUCTURE.Repository
         }
 
         #endregion
+
+        #region JWT
+        public async Task<OUTPUT> Login_UsersAsync(DM_User_login credentials)
+        {
+            var result = new OUTPUT();
+            try
+            {
+                using var con = _connection.CreateConnection();
+                await con.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("[SQM_SECURITY].[sp_Users_Login]", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("@userEmail", credentials.userEmail ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@userPasswordPlain", credentials.userPasswordPlain ?? (object)DBNull.Value));
+
+                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+
+                    cmd.Parameters.Add(pCode);
+                    cmd.Parameters.Add(pMessage);
+
+                    using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await dr.ReadAsync())
+                        {
+                           
+                            int userId = dr["userId"] != DBNull.Value ? Convert.ToInt32(dr["userId"]) : 0;
+                            string userFullName = dr["userFullName"] != DBNull.Value ? dr["userFullName"].ToString()! : string.Empty;
+                            string userEmail = dr["userEmail"] != DBNull.Value ? dr["userEmail"].ToString()! : string.Empty;
+
+                           
+                            string token = _jwtService.GenerarToken(userId, userEmail, userFullName);
+
+                           
+                            result.Data = new { token, userFullName, userEmail, userId };
+                        }
+                    }
+
+                    result.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
+                    result.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
+                    result.TemplateId = null;
+                }
+                return result;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Error en el motor SQL al realizar el login.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error crítico de infraestructura al realizar el login.", ex);
+            }
+        }
+        #endregion
     }
+
 }
+

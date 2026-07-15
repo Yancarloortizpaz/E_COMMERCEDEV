@@ -1,5 +1,6 @@
 using APLICATION.DTOs.Users;
 using APLICATION.Services;
+using APPLICATION.DTOs.Users;
 using DOMAIN.VariablesSalida;
 using Microsoft.AspNetCore.Mvc;
 
@@ -158,6 +159,34 @@ namespace PRESENTACION.Controllers
             }
         }
 
+        #endregion
+        #region login_users
+        [HttpPost("login")]
+        public async Task<IActionResult> Login_Users([FromBody] User_Login credentials)
+        {
+            try
+            {
+                if (credentials == null || string.IsNullOrWhiteSpace(credentials.userEmail) || string.IsNullOrWhiteSpace(credentials.userPasswordPlain))
+                {
+                    return BadRequest(new { codigo = 400, msj = "El correo y la contraseña son obligatorios." });
+                }
+
+                // Llamamos al servicio de login que conecta con el repositorio
+                OUTPUT resultado = await _service.Login_User_async(credentials);
+
+                if (!resultado.IsSuccess) // Si el SP devuelve error (ej. credenciales inválidas)
+                {
+                    return BadRequest(new { codigo = resultado.Code, msj = resultado.Message });
+                }
+
+                // Si todo sale bien, devolvemos un 200 OK con la "mochila" de datos (donde viene el token)
+                return Ok(new { codigo = resultado.Code, msj = resultado.Message, data = resultado.Data });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = 500, msj = ex.Message });
+            }
+        }
         #endregion
     }
 }

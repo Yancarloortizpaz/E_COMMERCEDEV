@@ -1,9 +1,10 @@
 
-using INFRASTRUCTURE.DB;
-using Microsoft.AspNetCore.Builder;
 using APLICATION.Interfaces;
 using APLICATION.Services;
+using INFRASTRUCTURE.DB;
+using INFRASTRUCTURE.JWT;
 using INFRASTRUCTURE.Repository;
+using Microsoft.AspNetCore.Builder;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,7 @@ builder.Services.AddCors(op =>
 // Conexión base de datos 
 var connectionString = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddSingleton(new DBconexionfactory(connectionString!));
-
+builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IProvidersRepository, ProvidersRepository>();
 builder.Services.AddScoped<ProvidersServices>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();

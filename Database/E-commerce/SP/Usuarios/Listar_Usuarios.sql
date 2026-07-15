@@ -29,6 +29,10 @@ BEGIN
 END
 GO
 
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'UnPasswordSuperSeguro123!';
+GO
+
 exec  [SQM_SECURITY].[sp_Users_List]
 
 select * from [SQM_CATALOGS].[Tbl_Status]
+
