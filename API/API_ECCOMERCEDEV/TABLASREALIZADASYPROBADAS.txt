@@ -41,3 +41,6 @@ en caso que la queramos mostrar
 
  13.vamos con detallestok
  YA QUEDO NO HAY DE INSERCCION POR QUE ESO LO HACE REL CARRIOTO O EL DE LA ORDEN DE PAGO
+
+
+ 14. tabla de categorias de productos realizada correctamente con sus 5 sp en funcionamiento
