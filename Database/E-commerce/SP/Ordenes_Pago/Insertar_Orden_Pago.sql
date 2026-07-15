@@ -1,7 +1,6 @@
 USE [DB_ECOMMERCE]
 GO
 
-
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_PaymentOrders_Create]
 (
     @orderUserId INT,
@@ -24,7 +23,7 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    -- Validaciones preliminares
+    -- 1. Validaciones preliminares
     IF @orderUserId IS NULL OR @orderUserId <= 0
     BEGIN
         SET @o_code = -1;
@@ -60,7 +59,7 @@ BEGIN
         RETURN;
     END;
 
-    -- Validar existencia y estado del usuario, dirección y método de pago
+    -- 2. Validar existencia y estado del usuario comprador y del creador
     IF NOT EXISTS (SELECT 1 FROM [SQM_SECURITY].[Tbl_Users] WHERE userId = @orderUserId AND userStatusId = 1)
     BEGIN
         SET @o_code = -1;
@@ -75,21 +74,29 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_UserAddress] WHERE userAddressId = @orderDeliveryAddress AND userAddressStatusId = 1)
+    -- 3. VALIDACIÓN DE SEGURIDAD: Verificar que la dirección de entrega pertenezca al usuario comprador
+    IF NOT EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_UserAddress] 
+                   WHERE userAddressId = @orderDeliveryAddress 
+                     AND userAddressUserId = @orderUserId 
+                     AND userAddressStatusId = 1)
     BEGIN
         SET @o_code = -1;
-        SET @o_message = 'La dirección de entrega seleccionada no existe o se encuentra inactiva.';
+        SET @o_message = 'La dirección de entrega seleccionada no existe, está inactiva o no pertenece al usuario comprador.';
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_UserPaymentMethods] WHERE userPaymentMethodId = @orderPaymentMethodId AND userPaymentMethodStatusId = 1)
+    -- 4. VALIDACIÓN DE SEGURIDAD: Verificar que el método de pago pertenezca al usuario comprador
+    IF NOT EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_UserPaymentMethods] 
+                   WHERE userPaymentMethodId = @orderPaymentMethodId 
+                     AND userPaymentMethodUserId = @orderUserId 
+                     AND userPaymentMethodStatusId = 1)
     BEGIN
         SET @o_code = -1;
-        SET @o_message = 'El método de pago seleccionado no existe o se encuentra inactivo.';
+        SET @o_message = 'El método de pago seleccionado no existe, está inactivo o no pertenece al usuario comprador.';
         RETURN;
     END;
 
-    -- Obtener el carrito activo del usuario
+    -- 5. Obtener el carrito activo del usuario
     DECLARE @CartId INT;
     SELECT @CartId = cartId 
     FROM [SQM_GENERAL].[Tbl_Carts] 
@@ -110,7 +117,7 @@ BEGIN
         RETURN;
     END;
 
-    -- 1. Calcular automáticamente los totales del carrito si vienen nulos
+    -- 6. Calcular automáticamente los totales del carrito si vienen nulos
     DECLARE @CalculatedSubtotal DECIMAL(18,2) = 0;
     DECLARE @CalculatedDiscount DECIMAL(18,2) = 0;
     DECLARE @CalculatedTAX DECIMAL(18,2) = 0;
@@ -132,7 +139,7 @@ BEGIN
     IF @orderTotal IS NULL SET @orderTotal = @CalculatedTotal + @orderShipping;
     IF @orderCurrencyId IS NULL SET @orderCurrencyId = @CalculatedCurrencyId;
 
-    -- 2. VALIDAR SUFICIENCIA DE STOCK TOTAL ANTES DE INICIAR TRANSACCIÓN (Pre-check)
+    -- 7. VALIDAR SUFICIENCIA DE STOCK TOTAL ANTES DE INICIAR TRANSACCIÓN (Pre-check con bloqueo de fila UPDLOCK)
     IF EXISTS (
         SELECT 1
         FROM (
@@ -143,7 +150,7 @@ BEGIN
         ) R
         LEFT JOIN (
             SELECT stockProductVariableId, SUM(stockQuantity) AS AvailQty
-            FROM [SQM_GENERAL].[Tbl_Stocks]
+            FROM [SQM_GENERAL].[Tbl_Stocks] WITH (UPDLOCK, HOLDLOCK) -- Evita condiciones de carrera adquiriendo bloqueos
             WHERE stockStatusId = 1
             GROUP BY stockProductVariableId
         ) S ON R.cartDetailProductVariableId = S.stockProductVariableId
@@ -173,7 +180,7 @@ BEGIN
         RETURN;
     END;
 
-    -- Bloque transaccional del Checkout
+    -- 8. Bloque transaccional del Checkout
     BEGIN TRY
         BEGIN TRANSACTION;
 
@@ -210,7 +217,7 @@ BEGIN
             @orderStatusId
         );
 
-        SET @OrderId = SCOPE_IDENTITY();
+       SET @OrderId = SCOPE_IDENTITY();
 
         -- B. Crear la cabecera de Movimiento de Inventario (Salida por Venta - Tipo 2)
         DECLARE @MovementId INT;
@@ -235,7 +242,7 @@ BEGIN
             1 -- Activo / Procesado
         );
 
-        SET @MovementId = SCOPE_IDENTITY();
+     SET @MovementId = SCOPE_IDENTITY();
 
         -- C. Cursor para procesar detalles del carrito, descontar stock (FEFO) e insertar detalles de orden y Kardex
         DECLARE @CartDetailId INT,
@@ -300,7 +307,7 @@ BEGIN
                 1 -- Activo
             );
 
-            SET @OrderDetailId = SCOPE_IDENTITY();
+           SET @OrderDetailId = SCOPE_IDENTITY();
 
             -- 2. Descontar cantidad usando FEFO de Tbl_Stocks y crear detalles de Kardex
             DECLARE @RemainingQtyToDeduct INT = @Qty;
@@ -308,9 +315,10 @@ BEGIN
             DECLARE @StockId INT,
                     @StockQty INT;
 
+            -- Se adquieren UPDLOCK en el cursor para evitar condiciones de carrera concurrentes
             DECLARE stock_cursor CURSOR LOCAL FAST_FORWARD FOR
             SELECT stockId, stockQuantity
-            FROM [SQM_GENERAL].[Tbl_Stocks]
+            FROM [SQM_GENERAL].[Tbl_Stocks] WITH (UPDLOCK) 
             WHERE stockProductVariableId = @ProdVarId
               AND stockStatusId = 1
               AND stockQuantity > 0
@@ -352,7 +360,7 @@ BEGIN
                     stockMovementDetailCreationDate,
                     stockMovementDetailStatusId
                 )
-                VALUES
+                    VALUES
                 (
                     @MovementId,
                     @OrderDetailId,
@@ -369,7 +377,7 @@ BEGIN
             CLOSE stock_cursor;
             DEALLOCATE stock_cursor;
 
-            -- Si después del FEFO todavía falta cantidad por deducir, lanzamos excepción (para evitar cualquier inconsistencia extrema)
+            -- Si después del FEFO todavía falta cantidad por deducir, lanzamos excepción para disparar ROLLBACK
             IF @RemainingQtyToDeduct > 0
             BEGIN
                 DECLARE @DeductError VARCHAR(100) = 'Fallo en deducción FEFO para variante ID: ' + CAST(@ProdVarId AS VARCHAR(10));
@@ -418,6 +426,34 @@ BEGIN
 END;
 GO
 
+
+-- EJEMPLO DE PRUEBA DE CHECKOUT SEGURO
+
+DECLARE @v_code INT;
+DECLARE @v_message VARCHAR(255);
+DECLARE @v_templateId INT;
+
+EXEC  [SQM_GENERAL].[sp_PaymentOrders_Create]
+    @orderUserId = 1,                 
+    @orderDeliveryAddress = 2,        
+    @orderPaymentMethodId = 1,    
+    @orderSubtotal = NULL,           
+    @orderDiscount = NULL,            -- NULL para que lo calcule automáticamente
+    @orderShipping = 50.00,           
+    @orderTAX = NULL,                 -- NULL para que calcule IVA 15% automáticamente
+    @orderTotal = NULL,               -- NULL para calcular Subtotal + Shipping automáticamente
+    @orderCurrencyId = 1,             
+    @orderCreatorId = 1,             
+    @orderStatusId = 1,               
+    @o_code = @v_code OUTPUT,
+    @o_message = @v_message OUTPUT,
+    @o_templateId = @v_templateId OUTPUT;
+
+SELECT 
+    @v_code AS [CodigoRespuesta],
+    @v_message AS [MensajeRespuesta],
+    @v_templateId AS [OrderIdGenerado];
+GO
 
 
 
