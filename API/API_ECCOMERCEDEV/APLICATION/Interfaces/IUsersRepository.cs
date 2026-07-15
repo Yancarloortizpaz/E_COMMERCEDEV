@@ -11,5 +11,9 @@ namespace APLICATION.Interfaces
         Task<OUTPUT> Editar_UsersAsync(DM_Users_actualizar modelo);
         Task<OUTPUT> Eliminar_UsersAsync(int? userId, int? userModificatorId);
         Task<OUTPUT> CambiarPassword_UsersAsync(DM_Users_cambiar_password modelo);
+
+        //Log
+        Task<OUTPUT> Login_UsersAsync(DM_User_login credentials);
+       
     }
 }

@@ -1,5 +1,6 @@
 using APLICATION.DTOs.Users;
 using APLICATION.Interfaces;
+using APPLICATION.DTOs.Users;
 using DOMAIN.Users;
 using DOMAIN.VariablesSalida;
 
@@ -71,6 +72,20 @@ namespace APLICATION.Services
                 userPasswordPlain = dto.userPasswordPlain
             };
             return await _repository.CambiarPassword_UsersAsync(modelo);
+
         }
+        public async Task<OUTPUT> Login_User_async(User_Login credentials)
+        {
+            // 1. Traducimos (mapeamos) el DTO que viene del Controlador al Modelo que pide el Repositorio
+            var modelo = new DM_User_login
+            {
+                userEmail = credentials.userEmail,
+                userPasswordPlain = credentials.userPasswordPlain
+            };
+
+            // 2. Ahora sí, le pasamos el "modelo" correcto al repositorio
+            return await _repository.Login_UsersAsync(modelo);
+        }
+
     }
 }
