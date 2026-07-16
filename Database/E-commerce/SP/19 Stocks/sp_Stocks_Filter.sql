@@ -4,7 +4,7 @@ GO
 -- 5. FILTRAR (Integrando Vista y Búsqueda Múltiple)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Filter]
     @SearchTerm VARCHAR(50) = NULL, 
-    @StatusId BIT = NULL
+	@ProductVariableId INT = null
 AS BEGIN
     DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
 
@@ -26,7 +26,11 @@ AS BEGIN
         OR productVariableId = @SearchId
         OR productName LIKE '%' + @SearchTerm + '%'
         OR variableValue LIKE '%' + @SearchTerm + '%'
-    ) AND (@StatusId IS NULL OR statusId = @StatusId)
+    ) AND (@ProductVariableId IS NULL OR productVariableId = @ProductVariableId)
     OPTION (RECOMPILE);
 END
 GO
+
+exec [SQM_GENERAL].[sp_Stocks_Filter]
+
+exec [SQM_GENERAL].[sp_Stocks_Filter] @ProductVariableId=6
