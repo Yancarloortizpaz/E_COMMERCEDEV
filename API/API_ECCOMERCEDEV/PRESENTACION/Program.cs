@@ -55,6 +55,10 @@ builder.Services.AddScoped<IPaymentOrderDetailsRepository, PaymentOrderDetailsRe
 builder.Services.AddScoped<PaymentOrderDetailsServices>();
 builder.Services.AddScoped<IStockMovementDetailsRepository, StockMovementDetailsRepository>();
 builder.Services.AddScoped<StockMovementDetailsServices>();
+builder.Services.AddScoped<ICartDetailsRepository, CartDetailsRepository>();
+builder.Services.AddScoped<CartDetailsServices>();
+builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
+builder.Services.AddScoped<CategoriesServices>();
 
 
 

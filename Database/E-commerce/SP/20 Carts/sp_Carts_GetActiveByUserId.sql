@@ -23,3 +23,5 @@ BEGIN
     ORDER BY cartId DESC;
 END
 GO
+
+exec  [SQM_GENERAL].[sp_Carts_GetActiveByUserId] @cartUserId =2

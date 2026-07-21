@@ -3,7 +3,7 @@ GO
 
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_GetByProductVariable]
 (
-    @ProductVariableId INT
+    @ProductVariableId INT = null
 )
 AS 
 BEGIN
@@ -25,3 +25,4 @@ BEGIN
       AND stockStatusId = 1;
 END
 GO
+exec  [SQM_GENERAL].[sp_Stocks_GetByProductVariable] @ProductVariableId= 15
