@@ -13,7 +13,7 @@ namespace APLICATION.Interfaces
         Task<OUTPUT> CambiarPassword_UsersAsync(DM_Users_cambiar_password modelo);
 
         //Log
-        Task<OUTPUT> Login_UsersAsync(DM_User_login credentials);
+        Task<OUTPUT> Login_UsersAsync(DM_User_Login credentials);
        
     }
 }

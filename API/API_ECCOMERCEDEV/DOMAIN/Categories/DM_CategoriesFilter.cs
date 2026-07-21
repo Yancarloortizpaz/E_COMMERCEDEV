@@ -1,6 +1,6 @@
-﻿namespace APLICATION.DTOs.Categories
+namespace DOMAIN.Categories
 {
-    public class CategoriesFilterDTOs
+    public class DM_CategoriesFilter
     {
         public string? SearchTerm { get; set; }
         public bool? StatusId { get; set; }

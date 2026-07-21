@@ -294,7 +294,7 @@ namespace INFRASTRUCTURE.Repository
         #endregion
 
         #region JWT
-        public async Task<OUTPUT> Login_UsersAsync(DM_User_login credentials)
+        public async Task<OUTPUT> Login_UsersAsync(DM_User_Login credentials)
         {
             var result = new OUTPUT();
             try

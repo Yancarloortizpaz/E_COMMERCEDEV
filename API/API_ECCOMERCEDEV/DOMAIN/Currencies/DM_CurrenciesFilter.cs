@@ -1,6 +1,6 @@
-﻿namespace APLICATION.DTOs.Categories
+namespace DOMAIN.Currencies
 {
-    public class CategoriesFilterDTOs
+    public class DM_CurrenciesFilter
     {
         public string? SearchTerm { get; set; }
         public bool? StatusId { get; set; }

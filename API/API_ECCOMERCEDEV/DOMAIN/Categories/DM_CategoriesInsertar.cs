@@ -1,6 +1,6 @@
-﻿namespace APLICATION.DTOs.Categories
+namespace DOMAIN.Categories
 {
-    public class CategoriesInsertarDTOs
+    public class DM_CategoriesInsertar
     {
         public string? categoryName { get; set; }
         public string? categoryDescription { get; set; }

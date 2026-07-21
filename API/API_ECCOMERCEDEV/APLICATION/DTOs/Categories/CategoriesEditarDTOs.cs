@@ -1,4 +1,4 @@
-namespace APLICATION.DTOs.Categories
+﻿namespace APLICATION.DTOs.Categories
 {
     public class CategoriesEditarDTOs
     {
