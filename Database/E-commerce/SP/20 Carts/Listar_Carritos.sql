@@ -10,3 +10,4 @@ AS BEGIN
     FROM [SQM_GENERAL].[Tbl_Carts] (NOLOCK);
 END
 GO
+exec [SQM_GENERAL].[sp_Carts_List]

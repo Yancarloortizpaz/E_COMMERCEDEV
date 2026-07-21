@@ -25,3 +25,6 @@ BEGIN
     OPTION (RECOMPILE);
 END
 GO
+
+
+exec  [SQM_GENERAL].[sp_Carts_Filter]
