@@ -1,4 +1,4 @@
-﻿namespace APLICATION.DTOs.AttributeProducts
+namespace APLICATION.DTOs.AttributeProducts
 {
     public class AttributeProductsInsertarDTOs
     {
@@ -6,6 +6,6 @@
         public string? AttributeProductName { get; set; }
         public string? AttributeProductDescription { get; set; }
         public int? AttributeProductCreatorId { get; set; }
-        public bool? AttributeProductStatusId { get; set; }
+        public int? AttributeProductStatusId { get; set; }
     }
 }

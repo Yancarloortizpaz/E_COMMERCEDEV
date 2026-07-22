@@ -6,6 +6,6 @@ namespace DOMAIN.AttributeProducts
         public string? AttributeProductName { get; set; }
         public string? AttributeProductDescription { get; set; }
         public int? AttributeProductCreatorId { get; set; }
-        public bool? AttributeProductStatusId { get; set; }
+        public int? AttributeProductStatusId { get; set; }
     }
 }

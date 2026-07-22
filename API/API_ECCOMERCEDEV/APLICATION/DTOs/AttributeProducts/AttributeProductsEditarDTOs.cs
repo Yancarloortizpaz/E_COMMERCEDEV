@@ -1,4 +1,4 @@
-﻿namespace APLICATION.DTOs.AttributeProducts
+namespace APLICATION.DTOs.AttributeProducts
 {
     public class AttributeProductsEditarDTOs
     {
@@ -7,7 +7,7 @@
         public string? AttributeProductName { get; set; }
         public string? AttributeProductDescription { get; set; }
         public int? AttributeProductModificatorId { get; set; }
-        public bool? AttributeProductStatusId { get; set; }
+        public int? AttributeProductStatusId { get; set; }
         public bool? ForzarRecuperacion { get; set; }
     }
 }
