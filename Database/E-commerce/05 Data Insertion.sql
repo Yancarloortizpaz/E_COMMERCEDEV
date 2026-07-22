@@ -340,3 +340,138 @@ VALUES
 (24, 13, '2026-01-29', '2031-01-29', 1, GETDATE(), 1),
 (25, 4, '2026-03-12', '2031-03-12', 1, GETDATE(), 1);
 GO
+
+
+
+
+
+-- 1. Insertar Tipos de Variables en Catalogo
+INSERT INTO [SQM_CATALOGS].[Tbl_ProductVariableTypes]
+    (productVariableTypeName, productVariableTypeDescription, productVariableTypeCreatorId, productVariableTypeCreationDate, productVariableTypeStatusId)
+VALUES 
+    ('Talla', 'Talla o número de calzado', 1, GETDATE(), 1),         -- ID: 1
+    ('Color', 'Color principal del producto', 1, GETDATE(), 1),       -- ID: 2
+    ('Memoria RAM', 'Capacidad de Memoria RAM', 1, GETDATE(), 1),    -- ID: 3
+    ('Almacenamiento', 'Capacidad de Disco Duro / SSD', 1, GETDATE(), 1),-- ID: 4
+    ('Procesador', 'Modelo o serie de Procesador', 1, GETDATE(), 1); -- ID: 5
+GO
+
+-- 2. Insertar Atributos para las 29 Variantes Registradas
+INSERT INTO [SQM_GENERAL].[Tbl_AttributeProductVariables]
+    (attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableCreationDate, attributeProductVariableStatusId)
+VALUES
+    -- Variante 1: Ultraboost Talla 42
+    (1, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    
+    -- Variante 2: Ultraboost Talla 43
+    (2, 1, '43 (10 US)', 1, GETDATE(), 1),
+
+    -- Variante 3: Air Max 90 Talla 38
+    (3, 1, '38 (7 US)', 1, GETDATE(), 1),
+
+    -- Variante 4: Dell Inspiron 15 (Hardware)
+    (4, 3, '8GB', 1, GETDATE(), 1),
+    (4, 4, '512GB SSD', 1, GETDATE(), 1),
+
+    -- Variante 5: Nike Air Max 2026
+    (5, 1, '9.5 US', 1, GETDATE(), 1),
+    (5, 2, 'Negro', 1, GETDATE(), 1),
+
+    -- Variantes 6 y 7: Nike Air Max 90 Casual v2
+    (6, 1, '40 (7.5 US)', 1, GETDATE(), 1),
+    (6, 2, 'Blanco/Negro', 1, GETDATE(), 1),
+    (7, 1, '41 (8.5 US)', 1, GETDATE(), 1),
+    (7, 2, 'Total Negro', 1, GETDATE(), 1),
+
+    -- Variante 8: Dell Vostro 3500 Office
+    (8, 3, '16GB', 1, GETDATE(), 1),
+    (8, 4, '512GB SSD', 1, GETDATE(), 1),
+    (8, 5, 'Intel i5', 1, GETDATE(), 1),
+
+    -- Variante 9: Adidas Originals Forum
+    (9, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    (9, 2, 'Azul Clásico', 1, GETDATE(), 1),
+
+    -- Variante 10: Nike DefyAllDay
+    (10, 1, '40 (7.5 US)', 1, GETDATE(), 1),
+    (10, 2, 'Blanco', 1, GETDATE(), 1),
+
+    -- Variante 11: Nike Air Max SYSTM
+    (11, 1, '41 (8.5 US)', 1, GETDATE(), 1),
+    (11, 2, 'Negro/Gris', 1, GETDATE(), 1),
+
+    -- Variante 12: Nike Court Vision Low
+    (12, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    (12, 2, 'Blanco Total', 1, GETDATE(), 1),
+
+    -- Variante 13: Nike Downshifter 12
+    (13, 1, '43 (10 US)', 1, GETDATE(), 1),
+    (13, 2, 'Azul Marino', 1, GETDATE(), 1),
+
+    -- Variante 14: Adidas Runfalcon 3.0
+    (14, 1, '40 (7.5 US)', 1, GETDATE(), 1),
+    (14, 2, 'Negro', 1, GETDATE(), 1),
+
+    -- Variante 15: Adidas Grand Court TD
+    (15, 1, '41 (8.5 US)', 1, GETDATE(), 1),
+    (15, 2, 'Blanco/Negro', 1, GETDATE(), 1),
+
+    -- Variante 16: Adidas Duramo RC
+    (16, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    (16, 2, 'Gris', 1, GETDATE(), 1),
+
+    -- Variante 17: Adidas Galaxy 6
+    (17, 1, '43 (10 US)', 1, GETDATE(), 1),
+    (17, 2, 'Negro/Azul', 1, GETDATE(), 1),
+
+    -- Variante 18: Dell Vostro 3400
+    (18, 3, '8GB', 1, GETDATE(), 1),
+    (18, 4, '256GB SSD', 1, GETDATE(), 1),
+    (18, 5, 'Intel i3', 1, GETDATE(), 1),
+
+    -- Variante 19: Dell Inspiron 3520
+    (19, 3, '16GB', 1, GETDATE(), 1),
+    (19, 4, '512GB SSD', 1, GETDATE(), 1),
+    (19, 5, 'Intel i5', 1, GETDATE(), 1),
+
+    -- Variante 20: Dell Latitude 3420 Pro
+    (20, 3, '16GB', 1, GETDATE(), 1),
+    (20, 4, '512GB SSD', 1, GETDATE(), 1),
+
+    -- Variante 21: Dell G15 Gaming
+    (21, 3, '16GB', 1, GETDATE(), 1),
+    (21, 4, '512GB SSD', 1, GETDATE(), 1),
+
+    -- Variante 22: Nike Revolution 6 Flyease
+    (22, 1, '41 (8.5 US)', 1, GETDATE(), 1),
+    (22, 2, 'Rojo Deportivo', 1, GETDATE(), 1),
+
+    -- Variante 23: Nike Pegasus 40 Premium
+    (23, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    (23, 2, 'Edición Pegasus', 1, GETDATE(), 1),
+
+    -- Variante 24: Adidas Superstar Classic
+    (24, 1, '42 (9.5 US)', 1, GETDATE(), 1),
+    (24, 2, 'Blanco Original', 1, GETDATE(), 1),
+
+    -- Variante 25: Adidas Stan Smith Eco
+    (25, 1, '40 (7.5 US)', 1, GETDATE(), 1),
+    (25, 2, 'Verde/Blanco', 1, GETDATE(), 1),
+
+    -- Variante 26: Dell Inspiron 16 Ryzen 5
+    (26, 3, '16GB', 1, GETDATE(), 1),
+    (26, 4, '512GB SSD', 1, GETDATE(), 1),
+    (26, 5, 'AMD Ryzen 5', 1, GETDATE(), 1),
+
+    -- Variante 27: Dell Precision 3580 Workstation
+    (27, 3, '32GB', 1, GETDATE(), 1),
+    (27, 4, '1TB SSD', 1, GETDATE(), 1),
+
+    -- Variante 28: Nike Air Max Excee
+    (28, 1, '41 (8.5 US)', 1, GETDATE(), 1),
+    (28, 2, 'Negro/Blanco', 1, GETDATE(), 1),
+
+    -- Variante 29: Dell XPS 13 Ultrabook
+    (29, 3, '16GB', 1, GETDATE(), 1),
+    (29, 4, '1TB SSD', 1, GETDATE(), 1);
+GO
