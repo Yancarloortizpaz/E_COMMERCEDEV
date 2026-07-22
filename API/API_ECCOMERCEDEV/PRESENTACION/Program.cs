@@ -59,6 +59,18 @@ builder.Services.AddScoped<ICartDetailsRepository, CartDetailsRepository>();
 builder.Services.AddScoped<CartDetailsServices>();
 builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
 builder.Services.AddScoped<CategoriesServices>();
+builder.Services.AddScoped<IStatusRepository, StatusRepository>();
+builder.Services.AddScoped<StatusServices>();
+builder.Services.AddScoped<IAttributeProductsRepository, AttributeProductsRepository>();
+builder.Services.AddScoped<AttributeProductsServices>();
+builder.Services.AddScoped<IProductIdentificatorsRepository, ProductIdentificatorsRepository>();
+builder.Services.AddScoped<ProductIdentificatorsServices>();
+builder.Services.AddScoped<IMarkByProvidersRepository, MarkByProvidersRepository>();
+builder.Services.AddScoped<MarkByProvidersServices>();
+builder.Services.AddScoped<IProductImagesRepository, ProductImagesRepository>();
+builder.Services.AddScoped<ProductImagesServices>();
+builder.Services.AddScoped<IProductVariableTypesRepository, ProductVariableTypesRepository>();
+builder.Services.AddScoped<ProductVariableTypesServices>();
 
 
 

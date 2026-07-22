@@ -12,6 +12,6 @@ namespace DOMAIN.AttributeProducts
         public DateTime? AttributeProductCreationDate { get; set; }
         public int? AttributeProductModificatorId { get; set; }
         public DateTime? AttributeProductModificationDate { get; set; }
-        public bool? AttributeProductStatusId { get; set; }
+        public int? AttributeProductStatusId { get; set; }
     }
 }
