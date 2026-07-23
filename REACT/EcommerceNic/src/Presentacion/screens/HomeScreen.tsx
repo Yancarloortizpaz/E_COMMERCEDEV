@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 
-import { formatCurrency, getBotResponse } from './constants';
+import { formatCurrency } from './constants';
 import { Product } from '../../Domain/entities/Product';
 import { getProductsUseCase } from '../../di/DI';
 import { CatalogTab } from './components/CatalogTab';
@@ -17,6 +17,8 @@ import { CartTab } from './components/CartTab';
 import { ChatbotTab } from './components/ChatbotTab';
 import { NosotrosTab } from './components/NosotrosTab';
 import { PaymentModal } from './components/PaymentModal';
+import { sendChatMessageUseCase } from "../../di/DI";
+
 
 interface Props {
   onLogout: () => void;
@@ -100,7 +102,7 @@ export const HomeScreen = ({ onLogout }: Props) => {
   };
 
   // Chatbot Send Message Flow
-  const handleSendMessage = (text: string) => {
+   const handleSendMessage = async (text: string) => {
     const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
     if (!cleanText) return;
 
@@ -116,66 +118,44 @@ export const HomeScreen = ({ onLogout }: Props) => {
     setMessages(prev => [...prev, newUserMsg]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botReply = getBotResponse(cleanText);
-      let metadata: string | undefined = undefined;
+    try {
 
-      const t = cleanText.toLowerCase();
-      if (t.includes('rtx') || t.includes('nvidia') || t.includes('4080') || t.includes('gráfica') || t.includes('grafica') || t.includes('gpu')) {
-        metadata = JSON.stringify({
-          id: '1', 
-          name: "Gráfica RTX 4080",
-          description: "16GB GDDR6X Ultra Potencia",
-          categoryId: 1,
-          categoryName: "hardware",
-          subCategoryId: 1,
-          subCategoryName: "Componentes",
-          segmentId: 1,
-          segmentName: "Gaming",
-          brandId: 1,
-          brandName: "NVIDIA",
-          providerId: 1,
-          providerName: "Nvidia Nicaragua",
-          images: [{ id: 1, url: "https://images.unsplash.com/photo-1610563166150-b34df4f3bcd6?q=80&w=800", description: "RTX 4080", isPrimary: true }],
-          variables: [{ id: 1, productId: 1, value: "16GB GDDR6X", price: 42500, currencyId: 1, currencyISO: "C$", stock: 5 }]
-        });
-      } else if (t.includes('iphone') || t.includes('apple') || t.includes('15 pro')) {
-        metadata = JSON.stringify({
-          id: '4', 
-          name: "iPhone 15 Pro Max",
-          description: "256GB Titanio Natural",
-          categoryId: 2,
-          categoryName: "phones",
-          subCategoryId: 2,
-          subCategoryName: "Celulares",
-          segmentId: 2,
-          segmentName: "Premium",
-          brandId: 2,
-          brandName: "Apple",
-          providerId: 2,
-          providerName: "Apple Nicaragua",
-          images: [{ id: 2, url: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=800", description: "iPhone 15 Pro Max", isPrimary: true }],
-          variables: [{ id: 4, productId: 4, value: "256GB Titanio Natural", price: 39800, currencyId: 1, currencyISO: "C$", stock: 3 }]
-        });
-      }
+  const response = await sendChatMessageUseCase.execute(cleanText);
+      console.log(response);
+  setMessages(prev => [
+    ...prev,
+    {
+      id: Date.now() + 1,
+      conversationId: "default",
+      role: "assistant",
+      isBot: true,
+      content: response.texto,
+      timestamp: new Date().toISOString(),
+    },
+  ]);
 
-      setMessages(prev => [
-        ...prev,
-        { 
-          // CORRECCIÓN: ID numérico autogenerado
-          id: Date.now() + 1, 
-          conversationId: 'default',
-          role: 'assistant', 
-          isBot: true,
-          content: botReply, 
-          timestamp: new Date().toISOString(),
-          metadata: metadata
-        },
-      ]);
-      setIsTyping(false);
-    }, 1000);
-  };
+} catch (error: any) {
 
+  console.log("ERROR DEL CHATBOT:");
+  console.log(error);
+
+  setMessages(prev => [
+    ...prev,
+    {
+      id: Date.now() + 1,
+      conversationId: "default",
+      role: "assistant",
+      isBot: true,
+      content: "❌ Error al comunicarse con el servidor.",
+      timestamp: new Date().toISOString(),
+    },
+  ]);
+
+} finally {
+
+  setIsTyping(false);
+  }
+};
   // Logout flow
   const handleLogout = () => {
     const ejecutarSalida = () => {
@@ -217,6 +197,8 @@ export const HomeScreen = ({ onLogout }: Props) => {
       ]
     );
   };
+
+console.log("HOME RENDERIZADO");
 
   return (
     <SafeAreaView style={styles.container}>

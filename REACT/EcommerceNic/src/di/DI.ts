@@ -8,6 +8,9 @@ import { CreateProductUseCase } from '../Domain/useCases/CreateProductUseCase';
 import { UpdateProductUseCase } from '../Domain/useCases/UpdateProductUseCase';
 import { DeleteProductUseCase } from '../Domain/useCases/DeleteProductUseCase';
 import { GetDashboardMetricsUseCase } from '../Domain/useCases/GetDashboardMetricsUseCase';
+import { ChatbotRepositoryImpl } from "../Data/repositories/ChatbotRepositoryImpl";
+import { SendChatMessageUseCase }from "../Domain/useCases/SendChatMessageUseCase";
+
 
 // Instantiate single instances of the Repository implementations
 const authRepository = new AuthRepositoryImpl();
@@ -23,3 +26,12 @@ export const updateProductUseCase = new UpdateProductUseCase(productRepository);
 export const deleteProductUseCase = new DeleteProductUseCase(productRepository);
 export const getDashboardMetricsUseCase = new GetDashboardMetricsUseCase(dashboardRepository);
 
+
+const chatbotRepository =
+new ChatbotRepositoryImpl();
+
+
+export const sendChatMessageUseCase =
+new SendChatMessageUseCase(
+    chatbotRepository
+);
