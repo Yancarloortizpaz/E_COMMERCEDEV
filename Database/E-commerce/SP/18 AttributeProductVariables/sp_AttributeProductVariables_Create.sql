@@ -119,3 +119,26 @@ BEGIN
     END CATCH;
 END;
 GO
+
+DECLARE @outCode INT;
+DECLARE @outMessage VARCHAR(255);
+DECLARE @outIdCreado INT;
+
+
+EXEC [SQM_GENERAL].[sp_AttributeProductVariables_Create]
+    @attributeProductVariableProductVariableId = 2,      
+    @attributeProductVariableAttributeProductId = 2,   
+    @attributeProductVariableValue = 'Rojo',            
+    @attributeProductVariableCreatorId = 1,              
+    @attributeProductVariableStatusId = 1,             
+
+    -- Parámetros de salida con la palabra clave OUTPUT
+    @o_code = @outCode OUTPUT,
+    @o_message = @outMessage OUTPUT,
+    @o_templateId = @outIdCreado OUTPUT;
+
+
+	select * from [SQM_GENERAL].Tbl_Products
+
+
+	select * from [SQM_GENERAL].[Tbl_AttributeProductVariables]

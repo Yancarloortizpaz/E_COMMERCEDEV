@@ -71,6 +71,11 @@ builder.Services.AddScoped<IProductImagesRepository, ProductImagesRepository>();
 builder.Services.AddScoped<ProductImagesServices>();
 builder.Services.AddScoped<IProductVariableTypesRepository, ProductVariableTypesRepository>();
 builder.Services.AddScoped<ProductVariableTypesServices>();
+builder.Services.AddScoped<IStocksRepository, StocksRepository>();
+builder.Services.AddScoped<StocksServices>();
+builder.Services.AddScoped<IAttributeProductVariablesRepository, AttributeProductVariablesRepository>();
+builder.Services.AddScoped<AttributeProductVariablesServices>();
+
 
 
 
