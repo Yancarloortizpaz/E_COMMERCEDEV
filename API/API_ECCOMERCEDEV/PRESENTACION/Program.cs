@@ -9,7 +9,11 @@ using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.AllowTrailingCommas = true;
+    });
 
 // Configuración de CORS
 builder.Services.AddCors(op =>
@@ -71,6 +75,12 @@ builder.Services.AddScoped<IProductImagesRepository, ProductImagesRepository>();
 builder.Services.AddScoped<ProductImagesServices>();
 builder.Services.AddScoped<IProductVariableTypesRepository, ProductVariableTypesRepository>();
 builder.Services.AddScoped<ProductVariableTypesServices>();
+builder.Services.AddScoped<IAttributeProductVariablesRepository, AttributeProductVariablesRepository>();
+builder.Services.AddScoped<AttributeProductVariablesServices>();
+builder.Services.AddScoped<IStockMovementTypesRepository, StockMovementTypesRepository>();
+builder.Services.AddScoped<StockMovementTypesServices>();
+builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
+builder.Services.AddScoped<PriceHistoryServices>();
 
 
 
