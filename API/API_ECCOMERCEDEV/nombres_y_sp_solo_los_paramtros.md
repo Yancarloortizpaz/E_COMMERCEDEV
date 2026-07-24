@@ -1,57 +1,60 @@
-CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_Update]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Update]
 (
-    @productVariableTypeId INT,
-    @productVariableTypeName VARCHAR(50),
-    @productVariableTypeDescription VARCHAR(100),
-    @productVariableTypeModificatorId INT,
-    @productVariableTypeStatusId BIT,
+    @attributeProductVariableId INT,
+    @attributeProductVariableProductVariableId INT,
+    @attributeProductVariableAttributeProductId INT,
+    @attributeProductVariableValue VARCHAR(50),
+    @attributeProductVariableModificatorId INT,
+    @attributeProductVariableStatusId BIT,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
     @o_templateId INT = NULL OUTPUT
 )
-AS[cite: 36]
+AS
 
-CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_Delete]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Delete]
 (
-    @productVariableTypeId INT,
-    @productVariableTypeModificatorId INT,
+    @attributeProductVariableId INT,
+    @attributeProductVariableModificatorId INT,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
     @o_templateId INT = NULL OUTPUT
 )
-AS[cite: 38]
+AS
 
 
 
 
-CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_Filter]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Filter]
 (
-    @productVariableTypeId INT = NULL,
-    @productVariableTypeName VARCHAR(50) = NULL,
-    @productVariableTypeDescription VARCHAR(100) = NULL,
-    @productVariableTypeCreatorId INT = NULL,
-    @productVariableTypeCreationDate DATETIME = NULL,
-    @productVariableTypeModificatorId INT = NULL,
-    @productVariableTypeModificationDate DATETIME = NULL,
-    @productVariableTypeStatusId BIT = NULL
+    @attributeProductVariableId INT = NULL,
+    @attributeProductVariableProductVariableId INT = NULL,
+    @attributeProductVariableAttributeProductId INT = NULL,
+    @attributeProductVariableValue VARCHAR(50) = NULL,
+    @attributeProductVariableCreatorId INT = NULL,
+    @attributeProductVariableCreationDate DATETIME = NULL,
+    @attributeProductVariableModificatorId INT = NULL,
+    @attributeProductVariableModificationDate DATETIME = NULL,
+    @attributeProductVariableStatusId BIT = NULL
 )
 AS BEGIN
 
-    SELECT productVariableTypeId, productVariableTypeName, productVariableTypeDescription, productVariableTypeCreatorId, productVariableTypeCreationDate, productVariableTypeModificatorId, productVariableTypeModificationDate, productVariableTypeStatusId[cite: 39]
+    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableCreationDate, attributeProductVariableModificatorId, attributeProductVariableModificationDate, attributeProductVariableStatusId
 
 
-    CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_Create]
+    CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Create]
 (
-    @productVariableTypeName VARCHAR(50),
-    @productVariableTypeDescription VARCHAR(100),
-    @productVariableTypeCreatorId INT,
-    @productVariableTypeStatusId BIT,
+    @attributeProductVariableProductVariableId INT,
+    @attributeProductVariableAttributeProductId INT,
+    @attributeProductVariableValue NVARCHAR(50),
+    @attributeProductVariableCreatorId INT,
+    @attributeProductVariableStatusId BIT,
     @o_code INT = NULL OUTPUT,
-    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_message NVARCHAR(255) = NULL OUTPUT,
     @o_templateId INT = NULL OUTPUT
 )
-AS[cite: 37]
+AS
 
-CREATE OR ALTER PROCEDURE [SQM_CATALOGS].[sp_ProductVariableTypes_List]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_List]
 AS BEGIN
-    SELECT productVariableTypeId, productVariableTypeName, productVariableTypeDescription, productVariableTypeCreatorId, productVariableTypeStatusId[cite: 40]
+    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableStatusId
