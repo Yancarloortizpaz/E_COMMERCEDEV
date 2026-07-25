@@ -63,13 +63,8 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
       console.log("✅ Login Exitoso para:", loggedUser.name, "Rol:", loggedUser.role);
       onLoginSuccess(loggedUser);
     } catch (err: any) {
-
-    console.log("ERROR LOGIN");
-    console.log(err);
-
-    setError(err.message);
-
-} finally {
+      setError(`🛑 ${err.message || 'Error al iniciar sesión. Verifica tus credenciales.'}`);
+    } finally {
       setIsLoading(false);
     }
   };
