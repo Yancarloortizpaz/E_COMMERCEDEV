@@ -25,6 +25,12 @@ export interface LoginResponse {
 
 }
 
+export interface RegisterResponse{
+    codigo:number;
+    msj:string;
+    templateId:number;
+}
+
 class AuthRemoteDataSource{
 
     async login(email:string,password:string):Promise<LoginResponse>{
@@ -61,6 +67,59 @@ class AuthRemoteDataSource{
 
     }
 
+    async register(
+    userFullName:string,
+    userName:string,
+    userPasswordPlain:string,
+    userEmail:string,
+    userPhoneNumber:string,
+    userCountryId:number,
+    userGenderId:number,
+    userBirthDay:string
+):Promise<RegisterResponse>{
+
+    const response=await fetch(`${API_URL}/api/Users/insertar`,{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            userFullName,
+            userName,
+            userPasswordPlain,
+            userEmail,
+            userPhoneNumber,
+            userCountryId,
+            userGenderId,
+            userBirthDay,
+
+            //Estos los controla la API
+            userCreatorId:1,
+            userStatusId:1
+
+        })
+
+    });
+
+    const data=await response.json();
+
+    console.log("RESPUESTA REGISTER:",data);
+
+    if(!response.ok){
+
+        throw new Error(data.msj);
+
+    }
+
+    return data;
+
 }
+
+}
+
 
 export const authRemoteDataSource=new AuthRemoteDataSource();

@@ -10,6 +10,9 @@ import { DeleteProductUseCase } from '../Domain/useCases/DeleteProductUseCase';
 import { GetDashboardMetricsUseCase } from '../Domain/useCases/GetDashboardMetricsUseCase';
 import { ChatbotRepositoryImpl } from "../Data/repositories/ChatbotRepositoryImpl";
 import { SendChatMessageUseCase }from "../Domain/useCases/SendChatMessageUseCase";
+import { CatalogosRepositoryImpl } from "../Data/repositories/CatalogosRepositoryImpl";
+import { GetPaisesUseCase } from "../Domain/useCases/GetPaisesUseCase";
+import { GetGenerosUseCase } from "../Domain/useCases/GetGenerosUseCase";
 
 
 // Instantiate single instances of the Repository implementations
@@ -30,6 +33,14 @@ export const getDashboardMetricsUseCase = new GetDashboardMetricsUseCase(dashboa
 const chatbotRepository =
 new ChatbotRepositoryImpl();
 
+const catalogosRepository =
+    new CatalogosRepositoryImpl();
+
+export const getPaisesUseCase =
+    new GetPaisesUseCase(catalogosRepository);
+
+export const getGenerosUseCase =
+    new GetGenerosUseCase(catalogosRepository);
 
 export const sendChatMessageUseCase =
 new SendChatMessageUseCase(

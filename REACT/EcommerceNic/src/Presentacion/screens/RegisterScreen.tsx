@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,16 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
-import { registerUseCase } from '../../di/DI';
+import { Pais } from '../../Domain/entities/Pais';
+import { Genero } from '../../Domain/entities/Genero';
+import {
+  getPaisesUseCase,
+  getGenerosUseCase,
+  registerUseCase,
+} from '../../di/DI';
 
 interface Props {
   onRegisterSuccess?: () => void;
@@ -20,13 +27,39 @@ interface Props {
 
 export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [birthday, setBirthday] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [countryId, setCountryId] = useState<number>();
+  const [genderId, setGenderId] = useState<number>();
+  const [countries, setCountries] = useState<Pais[]>([]);
+  const [genders, setGenders] = useState<Genero[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    loadCatalogs();
+  }, []);
+
+  const loadCatalogs = async () => {
+    try {
+      const paises = await getPaisesUseCase.execute();
+      const generos = await getGenerosUseCase.execute();
+
+      console.log('Países cargados:', paises);
+      console.log('Géneros cargados:', generos);
+
+      setCountries(paises);
+      setGenders(generos);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const validateEmail = (emailStr: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -38,10 +71,18 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
     setSuccessMessage('');
 
     const trimmedName = name.trim();
+    const trimmedUsernameValue = username.trim();
     const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedBirthday = birthday.trim();
 
     if (!trimmedName) {
       setErrorMessage('👤 Por favor, ingresa tu nombre completo.');
+      return;
+    }
+
+    if (!trimmedUsernameValue) {
+      setErrorMessage('🪪 Por favor, ingresa un nombre de usuario.');
       return;
     }
 
@@ -52,6 +93,31 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
 
     if (!validateEmail(trimmedEmail)) {
       setErrorMessage('🛑 El correo electrónico no tiene un formato válido.');
+      return;
+    }
+
+    if (!trimmedPhone) {
+      setErrorMessage('📞 Por favor, ingresa tu número de teléfono.');
+      return;
+    }
+
+    if (trimmedPhone.length < 8) {
+      setErrorMessage('📞 El teléfono debe tener al menos 8 dígitos.');
+      return;
+    }
+
+    if (!countryId) {
+      setErrorMessage('🌎 Por favor, selecciona tu país.');
+      return;
+    }
+
+    if (!genderId) {
+      setErrorMessage('⚧️ Por favor, selecciona tu género.');
+      return;
+    }
+
+    if (!trimmedBirthday) {
+      setErrorMessage('🎂 Por favor, ingresa tu fecha de nacimiento.');
       return;
     }
 
@@ -70,12 +136,26 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
       return;
     }
 
+    const [day, month, year] = trimmedBirthday.split("/");
+
+    const birthdayISO = `${year}-${month}-${day}T00:00:00`;
+
+    console.log(birthdayISO);
+
     setIsLoading(true);
     try {
-      // Register using Clean Architecture usecase
-      await registerUseCase.execute(trimmedName, trimmedEmail, password, 'user');
+      await registerUseCase.execute(
+        trimmedName,
+        trimmedUsernameValue,
+        password,
+        trimmedEmail,
+        trimmedPhone,
+        countryId,
+        genderId,
+        birthdayISO,
+      );
       setSuccessMessage('🎉 ¡Cuenta creada con éxito! Redirigiendo...');
-      
+
       setTimeout(() => {
         setIsLoading(false);
         if (onRegisterSuccess) onRegisterSuccess();
@@ -110,10 +190,18 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
 
           <View style={styles.formContainer}>
             <Text style={styles.inputLabel}>Nombre Completo</Text>
-            <CustomInput 
-              placeholder="Tu nombre completo" 
-              value={name} 
-              onChangeText={text => { setErrorMessage(''); setName(text); }} 
+            <CustomInput
+              placeholder="Tu nombre completo"
+              value={name}
+              onChangeText={text => { setErrorMessage(''); setName(text); }}
+            />
+
+            <Text style={styles.inputLabel}>Nombre de Usuario</Text>
+            <CustomInput
+              placeholder="Tu nombre de usuario"
+              value={username}
+              onChangeText={text => { setErrorMessage(''); setUsername(text); }}
+              autoCapitalize="none"
             />
 
             <Text style={styles.inputLabel}>Correo Electrónico</Text>
@@ -123,6 +211,58 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
               onChangeText={text => { setErrorMessage(''); setEmail(text); }}
               keyboardType="email-address"
               autoCapitalize="none"
+            />
+
+            <Text style={styles.inputLabel}>Teléfono</Text>
+            <CustomInput
+              placeholder="Número de teléfono"
+              value={phone}
+              onChangeText={text => { setErrorMessage(''); setPhone(text); }}
+              keyboardType="phone-pad"
+            />
+
+            <Text style={styles.inputLabel}>País</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={countryId ?? ''}
+                onValueChange={value => {
+                  setErrorMessage('');
+                  setCountryId(Number(value));
+                }}
+                style={styles.picker}
+                dropdownIconColor="#4F46E5"
+              >
+                <Picker.Item label="Selecciona un país" value="" />
+                {countries.map(country => (
+                  <Picker.Item key={country.id} label={country.nombre} value={country.id} />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={styles.inputLabel}>Género</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={genderId ?? ''}
+                onValueChange={value => {
+                  setErrorMessage('');
+                  setGenderId(Number(value));
+                }}
+                style={styles.picker}
+                dropdownIconColor="#4F46E5"
+              >
+                <Picker.Item label="Selecciona un género" value="" />
+                {genders.map(gender => (
+                  <Picker.Item key={gender.id} label={gender.nombre} value={gender.id} />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
+            <CustomInput
+              placeholder="dd/mm/yyyy"
+              value={birthday}
+              onChangeText={text => { setErrorMessage(''); setBirthday(text); }}
+              keyboardType="numbers-and-punctuation"
             />
 
             <Text style={styles.inputLabel}>Contraseña</Text>
@@ -280,6 +420,18 @@ const styles = StyleSheet.create({
     marginTop: 14,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    marginBottom: 2,
+    overflow: 'hidden',
+  },
+  picker: {
+    color: '#0F172A',
+    minHeight: 48,
   },
   buttonContainer: { 
     marginTop: 24 
