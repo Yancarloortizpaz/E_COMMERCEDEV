@@ -7,7 +7,7 @@ export class LoginUseCase {
     this.authRepository = authRepository;
   }
 
-  async execute(email: string, password: string) {
-    return this.authRepository.login(email, password);
-  }
+async execute(email: string, password: string) {
+    return await this.authRepository.login(email, password);
+}
 }

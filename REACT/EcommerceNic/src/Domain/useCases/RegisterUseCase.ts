@@ -1,13 +1,33 @@
 import { AuthRepository } from '../repositories/AuthRepository';
 
 export class RegisterUseCase {
-  private authRepository: AuthRepository;
 
-  constructor(authRepository: AuthRepository) {
-    this.authRepository = authRepository;
+  constructor(
+    private authRepository: AuthRepository
+  ) {}
+
+  async execute(
+    userFullName: string,
+    userName: string,
+    userPasswordPlain: string,
+    userEmail: string,
+    userPhoneNumber: string,
+    userCountryId: number,
+    userGenderId: number,
+    userBirthDay: string
+  ) {
+
+    return await this.authRepository.register(
+      userFullName,
+      userName,
+      userPasswordPlain,
+      userEmail,
+      userPhoneNumber,
+      userCountryId,
+      userGenderId,
+      userBirthDay
+    );
+
   }
 
-  async execute(name: string, email: string, password: string, role?: 'user' | 'admin') {
-    return this.authRepository.register(name, email, password, role);
-  }
 }
