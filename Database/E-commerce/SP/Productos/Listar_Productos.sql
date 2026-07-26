@@ -1,30 +1,93 @@
 USE [DB_ECOMMERCE]
 GO
 
--- 4. LISTAR (Integrando Vista)
 CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_List]
-AS BEGIN
-    SELECT 
-        productId,
-        productName,
-        productDescription,
-        productIdentificatorId,
-        categoryId,
-        categoryName,
-        subCategoryId,
-        subCategoryName,
-        segmentId,
-        segmentName,
-        markByProviderId,
-        markId,
-        markName,
-        providerId,
-        providerName,
-        statusId
-    FROM [SQM_GENERAL].[VW_PRODUCTS] (NOLOCK);
+(
+    @i_pageNumber INT = NULL,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_pageNumber INT = NULL OUTPUT,
+    @o_pageSize INT = NULL OUTPUT,
+    @o_totalRows INT = NULL OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @PageSize INT;
+    SET @PageSize = 5;
+
+    BEGIN TRY
+        SELECT 
+            @o_pageNumber = @i_pageNumber,
+            @o_pageSize = @PageSize,
+            @o_totalRows = COUNT(1)
+        FROM [SQM_GENERAL].[VW_PRODUCTS];
+
+        SELECT
+            productId,
+            productName,
+            productDescription,
+            productIdentificatorId,
+            categoryId,
+            categoryName,
+            subCategoryId,
+            subCategoryName,
+            segmentId,
+            segmentName,
+            markByProviderId,
+            markId,
+            markName,
+            providerId,
+            providerName,
+            statusId
+        FROM [SQM_GENERAL].[VW_PRODUCTS] (NOLOCK)
+        ORDER BY productId, providerId DESC
+        OFFSET (@i_pageNumber - 1) * @PageSize ROWS
+        FETCH NEXT @PageSize ROWS ONLY;
+
+        IF @@ROWCOUNT > 0
+        BEGIN
+            SET @o_code = 200;
+            SET @o_message = 'Carga de productos satisfactoria';
+        END
+        ELSE
+        BEGIN
+            SET @o_code = 204;
+            SET @o_message = 'No hay más filas disponibles';
+        END
+    END TRY
+    BEGIN CATCH
+        SET @o_code = 500;
+        SET @o_message = CONCAT_WS(' ','Error interno',ERROR_MESSAGE());
+    END CATCH
 END
 GO
 
 
-exec [SQM_GENERAL].[sp_Products_List]
+
+exec [SQM_GENERAL].[sp_Products_List] @i_pageNumber = 1
+
+
 SELECT * FROM [SQM_GENERAL].[Tbl_Products]
+
+DECLARE
+	@Code INT,
+	@Message VARCHAR(255),
+	@PageNumber INT,
+	@PageSize INT,
+	@TotalRows INT
+
+EXEC [SQM_GENERAL].[sp_Products_List]
+@i_pageNumber = 1,
+@o_code = @Code OUT,
+@o_message = @Message OUT,
+@o_pageNumber = @PageNumber OUT,
+@o_pageSize = @PageSize OUT,
+@o_totalRows = @TotalRows OUT
+
+PRINT 'CODIGO - ' +  TRY_CAST(@Code AS VARCHAR)
+PRINT 'MENSAJE - ' + TRY_CAST(@Message AS VARCHAR)
+PRINT 'NUMERO PAGINA - ' + TRY_CAST(@PageNumber AS VARCHAR)
+PRINT 'TAMAÑO DE PAGINA - ' + TRY_CAST(@PageSize AS VARCHAR)
+PRINT 'TOTAL REGISTROS - ' + TRY_CAST(@TotalRows AS VARCHAR)

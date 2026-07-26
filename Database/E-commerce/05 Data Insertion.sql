@@ -227,7 +227,7 @@ GO
 
 
 INSERT INTO [SQM_GENERAL].[Tbl_Products] 
-(productName, productDescription, productProductIdentificatorId, productMarkByProviderId, productCreatorId, productCreationDate, productStatusId)
+(productName, productDescription, productProductIdentificatorId,    , productCreatorId, productCreationDate, productStatusId)
 VALUES 
 ('Zapatillas Nike Air Max 2026', 'Calzado deportivo con amortiguación máxima', 2, 2, 1, GETDATE(), 1);
 
