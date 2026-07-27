@@ -1,60 +1,90 @@
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Update]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_Filter]
 (
-    @attributeProductVariableId INT,
-    @attributeProductVariableProductVariableId INT,
-    @attributeProductVariableAttributeProductId INT,
-    @attributeProductVariableValue VARCHAR(50),
-    @attributeProductVariableModificatorId INT,
-    @attributeProductVariableStatusId BIT,
+    @SearchTerm VARCHAR(50) = NULL,
+    @i_pageNumber INT = 1,            
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
-    @o_templateId INT = NULL OUTPUT
+    @o_pageNumber INT = NULL OUTPUT,
+    @o_pageSize INT = NULL OUTPUT,
+    @o_totalRows INT = NULL OUTPUT
 )
 AS
+BEGIN
+    SET NOCOUNT ON;
 
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Delete]
+    BEGIN TRY
+      
+        SELECT
+            ProductID,
+            ProductName,
+            ProductVariableID,
+            ProductVariableName,
+            ProductVariablePrice,
+            CurrencyID,
+            CurrencyISO,
+            CategoryID,
+            CategoryName,
+            SubcategoryID,
+            SubcategoryName,
+            SegmentID,
+            SegmentName,
+            MarkID,
+            MarkName,
+            ProviderID,
+            ProviderName,
+            StockID,
+            StockAvilable,
+            StockFactoryDate,
+            StockExpirationDate
+
+
+
+            CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_List]
 (
-    @attributeProductVariableId INT,
-    @attributeProductVariableModificatorId INT,
+    @i_pageNumber INT = NULL,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
-    @o_templateId INT = NULL OUTPUT
+    @o_pageNumber INT = NULL OUTPUT,
+    @o_pageSize INT = NULL OUTPUT,
+    @o_totalRows INT = NULL OUTPUT
 )
 AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @PageSize INT = 5;
+
+    BEGIN TRY
+      
+        SELECT
+            ProductID,
+            ProductName,
+            ProductVariableID,
+            ProductVariableName,
+            ProductVariablePrice,
+            CurrencyID,
+            CurrencyISO,
+            CategoryID,
+            CategoryName,
+            SubcategoryID,
+            SubcategoryName,
+            SegmentID,
+            SegmentName,
+            MarkID,
+            MarkName,
+            ProviderID,
+            ProviderName,
+            StockID,
+            StockAvilable,
+            StockFactoryDate,
+            StockExpirationDate
+
+            DONDE TENEMOS
+             AQUI TENEMOS LOS ARHIVOS QUE NECESITAMOS MODIFICAR TENIENDO EN CUENTA QUE SOLO ES LISTAR Y FILTRAR 
+            < C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\APLICATION\DTOs\Products\
 
 
 
-
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Filter]
-(
-    @attributeProductVariableId INT = NULL,
-    @attributeProductVariableProductVariableId INT = NULL,
-    @attributeProductVariableAttributeProductId INT = NULL,
-    @attributeProductVariableValue VARCHAR(50) = NULL,
-    @attributeProductVariableCreatorId INT = NULL,
-    @attributeProductVariableCreationDate DATETIME = NULL,
-    @attributeProductVariableModificatorId INT = NULL,
-    @attributeProductVariableModificationDate DATETIME = NULL,
-    @attributeProductVariableStatusId BIT = NULL
-)
-AS BEGIN
-
-    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableCreationDate, attributeProductVariableModificatorId, attributeProductVariableModificationDate, attributeProductVariableStatusId
-
-
-    CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Create]
-(
-    @attributeProductVariableProductVariableId INT,
-    @attributeProductVariableAttributeProductId INT,
-    @attributeProductVariableValue NVARCHAR(50),
-    @attributeProductVariableCreatorId INT,
-    @attributeProductVariableStatusId BIT,
-    @o_code INT = NULL OUTPUT,
-    @o_message NVARCHAR(255) = NULL OUTPUT,
-    @o_templateId INT = NULL OUTPUT
-)
-AS
-
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_List]
-AS BEGIN
-    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableStatusId
+            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\APLICATION\Services\ProductsServices.cs
+            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\DOMAIN\Products\
+            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\INFRASTRUCTURE\Repository\ProductsRepository.cs

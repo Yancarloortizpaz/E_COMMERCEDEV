@@ -20,19 +20,25 @@ namespace PRESENTACION.Controllers
             _service = service;
         }
 
-        #region lectura_products
-
         [HttpGet("Listar")]
-        public async Task<IActionResult> Listar_Products()
+        public async Task<IActionResult> Listar_Products([FromQuery] int? pageNumber)
         {
             try
             {
-                var lista = await _service.Listar_Products_async();
+                var (lista, output) = await _service.Listar_Products_async(pageNumber);
                 if (lista == null || !lista.Any())
                 {
                     return NotFound(new { codigo = 404, msj = "No se encontraron productos." });
                 }
-                return Ok(new { codigo = 200, msj = "Consulta exitosa", data = lista });
+                return Ok(new
+                {
+                    codigo = output.Code ?? 200,
+                    msj = output.Message ?? "Consulta exitosa",
+                    pageNumber = output.PageNumber,
+                    pageSize = output.PageSize,
+                    totalRows = output.TotalRows,
+                    data = lista
+                });
             }
             catch (Exception ex)
             {
@@ -41,26 +47,30 @@ namespace PRESENTACION.Controllers
         }
 
         [HttpGet("filtrar")]
-        public async Task<IActionResult> Filtrar_Products([FromQuery] string? searchTerm)
+        public async Task<IActionResult> Filtrar_Products([FromQuery] string? searchTerm, [FromQuery] int? pageNumber = 1)
         {
             try
             {
-                var lista = await _service.Filtrar_Products_async(searchTerm);
+                var (lista, output) = await _service.Filtrar_Products_async(searchTerm, pageNumber);
                 if (lista == null || !lista.Any())
                 {
                     return NotFound(new { codigo = 404, msj = "No se encontraron productos que coincidan con la búsqueda." });
                 }
-                return Ok(new { codigo = 200, msj = "Consulta exitosa", data = lista });
+                return Ok(new
+                {
+                    codigo = output.Code ?? 200,
+                    msj = output.Message ?? "Consulta exitosa",
+                    pageNumber = output.PageNumber,
+                    pageSize = output.PageSize,
+                    totalRows = output.TotalRows,
+                    data = lista
+                });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { codigo = 500, msj = ex.Message });
             }
         }
-
-        #endregion
-
-        #region escritura_products
 
         [HttpPost("insertar")]
         public async Task<IActionResult> Ingresar_Products([FromBody] ProductsinsertarDTOs model)
@@ -136,7 +146,5 @@ namespace PRESENTACION.Controllers
                 return StatusCode(500, new { codigo = 500, msj = ex.Message });
             }
         }
-
-        #endregion
     }
 }

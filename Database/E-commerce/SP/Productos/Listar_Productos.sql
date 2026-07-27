@@ -14,36 +14,42 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PageSize INT;
-    SET @PageSize = 5;
+    DECLARE @PageSize INT = 5;
 
     BEGIN TRY
+        -- Obtener el conteo total de filas desde la  vista
         SELECT 
             @o_pageNumber = @i_pageNumber,
             @o_pageSize = @PageSize,
             @o_totalRows = COUNT(1)
-        FROM [SQM_GENERAL].[VW_PRODUCTS];
+        FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK);
 
+        -- Consultar los datos con la estructura de la nueva vista
         SELECT
-            productId,
-            productName,
-            productDescription,
-            productIdentificatorId,
-            categoryId,
-            categoryName,
-            subCategoryId,
-            subCategoryName,
-            segmentId,
-            segmentName,
-            markByProviderId,
-            markId,
-            markName,
-            providerId,
-            providerName,
-            statusId
-        FROM [SQM_GENERAL].[VW_PRODUCTS] (NOLOCK)
-        ORDER BY productId, providerId DESC
-        OFFSET (@i_pageNumber - 1) * @PageSize ROWS
+            ProductID,
+            ProductName,
+            ProductVariableID,
+            ProductVariableName,
+            ProductVariablePrice,
+            CurrencyID,
+            CurrencyISO,
+            CategoryID,
+            CategoryName,
+            SubcategoryID,
+            SubcategoryName,
+            SegmentID,
+            SegmentName,
+            MarkID,
+            MarkName,
+            ProviderID,
+            ProviderName,
+            StockID,
+            StockAvilable,
+            StockFactoryDate,
+            StockExpirationDate
+        FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK)
+        ORDER BY ProductID ASC, ProviderID DESC
+        OFFSET ((ISNULL(@i_pageNumber, 1) - 1) * @PageSize) ROWS
         FETCH NEXT @PageSize ROWS ONLY;
 
         IF @@ROWCOUNT > 0
@@ -59,7 +65,7 @@ BEGIN
     END TRY
     BEGIN CATCH
         SET @o_code = 500;
-        SET @o_message = CONCAT_WS(' ','Error interno',ERROR_MESSAGE());
+        SET @o_message = CONCAT_WS(' ', 'Error interno:', ERROR_MESSAGE());
     END CATCH
 END
 GO

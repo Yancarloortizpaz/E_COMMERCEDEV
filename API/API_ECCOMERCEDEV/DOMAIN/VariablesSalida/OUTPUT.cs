@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,10 +10,12 @@ namespace DOMAIN.VariablesSalida
         public string? Message { get; set; }
         public int? TemplateId { get; set; }
 
-        //JWT Token
+        public int? PageNumber { get; set; }
+        public int? PageSize { get; set; }
+        public int? TotalRows { get; set; }
+
         public object? Data { get; set; }
 
-        // Propiedad calculada útil para los Controladores
         public bool IsSuccess => Code >= 0;
     }
 }

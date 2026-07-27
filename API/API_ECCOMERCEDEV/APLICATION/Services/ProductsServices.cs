@@ -17,52 +17,64 @@ namespace APLICATION.Services
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductsListarDTOs>> Listar_Products_async()
+        public async Task<(IEnumerable<ProductsListarDTOs> Data, OUTPUT Output)> Listar_Products_async(int? pageNumber = null)
         {
-            var data = await _repository.Listar_ProductsAsync();
-            return data.Select(x => new ProductsListarDTOs
+            var (data, output) = await _repository.Listar_ProductsAsync(pageNumber);
+            var dtos = data.Select(x => new ProductsListarDTOs
             {
-                productId = x.productId,
-                productName = x.productName,
-                productDescription = x.productDescription,
-                productIdentificatorId = x.productIdentificatorId,
-                categoryId = x.categoryId,
-                categoryName = x.categoryName,
-                subCategoryId = x.subCategoryId,
-                subCategoryName = x.subCategoryName,
-                segmentId = x.segmentId,
-                segmentName = x.segmentName,
-                markByProviderId = x.markByProviderId,
-                markId = x.markId,
-                markName = x.markName,
-                providerId = x.providerId,
-                providerName = x.providerName,
-                statusId = x.statusId
+                ProductID = x.ProductID,
+                ProductName = x.ProductName,
+                ProductVariableID = x.ProductVariableID,
+                ProductVariableName = x.ProductVariableName,
+                ProductVariablePrice = x.ProductVariablePrice,
+                CurrencyID = x.CurrencyID,
+                CurrencyISO = x.CurrencyISO,
+                CategoryID = x.CategoryID,
+                CategoryName = x.CategoryName,
+                SubcategoryID = x.SubcategoryID,
+                SubcategoryName = x.SubcategoryName,
+                SegmentID = x.SegmentID,
+                SegmentName = x.SegmentName,
+                MarkID = x.MarkID,
+                MarkName = x.MarkName,
+                ProviderID = x.ProviderID,
+                ProviderName = x.ProviderName,
+                StockID = x.StockID,
+                StockAvilable = x.StockAvilable,
+                StockFactoryDate = x.StockFactoryDate,
+                StockExpirationDate = x.StockExpirationDate
             });
+            return (dtos, output);
         }
 
-        public async Task<IEnumerable<ProductsFiltrarDTOs>> Filtrar_Products_async(string? searchTerm)
+        public async Task<(IEnumerable<ProductsFiltrarDTOs> Data, OUTPUT Output)> Filtrar_Products_async(string? searchTerm, int? pageNumber = 1)
         {
-            var data = await _repository.Filtrar_ProductsAsync(searchTerm);
-            return data.Select(x => new ProductsFiltrarDTOs
+            var (data, output) = await _repository.Filtrar_ProductsAsync(searchTerm, pageNumber);
+            var dtos = data.Select(x => new ProductsFiltrarDTOs
             {
-                productId = x.productId,
-                productName = x.productName,
-                productDescription = x.productDescription,
-                productIdentificatorId = x.productIdentificatorId,
-                categoryId = x.categoryId,
-                categoryName = x.categoryName,
-                subCategoryId = x.subCategoryId,
-                subCategoryName = x.subCategoryName,
-                segmentId = x.segmentId,
-                segmentName = x.segmentName,
-                markByProviderId = x.markByProviderId,
-                markId = x.markId,
-                markName = x.markName,
-                providerId = x.providerId,
-                providerName = x.providerName,
-                statusId = x.statusId
+                ProductID = x.ProductID,
+                ProductName = x.ProductName,
+                ProductVariableID = x.ProductVariableID,
+                ProductVariableName = x.ProductVariableName,
+                ProductVariablePrice = x.ProductVariablePrice,
+                CurrencyID = x.CurrencyID,
+                CurrencyISO = x.CurrencyISO,
+                CategoryID = x.CategoryID,
+                CategoryName = x.CategoryName,
+                SubcategoryID = x.SubcategoryID,
+                SubcategoryName = x.SubcategoryName,
+                SegmentID = x.SegmentID,
+                SegmentName = x.SegmentName,
+                MarkID = x.MarkID,
+                MarkName = x.MarkName,
+                ProviderID = x.ProviderID,
+                ProviderName = x.ProviderName,
+                StockID = x.StockID,
+                StockAvilable = x.StockAvilable,
+                StockFactoryDate = x.StockFactoryDate,
+                StockExpirationDate = x.StockExpirationDate
             });
+            return (dtos, output);
         }
 
         public async Task<OUTPUT> Insertar_Products_async(ProductsinsertarDTOs dto)
