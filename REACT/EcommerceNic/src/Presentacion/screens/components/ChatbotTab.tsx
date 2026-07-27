@@ -10,14 +10,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
-  ActivityIndicator,
 } from 'react-native';
 import { QUICK_REPLIES } from '../constants';
-import { Message } from '../../../Domain/entities/Chat';
-import { ProductDto } from '../../../Domain/entities/ProductDto';
+import { Conversation, Message } from '../../../Domain/entities/Chat';
 
 interface ChatbotTabProps {
   messages: Message[];
+  conversations?: Conversation[];
+  activeConversationId?: string | null;
+  onSelectConversation?: (conversationId: string) => void;
+  onNewConversation?: () => void;
   sendMessage: (text: string) => void;
   isTyping?: boolean; // Para simular o recibir el estado de "escribiendo..." de la IA
   onAddProductToCart?: (product: any) => void; // Integración con el carrito
@@ -51,6 +53,10 @@ const AnimatedMessageBubble = ({ children }: { children: React.ReactNode }) => {
 
 export const ChatbotTab = ({ 
   messages, 
+  conversations = [],
+  activeConversationId,
+  onSelectConversation,
+  onNewConversation,
   sendMessage, 
   isTyping = false,
   onAddProductToCart 
@@ -101,52 +107,6 @@ export const ChatbotTab = ({
     setChatMessage('');
   };
 
-  // Renderizar la tarjeta del producto si viene en el JSON de metadata
-  const renderProductCard = (metadataString?: string) => {
-    if (!metadataString) return null;
-    try {
-      const product: ProductDto = JSON.parse(metadataString);
-      if (!product || !product.name) return null;
-
-      // Obtener el precio y stock de la primera variable
-      const mainVariable = product.variables && product.variables.length > 0 
-        ? product.variables[0] 
-        : { price: 0, currencyISO: 'C$', stock: 0 };
-
-      const imageUrl = product.images && product.images.length > 0 
-        ? product.images[0].url 
-        : 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=300';
-
-      return (
-        <View style={styles.productCard}>
-          <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="cover" />
-          <View style={styles.productInfo}>
-            <Text style={styles.productBrand}>{product.brandName || 'Exclusivo'}</Text>
-            <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-            <Text style={styles.productPrice}>
-              {mainVariable.currencyISO} {mainVariable.price.toLocaleString('es-NI')}
-            </Text>
-            <View style={styles.productStockRow}>
-              <Text style={[styles.productStockText, mainVariable.stock > 0 ? styles.inStock : styles.outOfStock]}>
-                {mainVariable.stock > 0 ? `En Stock (${mainVariable.stock})` : 'Agotado'}
-              </Text>
-            </View>
-            <TouchableOpacity 
-              style={[styles.productAddButton, mainVariable.stock === 0 && styles.disabledButton]}
-              disabled={mainVariable.stock === 0}
-              onPress={() => onAddProductToCart && onAddProductToCart(product)}
-            >
-              <Text style={styles.productAddButtonText}>🛒 Agregar al Carrito</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    } catch (e) {
-      console.log('Error parseando metadata del producto en chatbot:', e);
-      return null;
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.tabContent}
@@ -169,6 +129,31 @@ export const ChatbotTab = ({
         </View>
       </View>
       <View style={styles.headerDivider} />
+
+      <View style={styles.historyBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
+          {conversations.map((conversation) => (
+            <TouchableOpacity
+              key={conversation.id}
+              style={[
+                styles.historyPill,
+                activeConversationId === conversation.id && styles.historyPillActive,
+              ]}
+              onPress={() => onSelectConversation?.(conversation.id)}
+            >
+              <Text style={[
+                styles.historyPillText,
+                activeConversationId === conversation.id && styles.historyPillTextActive,
+              ]}>
+                {conversation.title ?? 'Conversación'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        <TouchableOpacity style={styles.newConversationButton} onPress={() => onNewConversation?.()}>
+          <Text style={styles.newConversationText}>+ Nueva</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView
         ref={scrollViewRef}
@@ -193,12 +178,13 @@ export const ChatbotTab = ({
         {/* Mensajes */}
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
+
           return (
             <AnimatedMessageBubble key={msg.id}>
-              <View 
+              <View
                 style={[
-                  styles.messageRow, 
-                  isUser ? styles.messageRowRight : styles.messageRowLeft
+                  styles.messageRow,
+                  isUser ? styles.messageRowRight : styles.messageRowLeft,
                 ]}
               >
                 {!isUser && (
@@ -206,27 +192,84 @@ export const ChatbotTab = ({
                     <Text style={styles.botAvatarText}>🤖</Text>
                   </View>
                 )}
+
                 <View style={styles.bubbleContainer}>
-                  <View 
+                  <View
                     style={[
-                      styles.messageBubble, 
-                      isUser ? styles.messageBubbleUser : styles.messageBubbleBot
+                      styles.messageBubble,
+                      isUser
+                        ? styles.messageBubbleUser
+                        : styles.messageBubbleBot,
                     ]}
                   >
-                    <Text style={[styles.messageText, isUser ? styles.messageTextUser : styles.messageTextBot]}>
-                      {msg.content}
-                    </Text>
-                    
-                    {/* Timestamp sutil */}
+                    {/* Mostrar texto únicamente cuando NO sea una respuesta de productos */}
+                    {msg.tipo !== 'productos' && (
+                      <Text
+                        style={[
+                          styles.messageText,
+                          isUser
+                            ? styles.messageTextUser
+                            : styles.messageTextBot,
+                        ]}
+                      >
+                        {msg.content}
+                      </Text>
+                    )}
+
+                    {/* Tarjetas de productos */}
+                    {!isUser &&
+                      msg.tipo === 'productos' &&
+                      msg.productos?.map((producto: any) => (
+                        <View
+                          key={producto.ProductID}
+                          style={styles.productCard}
+                        >
+                          <Text style={styles.productName}>
+                            {producto.ProductName}
+                          </Text>
+
+                          <Text style={styles.productDescription}>
+                            {producto.ProductVariableName}
+                          </Text>
+
+                          <Text style={styles.productPrice}>
+                            {producto.CurrencyISO}{' '}{producto.ProductVariablePrice}
+                          </Text>
+
+                          <TouchableOpacity
+                            style={styles.productAddButton}
+                            onPress={() =>
+                              onAddProductToCart?.({
+                                id: producto.ProductID,
+                                name: producto.ProductName,
+                                price: producto.ProductVariablePrice,
+                              })
+                            }
+                          >
+                            <Text style={styles.productAddButtonText}>
+                              🛒 Agregar al carrito
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+
+                    {/* Hora */}
                     {msg.timestamp && (
-                      <Text style={[styles.messageTime, isUser ? styles.messageTimeUser : styles.messageTimeBot]}>
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <Text
+                        style={[
+                          styles.messageTime,
+                          isUser
+                            ? styles.messageTimeUser
+                            : styles.messageTimeBot,
+                        ]}
+                      >
+                        {new Date(msg.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </Text>
                     )}
                   </View>
-
-                  {/* Renderizar producto si contiene metadatos del producto */}
-                  {!isUser && msg.metadata && renderProductCard(msg.metadata)}
                 </View>
               </View>
             </AnimatedMessageBubble>
@@ -361,6 +404,46 @@ const styles = StyleSheet.create({
   headerDivider: { 
     height: 1, 
     backgroundColor: '#E2E8F0' 
+  },
+  historyBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  historyScroll: { flex: 1 },
+  historyPill: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    marginRight: 8,
+  },
+  historyPillActive: {
+    backgroundColor: '#4F46E5',
+  },
+  historyPillText: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  historyPillTextActive: {
+    color: '#FFFFFF',
+  },
+  newConversationButton: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginLeft: 6,
+  },
+  newConversationText: {
+    color: '#4F46E5',
+    fontSize: 12,
+    fontWeight: '800',
   },
   chatScrollPadding: { 
     padding: 16, 
@@ -513,9 +596,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderRadius: 16,
     marginTop: 10,
-    flexDirection: 'row',
+    flexDirection: 'column',
     padding: 12,
-    alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#0F172A',
@@ -528,64 +610,35 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  productImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    backgroundColor: '#F1F5F9',
-  },
-  productInfo: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'center',
-  },
-  productBrand: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748B',
-    textTransform: 'uppercase',
-  },
   productName: {
     fontSize: 14,
     fontWeight: '700',
     color: '#0F172A',
     marginTop: 2,
   },
+  // ESTILO AGREGADO PARA SOLUCIONAR EL ERROR
+  productDescription: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
   productPrice: {
     fontSize: 14,
     fontWeight: '800',
     color: '#4F46E5',
-    marginTop: 3,
-  },
-  productStockRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginTop: 4,
-  },
-  productStockText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  inStock: {
-    color: '#10B981',
-  },
-  outOfStock: {
-    color: '#EF4444',
   },
   productAddButton: {
     backgroundColor: '#4F46E5',
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     marginTop: 8,
     alignItems: 'center',
   },
-  disabledButton: {
-    backgroundColor: '#CBD5E1',
-  },
   productAddButtonText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
   },
   chatInputContainer: { 

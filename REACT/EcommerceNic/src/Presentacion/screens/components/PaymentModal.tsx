@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { formatCurrency } from '../constants';
 
@@ -341,9 +342,9 @@ const styles = StyleSheet.create({
     elevation: 24 
   },
   modalHeader: { marginBottom: 18 },
-  modalTitle: { fontSize: 20, fontWeight: '950', color: '#0F172A', marginBottom: 2 },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: '#0F172A', marginBottom: 2 },
   modalSubtitle: { fontSize: 13, color: '#64748B', fontWeight: '600' },
-  modalTotalAmount: { color: '#4F46E5', fontWeight: '850', fontSize: 16 },
+  modalTotalAmount: { color: '#4F46E5', fontWeight: '800', fontSize: 16 },
   
   paymentOption: { 
     flexDirection: 'row', 
@@ -407,7 +408,7 @@ const styles = StyleSheet.create({
   },
   visualCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   visualCardChip: { width: 34, height: 26, backgroundColor: '#F59E0B', borderRadius: 6, opacity: 0.8 },
-  visualCardType: { color: '#FFFFFF', fontSize: 18, fontWeight: '950', fontStyle: 'italic' },
+  visualCardType: { color: '#FFFFFF', fontSize: 18, fontWeight: '900', fontStyle: 'italic' },
   visualCardNumber: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', letterSpacing: 2, marginVertical: 10, textAlign: 'center' },
   visualCardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   visualCardLabel: { color: '#64748B', fontSize: 7, fontWeight: '800', letterSpacing: 0.5, marginBottom: 2 },

@@ -24,12 +24,15 @@ interface Props {
   onLogout: () => void;
 }
 
-import { Message } from '../../Domain/entities/Chat';
+import { Conversation, Message } from '../../Domain/entities/Chat';
 
 export const HomeScreen = ({ onLogout }: Props) => {
   const [currentTab, setCurrentTab] = useState<'home' | 'cart' | 'chatbot' | 'nosotros'>('home');
   const [products, setProducts] = useState<Product[]>([]);
   const [cartQuantities, setCartQuantities] = useState<{ [key: string]: number }>({});
+  const [chatbotCartProducts, setChatbotCartProducts] = useState<Product[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
@@ -58,8 +61,70 @@ export const HomeScreen = ({ onLogout }: Props) => {
     loadProducts();
   }, []);
 
+  const loadConversations = async (userId?: string) => {
+    try {
+      const result = await sendChatMessageUseCase.getConversations(userId);
+      const mapped = result.map((conversation: any) => ({
+        id: conversation.id,
+        userId: conversation.userId,
+        title: conversation.title ?? 'Nueva conversación',
+        startDate: conversation.startDate ?? new Date().toISOString(),
+        updatedAt: conversation.updatedAt ?? new Date().toISOString(),
+        isActive: conversation.isActive ?? true,
+        messages: Array.isArray(conversation.messages) ? conversation.messages.map((msg: any) => ({
+          id: msg.id ?? Date.now(),
+          conversationId: conversation.id,
+          role: msg.role ?? 'assistant',
+          isBot: msg.isBot ?? msg.role !== 'user',
+          content: msg.content ?? '',
+          timestamp: msg.timestamp ?? new Date().toISOString(),
+          tipo: msg.tipo,
+          productos: msg.productos ?? [],
+        })) : [],
+      }));
+      setConversations(mapped);
+      if (mapped.length > 0) {
+        setActiveConversationId(mapped[0].id);
+        setMessages(mapped[0].messages ?? []);
+      }
+    } catch (error) {
+      console.log('Error loading conversations:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadConversations('demo-user');
+  }, []);
+
   // Cart actions
   const addUnit = (id: string) => setCartQuantities(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+
+  const addProductToCart = (product: Partial<Product> & { id: string | number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
+    const normalizedId = product.id.toString();
+    const existingProduct = products.find((item) => item.id === normalizedId);
+
+    if (existingProduct) {
+      addUnit(normalizedId);
+    } else {
+      const fallbackProduct: Product = {
+        id: normalizedId,
+        title: product.title ?? product.name ?? 'Producto agregado',
+        subtitle: product.subtitle ?? 'Agregado desde el chatbot',
+        numericPrice: Number(product.numericPrice ?? product.price ?? 0),
+        tag: '',
+        brand: product.brand ?? 'NIC STORE',
+        category: 'chatbot',
+        image: product.image ?? 'https://placehold.co/300x300/png?text=Producto',
+      };
+
+      setCartQuantities(prev => ({ ...prev, [normalizedId]: (prev[normalizedId] || 0) + 1 }));
+      setChatbotCartProducts(prev =>
+        prev.some((item) => item.id === normalizedId) ? prev : [...prev, fallbackProduct]
+      );
+    }
+
+    setCurrentTab('cart');
+  };
   
   const removeUnit = (id: string) => {
     setCartQuantities(prev => {
@@ -86,7 +151,7 @@ export const HomeScreen = ({ onLogout }: Props) => {
   };
 
   const totalItemsInCart = Object.values(cartQuantities).reduce((acc, qty) => acc + qty, 0);
-  const subtotal = products.reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
+  const subtotal = [...products, ...chatbotCartProducts].reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
   const shippingCost = subtotal > 0 ? 350 : 0;
   const totalPayment = subtotal + shippingCost;
 
@@ -101,60 +166,88 @@ export const HomeScreen = ({ onLogout }: Props) => {
     );
   };
 
+  const createNewConversation = async () => {
+    const conversation = await sendChatMessageUseCase.createConversation('demo-user', 'Nueva conversación');
+    const newConversation: Conversation = {
+      id: conversation.id,
+      userId: 'demo-user',
+      title: conversation.title ?? 'Nueva conversación',
+      startDate: conversation.startDate ?? new Date().toISOString(),
+      updatedAt: conversation.updatedAt ?? new Date().toISOString(),
+      isActive: true,
+      messages: [],
+    };
+    setConversations(prev => [newConversation, ...prev]);
+    setActiveConversationId(newConversation.id);
+    setMessages([]);
+  };
+
+  const persistMessage = async (conversationId: string, message: Message) => {
+    try {
+      await sendChatMessageUseCase.saveMessage(conversationId, {
+        role: message.role,
+        content: message.content,
+        timestamp: message.timestamp,
+        isBot: message.isBot,
+        tipo: message.tipo,
+        productos: message.productos ?? [],
+      });
+    } catch (error) {
+      console.log('Error persisting message:', error);
+    }
+  };
+
   // Chatbot Send Message Flow
    const handleSendMessage = async (text: string) => {
     const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
     if (!cleanText) return;
 
-    // CORRECCIÓN: Usando Date.now() directo como número para el id
+    const conversationId = activeConversationId ?? 'default';
+
     const newUserMsg: Message = { 
       id: Date.now(), 
-      conversationId: 'default',
+      conversationId,
       role: 'user', 
       isBot: false,
       content: cleanText,
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, newUserMsg]);
+    await persistMessage(conversationId, newUserMsg);
     setIsTyping(true);
 
     try {
+      const response = await sendChatMessageUseCase.execute(cleanText);
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        conversationId,
+        role: 'assistant',
+        isBot: true,
+        content: response.texto,
+        timestamp: new Date().toISOString(),
+        tipo: response.tipo,
+        productos: response.productos ?? [],
+      };
+      setMessages(prev => [...prev, botMessage]);
+      await persistMessage(conversationId, botMessage);
+      setConversations(prev => prev.map(item => item.id === conversationId ? { ...item, updatedAt: new Date().toISOString(), title: item.title && item.title !== 'Nueva conversación' ? item.title : cleanText.slice(0, 30) } : item));
+    } catch (error: any) {
+      console.log('ERROR DEL CHATBOT:');
+      console.log(error);
 
-  const response = await sendChatMessageUseCase.execute(cleanText);
-      console.log(response);
-  setMessages(prev => [
-    ...prev,
-    {
-      id: Date.now() + 1,
-      conversationId: "default",
-      role: "assistant",
-      isBot: true,
-      content: response.texto,
-      timestamp: new Date().toISOString(),
-    },
-  ]);
-
-} catch (error: any) {
-
-  console.log("ERROR DEL CHATBOT:");
-  console.log(error);
-
-  setMessages(prev => [
-    ...prev,
-    {
-      id: Date.now() + 1,
-      conversationId: "default",
-      role: "assistant",
-      isBot: true,
-      content: "❌ Error al comunicarse con el servidor.",
-      timestamp: new Date().toISOString(),
-    },
-  ]);
-
-} finally {
-
-  setIsTyping(false);
-  }
+      const fallbackMessage: Message = {
+        id: Date.now() + 1,
+        conversationId,
+        role: 'assistant',
+        isBot: true,
+        content: '❌ Error al comunicarse con el servidor.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
+      await persistMessage(conversationId, fallbackMessage);
+    } finally {
+      setIsTyping(false);
+    }
 };
   // Logout flow
   const handleLogout = () => {
@@ -218,6 +311,7 @@ console.log("HOME RENDERIZADO");
       {currentTab === 'cart' && (
         <CartTab
           products={products}
+          extraProducts={chatbotCartProducts}
           cartQuantities={cartQuantities}
           addUnit={addUnit}
           removeUnit={removeUnit}
@@ -231,10 +325,20 @@ console.log("HOME RENDERIZADO");
       {currentTab === 'chatbot' && (
         <ChatbotTab
           messages={messages}
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelectConversation={(conversationId) => {
+            const selected = conversations.find((item) => item.id === conversationId);
+            if (selected) {
+              setActiveConversationId(conversationId);
+              setMessages(selected.messages ?? []);
+            }
+          }}
+          onNewConversation={createNewConversation}
           sendMessage={handleSendMessage}
           isTyping={isTyping}
           onAddProductToCart={(product) => {
-            addUnit(product.id.toString());
+            addProductToCart(product);
             Alert.alert(
               '🛒 ¡Carrito Actualizado!',
               `Agregaste "${product.name}" al carrito desde el Chatbot.`,

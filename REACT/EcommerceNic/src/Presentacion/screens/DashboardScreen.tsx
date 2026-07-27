@@ -70,7 +70,7 @@ export const DashboardScreen = ({ onLogout }: DashboardScreenProps) => {
       contentContainerStyle={styles.scrollPadding}
       showsVerticalScrollIndicator={false}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} color="#4F46E5" />
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={["#4F46E5"]} />
       }
     >
       {/* Metrics Header */}
@@ -169,7 +169,7 @@ export const DashboardScreen = ({ onLogout }: DashboardScreenProps) => {
                       <View
                         style={[
                           styles.barFill,
-                          { height: heightPercentage },
+                          { height: heightPercentage as any },
                           isSelected && styles.barFillActive,
                         ]}
                       />

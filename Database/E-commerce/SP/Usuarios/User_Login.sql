@@ -1,7 +1,7 @@
 USE [DB_ECOMMERCE];
 GO
 
-CREATE OR ALTER PROCEDURE [SQM_SECURITY].[sp_Users_Login]
+CREATE or alter PROCEDURE [SQM_SECURITY].[sp_Users_Login]
     @userEmail VARCHAR(150),
     @userPasswordPlain VARCHAR(255),
     @o_code INT OUTPUT,

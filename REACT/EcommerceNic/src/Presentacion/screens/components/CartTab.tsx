@@ -13,6 +13,7 @@ import { Product } from '../../../Domain/entities/Product';
 
 interface CartTabProps {
   products: Product[];
+  extraProducts?: Product[];
   cartQuantities: { [key: string]: number };
   addUnit: (id: string) => void;
   removeUnit: (id: string) => void;
@@ -24,6 +25,7 @@ interface CartTabProps {
 
 export const CartTab = ({
   products,
+  extraProducts = [],
   cartQuantities,
   addUnit,
   removeUnit,
@@ -32,14 +34,15 @@ export const CartTab = ({
   openPaymentModal,
   totalItemsInCart,
 }: CartTabProps) => {
-  const subtotal = products.reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
+  const cartProducts = [...products, ...extraProducts];
+  const subtotal = cartProducts.reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
   const shippingCost = subtotal > 0 ? 350 : 0;
   const totalPayment = subtotal + shippingCost;
 
   return (
     <View style={styles.tabContent}>
       <View style={styles.cartHeader}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setCurrentTab('home')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => setCurrentTab('chatbot')}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.cartHeaderTitle}>Tu Carrito</Text>
@@ -55,14 +58,14 @@ export const CartTab = ({
           </View>
           <Text style={styles.emptyTextTitle}>Tu carrito está vacío</Text>
           <Text style={styles.emptyTextSub}>¡Agrega productos del catálogo para habilitar el pago!</Text>
-          <TouchableOpacity style={styles.returnButton} onPress={() => setCurrentTab('home')}>
-            <Text style={styles.returnButtonText}>Ir a la Tienda</Text>
+          <TouchableOpacity style={styles.returnButton} onPress={() => setCurrentTab('chatbot')}>
+            <Text style={styles.returnButtonText}>Volver al Chatbot</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <>
           <ScrollView showsVerticalScrollIndicator={false} style={styles.cartItemsList}>
-            {products.map((product) => {
+            {cartProducts.map((product) => {
               const qty = cartQuantities[product.id] || 0;
               if (qty === 0) return null;
               return (
@@ -129,7 +132,7 @@ const styles = StyleSheet.create({
   cartHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, marginBottom: 12 },
   backButton: { width: 38, height: 38, backgroundColor: '#FFFFFF', borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#F1F5F9' },
   backButtonText: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
-  cartHeaderTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '950', color: '#0F172A', marginLeft: 16, marginRight: 16 },
+  cartHeaderTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#0F172A', marginLeft: 16, marginRight: 16 },
   itemsCountBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   itemsCountText: { color: '#4F46E5', fontSize: 12, fontWeight: '800' },
   cartItemsList: { paddingHorizontal: 20, flex: 1, marginBottom: 10 },
@@ -234,7 +237,7 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
   dividerLine: { height: 1.5, backgroundColor: '#EEF2FF', marginVertical: 10 },
   totalLabel: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
-  totalValue: { fontSize: 22, fontWeight: '950', color: '#4F46E5' },
+  totalValue: { fontSize: 22, fontWeight: '900', color: '#4F46E5' },
   payButton: { 
     backgroundColor: '#4F46E5', 
     height: 52, 
@@ -254,7 +257,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  payButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '850' },
+  payButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
   emptyCartContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, marginTop: 40 },
   emptyCartIconBackground: {
     width: 80,
@@ -266,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyTextEmoji: { fontSize: 36 },
-  emptyTextTitle: { fontSize: 18, fontWeight: '850', color: '#0F172A' },
+  emptyTextTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
   emptyTextSub: { fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 6, marginBottom: 24, lineHeight: 18 },
   returnButton: { backgroundColor: '#EEF2FF', paddingHorizontal: 24, height: 40, borderRadius: 20, justifyContent: 'center' },
   returnButtonText: { color: '#4F46E5', fontSize: 13, fontWeight: '800' },

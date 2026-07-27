@@ -11,10 +11,16 @@ def buscar_producto(texto_busqueda):
     )
 
     columns = [column[0] for column in cursor.description] if cursor.description else []
+
+    print("COLUMNAS:", columns)
+
     productos = []
 
     for row in cursor.fetchall():
-        productos.append({column: value for column, value in zip(columns, row)})
+        producto = {column: value for column, value in zip(columns, row)}
+        productos.append(producto)
+
+    print("PRODUCTOS:", productos)
 
     conn.close()
     return productos

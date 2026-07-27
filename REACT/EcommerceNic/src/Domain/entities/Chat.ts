@@ -4,15 +4,19 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   isBot: boolean;
   content: string;
-  timestamp: string; // ISO string mapping to FechaHora
+  timestamp: string;
   appliedRuleId?: number;
   intent?: string;
-  metadata?: string; // Flexible JSON metadata for products, orders, etc.
+  metadata?: string;
+
+  tipo?: string;
+  productos?: any[];
 }
 
 export interface Conversation {
   id: string;
   userId?: string;
+  title?: string;
   language?: string;
   lastIntent?: string;
   cartId?: string;
@@ -20,5 +24,6 @@ export interface Conversation {
   startDate: string; // ISO string mapping to FechaInicio
   endDate?: string;  // ISO string mapping to FechaFin
   isActive: boolean;
+  updatedAt?: string;
   messages?: Message[];
 }

@@ -1,6 +1,6 @@
 import { ChatbotRepository } from "../../Domain/repositories/ChatbotRepository";
 import { chatbotRemoteDataSource } from "../dataSources/ChatbotRemoteDataSource";
-import { ChatbotResponse } from "../dataSources/ChatbotRemoteDataSource";
+import { ChatbotConversationResponse, ChatMessagePayload, ChatbotResponse } from "../dataSources/ChatbotRemoteDataSource";
 
 
 export class ChatbotRepositoryImpl implements ChatbotRepository {
@@ -12,6 +12,22 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
 
         return chatbotRemoteDataSource.sendMessage(message);
 
+    }
+
+    async getConversations(userId?: string): Promise<ChatbotConversationResponse[]> {
+        return chatbotRemoteDataSource.getConversations(userId);
+    }
+
+    async createConversation(userId: string, title?: string): Promise<ChatbotConversationResponse> {
+        return chatbotRemoteDataSource.createConversation(userId, title);
+    }
+
+    async saveMessage(conversationId: string, payload: ChatMessagePayload): Promise<any> {
+        return chatbotRemoteDataSource.saveMessage(conversationId, payload);
+    }
+
+    async getConversation(conversationId: string): Promise<ChatbotConversationResponse | null> {
+        return chatbotRemoteDataSource.getConversation(conversationId);
     }
 
 }

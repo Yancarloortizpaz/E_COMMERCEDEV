@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   iconButton: { width: 42, height: 42, backgroundColor: '#F1F5F9', borderRadius: 21, justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
   emojiIcon: { fontSize: 18 },
   cartBadge: { position: 'absolute', top: -3, right: -3, backgroundColor: '#4F46E5', width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
-  cartBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '850' },
+  cartBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   searchContainer: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   },
   miniQtyText: {
     fontSize: 12,
-    fontWeight: '850',
+    fontWeight: '800',
     color: '#4F46E5',
     paddingHorizontal: 8,
   },

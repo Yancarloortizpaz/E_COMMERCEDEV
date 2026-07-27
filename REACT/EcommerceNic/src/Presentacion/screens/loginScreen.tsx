@@ -60,8 +60,14 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
     setIsLoading(true);
     try {
       const loggedUser = await loginUseCase.execute(trimmedEmail, trimmedPassword);
-      console.log("✅ Login Exitoso para:", loggedUser.name, "Rol:", loggedUser.role);
-      onLoginSuccess(loggedUser);
+      const normalizedUser: User = {
+        id: String(loggedUser.data?.userId ?? Date.now()),
+        email: loggedUser.data?.userEmail ?? trimmedEmail,
+        name: loggedUser.data?.userFullName ?? trimmedEmail,
+        role: 'user',
+      };
+      console.log("✅ Login Exitoso para:", normalizedUser.name, "Rol:", normalizedUser.role);
+      onLoginSuccess(normalizedUser);
     } catch (err: any) {
       setError(`🛑 ${err.message || 'Error al iniciar sesión. Verifica tus credenciales.'}`);
     } finally {
