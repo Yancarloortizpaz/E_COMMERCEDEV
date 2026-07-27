@@ -57,3 +57,6 @@ GO
 
 
 exec [SQM_GENERAL].[sp_AttributeProductVariables_GetByProductVariable] 
+
+
+exec [SQM_GENERAL].[sp_AttributeProductVariables_GetByProductVariable] @SearchTerm = 'a'

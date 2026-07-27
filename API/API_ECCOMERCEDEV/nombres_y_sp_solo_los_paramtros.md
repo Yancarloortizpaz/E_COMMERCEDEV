@@ -1,21 +1,7 @@
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Update]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Delete]
 (
-    @attributeProductVariableId INT,
-    @attributeProductVariableProductVariableId INT,
-    @attributeProductVariableAttributeProductId INT,
-    @attributeProductVariableValue VARCHAR(50),
-    @attributeProductVariableModificatorId INT,
-    @attributeProductVariableStatusId BIT,
-    @o_code INT = NULL OUTPUT,
-    @o_message VARCHAR(255) = NULL OUTPUT,
-    @o_templateId INT = NULL OUTPUT
-)
-AS
-
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Delete]
-(
-    @attributeProductVariableId INT,
-    @attributeProductVariableModificatorId INT,
+    @stockId INT,
+    @stockModificatorId INT,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
     @o_templateId INT = NULL OUTPUT
@@ -24,37 +10,103 @@ AS
 
 
 
-
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Filter]
-(
-    @attributeProductVariableId INT = NULL,
-    @attributeProductVariableProductVariableId INT = NULL,
-    @attributeProductVariableAttributeProductId INT = NULL,
-    @attributeProductVariableValue VARCHAR(50) = NULL,
-    @attributeProductVariableCreatorId INT = NULL,
-    @attributeProductVariableCreationDate DATETIME = NULL,
-    @attributeProductVariableModificatorId INT = NULL,
-    @attributeProductVariableModificationDate DATETIME = NULL,
-    @attributeProductVariableStatusId BIT = NULL
-)
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Filter]
+    @SearchTerm VARCHAR(50) = NULL, 
+	@ProductVariableId INT = null
 AS BEGIN
+    DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
 
-    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableCreationDate, attributeProductVariableModificatorId, attributeProductVariableModificationDate, attributeProductVariableStatusId
+    SELECT 
+        stockId,
+        productVariableId,
+        productName,
+        variableValue,
+        unitPrice,
+        currencyISO,
+        quantity,
+        factoryDate,
+        expirationDate,
+        statusId
 
 
-    CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_Create]
+
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_GetByProductVariable]
 (
-    @attributeProductVariableProductVariableId INT,
-    @attributeProductVariableAttributeProductId INT,
-    @attributeProductVariableValue NVARCHAR(50),
-    @attributeProductVariableCreatorId INT,
-    @attributeProductVariableStatusId BIT,
+    @ProductVariableId INT = NULL,
+    @SearchTerm VARCHAR(100) = NULL
+)
+AS 
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @TerminoBusqueda VARCHAR(102) = NULL;
+    IF @SearchTerm IS NOT NULL AND RTRIM(LTRIM(@SearchTerm)) <> ''
+    BEGIN
+        SET @TerminoBusqueda = '%' + RTRIM(LTRIM(@SearchTerm)) + '%';
+    END
+
+    SELECT 
+        IdAtributoVariable,
+        ValorAtributo,
+        RegistroActivo,
+        IdTipoVariable,
+        TipoVariable,
+        DescripcionTipoVariable,
+        IdVariante,
+        ValorVariante,
+        PrecioVariante,
+        CodigoMoneda,
+        NombreMoneda,
+        IdProducto,
+        NombreProducto,
+        DescripcionProducto,
+        NombreMarca,
+        NombreProveedor,
+        FechaCreacion,
+        CreadoPor,
+        FechaModificacion,
+        ModificadoPor
+
+
+
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_List]
+AS BEGIN
+    SELECT 
+        stockId,
+        productVariableId,
+        productName,
+        variableValue,
+        unitPrice,
+        currencyISO,
+        quantity,
+        factoryDate,
+        expirationDate,
+        statusId
+
+
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Create]
+(
+    @stockProductVariableId INT,
+    @stockQuantity INT,
+    @stockFactoryDate DATE,
+    @stockExpirationDate DATE,
+    @stockCreatorId INT,
+    @stockStatusId BIT,
     @o_code INT = NULL OUTPUT,
-    @o_message NVARCHAR(255) = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
     @o_templateId INT = NULL OUTPUT
 )
 AS
 
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_List]
-AS BEGIN
-    SELECT attributeProductVariableId, attributeProductVariableProductVariableId, attributeProductVariableAttributeProductId, attributeProductVariableValue, attributeProductVariableCreatorId, attributeProductVariableStatusId
+
+
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Update]
+(
+    @stockId INT,
+    @stockQuantityAdjustment INT, -- Positivo para sumar, negativo para restar
+    @stockModificatorId INT,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_templateId INT = NULL OUTPUT
+)
+AS

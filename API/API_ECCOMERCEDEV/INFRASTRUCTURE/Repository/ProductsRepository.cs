@@ -19,8 +19,6 @@ namespace INFRASTRUCTURE.Repository
             _connection = connection;
         }
 
-        #region escritura_products
-
         public async Task<OUTPUT> Insertar_ProductsAsync(DM_Products_insertar modelo)
         {
             var result = new OUTPUT();
@@ -154,13 +152,10 @@ namespace INFRASTRUCTURE.Repository
             }
         }
 
-        #endregion
-
-        #region lectura_products
-
-        public async Task<IEnumerable<DM_Products_listar>> Listar_ProductsAsync()
+        public async Task<(IEnumerable<DM_Products_listar> Data, OUTPUT Output)> Listar_ProductsAsync(int? pageNumber = null)
         {
             var list = new List<DM_Products_listar>();
+            var output = new OUTPUT();
             try
             {
                 using var con = _connection.CreateConnection();
@@ -169,6 +164,19 @@ namespace INFRASTRUCTURE.Repository
                 using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_Products_List]", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@i_pageNumber", pageNumber ?? (object)DBNull.Value));
+
+                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+                    SqlParameter pPageNumber = new SqlParameter("@o_pageNumber", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pPageSize = new SqlParameter("@o_pageSize", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pTotalRows = new SqlParameter("@o_totalRows", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                    cmd.Parameters.Add(pCode);
+                    cmd.Parameters.Add(pMessage);
+                    cmd.Parameters.Add(pPageNumber);
+                    cmd.Parameters.Add(pPageSize);
+                    cmd.Parameters.Add(pTotalRows);
 
                     using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
                     {
@@ -177,8 +185,14 @@ namespace INFRASTRUCTURE.Repository
                             list.Add(MapearDataReaderAListar(dr));
                         }
                     }
+
+                    output.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
+                    output.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
+                    output.PageNumber = pPageNumber.Value != DBNull.Value ? (int?)pPageNumber.Value : null;
+                    output.PageSize = pPageSize.Value != DBNull.Value ? (int?)pPageSize.Value : null;
+                    output.TotalRows = pTotalRows.Value != DBNull.Value ? (int?)pTotalRows.Value : null;
                 }
-                return list;
+                return (list, output);
             }
             catch (SqlException ex)
             {
@@ -186,9 +200,10 @@ namespace INFRASTRUCTURE.Repository
             }
         }
 
-        public async Task<IEnumerable<DM_Products_filtrar>> Filtrar_ProductsAsync(string? searchTerm)
+        public async Task<(IEnumerable<DM_Products_filtrar> Data, OUTPUT Output)> Filtrar_ProductsAsync(string? searchTerm, int? pageNumber = 1)
         {
             var list = new List<DM_Products_filtrar>();
+            var output = new OUTPUT();
             try
             {
                 using var con = _connection.CreateConnection();
@@ -198,6 +213,19 @@ namespace INFRASTRUCTURE.Repository
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@SearchTerm", searchTerm ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@i_pageNumber", pageNumber ?? (object)DBNull.Value));
+
+                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+                    SqlParameter pPageNumber = new SqlParameter("@o_pageNumber", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pPageSize = new SqlParameter("@o_pageSize", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pTotalRows = new SqlParameter("@o_totalRows", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                    cmd.Parameters.Add(pCode);
+                    cmd.Parameters.Add(pMessage);
+                    cmd.Parameters.Add(pPageNumber);
+                    cmd.Parameters.Add(pPageSize);
+                    cmd.Parameters.Add(pTotalRows);
 
                     using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
                     {
@@ -206,8 +234,14 @@ namespace INFRASTRUCTURE.Repository
                             list.Add(MapearDataReaderAFiltrar(dr));
                         }
                     }
+
+                    output.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
+                    output.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
+                    output.PageNumber = pPageNumber.Value != DBNull.Value ? (int?)pPageNumber.Value : null;
+                    output.PageSize = pPageSize.Value != DBNull.Value ? (int?)pPageSize.Value : null;
+                    output.TotalRows = pTotalRows.Value != DBNull.Value ? (int?)pTotalRows.Value : null;
                 }
-                return list;
+                return (list, output);
             }
             catch (SqlException ex)
             {
@@ -215,30 +249,31 @@ namespace INFRASTRUCTURE.Repository
             }
         }
 
-        #endregion
-
-        #region mapeadores
-
         private DM_Products_listar MapearDataReaderAListar(SqlDataReader dr)
         {
             return new DM_Products_listar
             {
-                productId = dr["productId"] != DBNull.Value ? (int?)dr["productId"] : null,
-                productName = dr["productName"] != DBNull.Value ? dr["productName"].ToString() : null,
-                productDescription = dr["productDescription"] != DBNull.Value ? dr["productDescription"].ToString() : null,
-                productIdentificatorId = dr["productIdentificatorId"] != DBNull.Value ? (int?)dr["productIdentificatorId"] : null,
-                categoryId = dr["categoryId"] != DBNull.Value ? (int?)dr["categoryId"] : null,
-                categoryName = dr["categoryName"] != DBNull.Value ? dr["categoryName"].ToString() : null,
-                subCategoryId = dr["subCategoryId"] != DBNull.Value ? (int?)dr["subCategoryId"] : null,
-                subCategoryName = dr["subCategoryName"] != DBNull.Value ? dr["subCategoryName"].ToString() : null,
-                segmentId = dr["segmentId"] != DBNull.Value ? (int?)dr["segmentId"] : null,
-                segmentName = dr["segmentName"] != DBNull.Value ? dr["segmentName"].ToString() : null,
-                markByProviderId = dr["markByProviderId"] != DBNull.Value ? (int?)dr["markByProviderId"] : null,
-                markId = dr["markId"] != DBNull.Value ? (int?)dr["markId"] : null,
-                markName = dr["markName"] != DBNull.Value ? dr["markName"].ToString() : null,
-                providerId = dr["providerId"] != DBNull.Value ? (int?)dr["providerId"] : null,
-                providerName = dr["providerName"] != DBNull.Value ? dr["providerName"].ToString() : null,
-                statusId = dr["statusId"] != DBNull.Value ? (bool?)dr["statusId"] : null
+                ProductID = dr["ProductID"] != DBNull.Value ? (int?)dr["ProductID"] : null,
+                ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString() : null,
+                ProductVariableID = dr["ProductVariableID"] != DBNull.Value ? (int?)dr["ProductVariableID"] : null,
+                ProductVariableName = dr["ProductVariableName"] != DBNull.Value ? dr["ProductVariableName"].ToString() : null,
+                ProductVariablePrice = dr["ProductVariablePrice"] != DBNull.Value ? (decimal?)dr["ProductVariablePrice"] : null,
+                CurrencyID = dr["CurrencyID"] != DBNull.Value ? (int?)dr["CurrencyID"] : null,
+                CurrencyISO = dr["CurrencyISO"] != DBNull.Value ? dr["CurrencyISO"].ToString() : null,
+                CategoryID = dr["CategoryID"] != DBNull.Value ? (int?)dr["CategoryID"] : null,
+                CategoryName = dr["CategoryName"] != DBNull.Value ? dr["CategoryName"].ToString() : null,
+                SubcategoryID = dr["SubcategoryID"] != DBNull.Value ? (int?)dr["SubcategoryID"] : null,
+                SubcategoryName = dr["SubcategoryName"] != DBNull.Value ? dr["SubcategoryName"].ToString() : null,
+                SegmentID = dr["SegmentID"] != DBNull.Value ? (int?)dr["SegmentID"] : null,
+                SegmentName = dr["SegmentName"] != DBNull.Value ? dr["SegmentName"].ToString() : null,
+                MarkID = dr["MarkID"] != DBNull.Value ? (int?)dr["MarkID"] : null,
+                MarkName = dr["MarkName"] != DBNull.Value ? dr["MarkName"].ToString() : null,
+                ProviderID = dr["ProviderID"] != DBNull.Value ? (int?)dr["ProviderID"] : null,
+                ProviderName = dr["ProviderName"] != DBNull.Value ? dr["ProviderName"].ToString() : null,
+                StockID = dr["StockID"] != DBNull.Value ? (int?)dr["StockID"] : null,
+                StockAvilable = dr["StockAvilable"] != DBNull.Value ? (int?)dr["StockAvilable"] : null,
+                StockFactoryDate = dr["StockFactoryDate"] != DBNull.Value ? (DateTime?)dr["StockFactoryDate"] : null,
+                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null
             };
         }
 
@@ -246,25 +281,28 @@ namespace INFRASTRUCTURE.Repository
         {
             return new DM_Products_filtrar
             {
-                productId = dr["productId"] != DBNull.Value ? (int?)dr["productId"] : null,
-                productName = dr["productName"] != DBNull.Value ? dr["productName"].ToString() : null,
-                productDescription = dr["productDescription"] != DBNull.Value ? dr["productDescription"].ToString() : null,
-                productIdentificatorId = dr["productIdentificatorId"] != DBNull.Value ? (int?)dr["productIdentificatorId"] : null,
-                categoryId = dr["categoryId"] != DBNull.Value ? (int?)dr["categoryId"] : null,
-                categoryName = dr["categoryName"] != DBNull.Value ? dr["categoryName"].ToString() : null,
-                subCategoryId = dr["subCategoryId"] != DBNull.Value ? (int?)dr["subCategoryId"] : null,
-                subCategoryName = dr["subCategoryName"] != DBNull.Value ? dr["subCategoryName"].ToString() : null,
-                segmentId = dr["segmentId"] != DBNull.Value ? (int?)dr["segmentId"] : null,
-                segmentName = dr["segmentName"] != DBNull.Value ? dr["segmentName"].ToString() : null,
-                markByProviderId = dr["markByProviderId"] != DBNull.Value ? (int?)dr["markByProviderId"] : null,
-                markId = dr["markId"] != DBNull.Value ? (int?)dr["markId"] : null,
-                markName = dr["markName"] != DBNull.Value ? dr["markName"].ToString() : null,
-                providerId = dr["providerId"] != DBNull.Value ? (int?)dr["providerId"] : null,
-                providerName = dr["providerName"] != DBNull.Value ? dr["providerName"].ToString() : null,
-                statusId = dr["statusId"] != DBNull.Value ? (bool?)dr["statusId"] : null
+                ProductID = dr["ProductID"] != DBNull.Value ? (int?)dr["ProductID"] : null,
+                ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString() : null,
+                ProductVariableID = dr["ProductVariableID"] != DBNull.Value ? (int?)dr["ProductVariableID"] : null,
+                ProductVariableName = dr["ProductVariableName"] != DBNull.Value ? dr["ProductVariableName"].ToString() : null,
+                ProductVariablePrice = dr["ProductVariablePrice"] != DBNull.Value ? (decimal?)dr["ProductVariablePrice"] : null,
+                CurrencyID = dr["CurrencyID"] != DBNull.Value ? (int?)dr["CurrencyID"] : null,
+                CurrencyISO = dr["CurrencyISO"] != DBNull.Value ? dr["CurrencyISO"].ToString() : null,
+                CategoryID = dr["CategoryID"] != DBNull.Value ? (int?)dr["CategoryID"] : null,
+                CategoryName = dr["CategoryName"] != DBNull.Value ? dr["CategoryName"].ToString() : null,
+                SubcategoryID = dr["SubcategoryID"] != DBNull.Value ? (int?)dr["SubcategoryID"] : null,
+                SubcategoryName = dr["SubcategoryName"] != DBNull.Value ? dr["SubcategoryName"].ToString() : null,
+                SegmentID = dr["SegmentID"] != DBNull.Value ? (int?)dr["SegmentID"] : null,
+                SegmentName = dr["SegmentName"] != DBNull.Value ? dr["SegmentName"].ToString() : null,
+                MarkID = dr["MarkID"] != DBNull.Value ? (int?)dr["MarkID"] : null,
+                MarkName = dr["MarkName"] != DBNull.Value ? dr["MarkName"].ToString() : null,
+                ProviderID = dr["ProviderID"] != DBNull.Value ? (int?)dr["ProviderID"] : null,
+                ProviderName = dr["ProviderName"] != DBNull.Value ? dr["ProviderName"].ToString() : null,
+                StockID = dr["StockID"] != DBNull.Value ? (int?)dr["StockID"] : null,
+                StockAvilable = dr["StockAvilable"] != DBNull.Value ? (int?)dr["StockAvilable"] : null,
+                StockFactoryDate = dr["StockFactoryDate"] != DBNull.Value ? (DateTime?)dr["StockFactoryDate"] : null,
+                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null
             };
         }
-
-        #endregion
     }
 }
