@@ -3,7 +3,10 @@ using DOMAIN.AttributeProductVariables;
 using DOMAIN.VariablesSalida;
 using INFRASTRUCTURE.DB;
 using Microsoft.Data.SqlClient;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace INFRASTRUCTURE.Repository
 {
@@ -16,9 +19,9 @@ namespace INFRASTRUCTURE.Repository
             _connection = connection;
         }
 
-        #region escritura_attributeproductvariables
+        #region escritura
 
-        public async Task<OUTPUT> Insertar_AttributeProductVariablesAsync(DM_AttributeProductVariablesInsertar modelo)
+        public async Task<OUTPUT> Insertar_AttributeProductVariablesAsync(DM_AttributeProductVariables_create modelo)
         {
             var result = new OUTPUT();
             try
@@ -26,59 +29,14 @@ namespace INFRASTRUCTURE.Repository
                 using var con = _connection.CreateConnection();
                 await con.OpenAsync();
 
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_AttributeProductVariables_Create]", con))
+                using (SqlCommand cmd = new SqlCommand("SQM_GENERAL.sp_AttributeProductVariables_Create", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.Add(new SqlParameter("@attributeProductVariableProductVariableId", modelo.AttributeProductVariableProductVariableId ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@attributeProductVariableAttributeProductId", modelo.AttributeProductVariableAttributeProductId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableValue", modelo.AttributeProductVariableValue ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableValue", (object?)modelo.AttributeProductVariableValue ?? DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@attributeProductVariableCreatorId", modelo.AttributeProductVariableCreatorId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableStatusId", modelo.AttributeProductVariableStatusId ?? (object)DBNull.Value));
-
-                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
-                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.NVarChar, 255) { Direction = ParameterDirection.Output };
-                    SqlParameter pTemplate = new SqlParameter("@o_templateId", SqlDbType.Int) { Direction = ParameterDirection.Output };
-
-                    cmd.Parameters.Add(pCode);
-                    cmd.Parameters.Add(pMessage);
-                    cmd.Parameters.Add(pTemplate);
-
-                    await cmd.ExecuteNonQueryAsync();
-
-                    result.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
-                    result.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
-                    result.TemplateId = pTemplate.Value != DBNull.Value ? (int?)pTemplate.Value : null;
-                }
-                return result;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception($"Error en el motor SQL al crear la variable de atributo de producto: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error crítico de infraestructura al crear la variable de atributo de producto: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<OUTPUT> Editar_AttributeProductVariablesAsync(DM_AttributeProductVariablesEditar modelo)
-        {
-            var result = new OUTPUT();
-            try
-            {
-                using var con = _connection.CreateConnection();
-                await con.OpenAsync();
-
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_AttributeProductVariables_Update]", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableId", modelo.AttributeProductVariableId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableProductVariableId", modelo.AttributeProductVariableProductVariableId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableAttributeProductId", modelo.AttributeProductVariableAttributeProductId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableValue", modelo.AttributeProductVariableValue ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableModificatorId", modelo.AttributeProductVariableModificatorId ?? (object)DBNull.Value));
                     cmd.Parameters.Add(new SqlParameter("@attributeProductVariableStatusId", modelo.AttributeProductVariableStatusId ?? (object)DBNull.Value));
 
                     SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
@@ -99,11 +57,57 @@ namespace INFRASTRUCTURE.Repository
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Error en el motor SQL al actualizar la variable de atributo de producto: {ex.Message}", ex);
+                throw new Exception("Error en SQL Server al insertar el atributo de variable de producto.", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error crítico de infraestructura al actualizar la variable de atributo de producto: {ex.Message}", ex);
+                throw new Exception("Error crítico al insertar el atributo de variable de producto.", ex);
+            }
+        }
+
+        public async Task<OUTPUT> Actualizar_AttributeProductVariablesAsync(DM_AttributeProductVariables_update modelo)
+        {
+            var result = new OUTPUT();
+            try
+            {
+                using var con = _connection.CreateConnection();
+                await con.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("SQM_GENERAL.sp_AttributeProductVariables_Update", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableId", modelo.AttributeProductVariableId ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableProductVariableId", modelo.AttributeProductVariableProductVariableId ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableAttributeProductId", modelo.AttributeProductVariableAttributeProductId ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableValue", (object?)modelo.AttributeProductVariableValue ?? DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableModificatorId", modelo.AttributeProductVariableModificatorId ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableStatusId", modelo.AttributeProductVariableStatusId ?? (object)DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@ForzarRecuperacion", modelo.ForzarRecuperacion ?? (object)DBNull.Value));
+
+                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+                    SqlParameter pTemplate = new SqlParameter("@o_templateId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                    cmd.Parameters.Add(pCode);
+                    cmd.Parameters.Add(pMessage);
+                    cmd.Parameters.Add(pTemplate);
+
+                    await cmd.ExecuteNonQueryAsync();
+
+                    result.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
+                    result.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
+                    result.TemplateId = pTemplate.Value != DBNull.Value ? (int?)pTemplate.Value : null;
+                }
+                return result;
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Error en SQL Server al actualizar el atributo de variable de producto.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error crítico al actualizar el atributo de variable de producto.", ex);
             }
         }
 
@@ -115,7 +119,7 @@ namespace INFRASTRUCTURE.Repository
                 using var con = _connection.CreateConnection();
                 await con.OpenAsync();
 
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_AttributeProductVariables_Delete]", con))
+                using (SqlCommand cmd = new SqlCommand("SQM_GENERAL.sp_AttributeProductVariables_Delete", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -140,35 +144,59 @@ namespace INFRASTRUCTURE.Repository
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Error en el motor SQL al eliminar la variable de atributo de producto: {ex.Message}", ex);
+                throw new Exception("Error en SQL Server al eliminar el atributo de variable de producto.", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error crítico de infraestructura al eliminar la variable de atributo de producto: {ex.Message}", ex);
+                throw new Exception("Error crítico al eliminar el atributo de variable de producto.", ex);
             }
         }
 
         #endregion
 
-        #region lectura_attributeproductvariables
+        #region lectura
 
-        public async Task<IEnumerable<DM_AttributeProductVariablesListar>> Listar_AttributeProductVariablesAsync()
+        public async Task<IEnumerable<DM_AttributeProductVariables_obtener>> Obtener_AttributeProductVariablesAsync(int? productVariableId, string? searchTerm)
         {
-            var list = new List<DM_AttributeProductVariablesListar>();
+            var list = new List<DM_AttributeProductVariables_obtener>();
             try
             {
                 using var con = _connection.CreateConnection();
                 await con.OpenAsync();
 
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_AttributeProductVariables_List]", con))
+                using (SqlCommand cmd = new SqlCommand("SQM_GENERAL.sp_AttributeProductVariables_GetByProductVariable", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@ProductVariableId", (object?)productVariableId ?? DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
 
                     using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
                     {
                         while (await dr.ReadAsync())
                         {
-                            list.Add(MapearDataReaderAListar(dr));
+                            list.Add(new DM_AttributeProductVariables_obtener
+                            {
+                                IdAtributoVariable = dr.IsDBNull(dr.GetOrdinal("IdAtributoVariable")) ? null : (int?)dr.GetInt32(dr.GetOrdinal("IdAtributoVariable")),
+                                ValorAtributo = dr.IsDBNull(dr.GetOrdinal("ValorAtributo")) ? null : dr.GetString(dr.GetOrdinal("ValorAtributo")),
+                                RegistroActivo = dr.IsDBNull(dr.GetOrdinal("RegistroActivo")) ? null : (bool?)dr.GetBoolean(dr.GetOrdinal("RegistroActivo")),
+                                IdTipoVariable = dr.IsDBNull(dr.GetOrdinal("IdTipoVariable")) ? null : (int?)dr.GetInt32(dr.GetOrdinal("IdTipoVariable")),
+                                TipoVariable = dr.IsDBNull(dr.GetOrdinal("TipoVariable")) ? null : dr.GetString(dr.GetOrdinal("TipoVariable")),
+                                DescripcionTipoVariable = dr.IsDBNull(dr.GetOrdinal("DescripcionTipoVariable")) ? null : dr.GetString(dr.GetOrdinal("DescripcionTipoVariable")),
+                                IdVariante = dr.IsDBNull(dr.GetOrdinal("IdVariante")) ? null : (int?)dr.GetInt32(dr.GetOrdinal("IdVariante")),
+                                ValorVariante = dr.IsDBNull(dr.GetOrdinal("ValorVariante")) ? null : dr.GetString(dr.GetOrdinal("ValorVariante")),
+                                PrecioVariante = dr.IsDBNull(dr.GetOrdinal("PrecioVariante")) ? null : (decimal?)dr.GetDecimal(dr.GetOrdinal("PrecioVariante")),
+                                CodigoMoneda = dr.IsDBNull(dr.GetOrdinal("CodigoMoneda")) ? null : dr.GetString(dr.GetOrdinal("CodigoMoneda")),
+                                NombreMoneda = dr.IsDBNull(dr.GetOrdinal("NombreMoneda")) ? null : dr.GetString(dr.GetOrdinal("NombreMoneda")),
+                                IdProducto = dr.IsDBNull(dr.GetOrdinal("IdProducto")) ? null : (int?)dr.GetInt32(dr.GetOrdinal("IdProducto")),
+                                NombreProducto = dr.IsDBNull(dr.GetOrdinal("NombreProducto")) ? null : dr.GetString(dr.GetOrdinal("NombreProducto")),
+                                DescripcionProducto = dr.IsDBNull(dr.GetOrdinal("DescripcionProducto")) ? null : dr.GetString(dr.GetOrdinal("DescripcionProducto")),
+                                NombreMarca = dr.IsDBNull(dr.GetOrdinal("NombreMarca")) ? null : dr.GetString(dr.GetOrdinal("NombreMarca")),
+                                NombreProveedor = dr.IsDBNull(dr.GetOrdinal("NombreProveedor")) ? null : dr.GetString(dr.GetOrdinal("NombreProveedor")),
+                                FechaCreacion = dr.IsDBNull(dr.GetOrdinal("FechaCreacion")) ? null : (DateTime?)dr.GetDateTime(dr.GetOrdinal("FechaCreacion")),
+                                CreadoPor = dr.IsDBNull(dr.GetOrdinal("CreadoPor")) ? null : dr.GetString(dr.GetOrdinal("CreadoPor")),
+                                FechaModificacion = dr.IsDBNull(dr.GetOrdinal("FechaModificacion")) ? null : (DateTime?)dr.GetDateTime(dr.GetOrdinal("FechaModificacion")),
+                                ModificadoPor = dr.IsDBNull(dr.GetOrdinal("ModificadoPor")) ? null : (int?)dr.GetInt32(dr.GetOrdinal("ModificadoPor"))
+                            });
                         }
                     }
                 }
@@ -176,147 +204,12 @@ namespace INFRASTRUCTURE.Repository
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Error al consultar el listado completo de variables de atributos de productos: {ex.Message}", ex);
+                throw new Exception("Error en SQL Server al consultar atributos de variables del producto.", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error crítico al consultar el listado completo de variables de atributos de productos: {ex.Message}", ex);
+                throw new Exception("Error crítico al obtener atributos de variables del producto.", ex);
             }
-        }
-
-        public async Task<IEnumerable<DM_AttributeProductVariablesFiltrar>> Filtrar_AttributeProductVariablesAsync(DM_AttributeProductVariablesFiltrar filtro)
-        {
-            var list = new List<DM_AttributeProductVariablesFiltrar>();
-            try
-            {
-                using var con = _connection.CreateConnection();
-                await con.OpenAsync();
-
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_AttributeProductVariables_Filter]", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableId", filtro.AttributeProductVariableId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableProductVariableId", filtro.AttributeProductVariableProductVariableId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableAttributeProductId", filtro.AttributeProductVariableAttributeProductId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableValue", filtro.AttributeProductVariableValue ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableCreatorId", filtro.AttributeProductVariableCreatorId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableCreationDate", filtro.AttributeProductVariableCreationDate ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableModificatorId", filtro.AttributeProductVariableModificatorId ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableModificationDate", filtro.AttributeProductVariableModificationDate ?? (object)DBNull.Value));
-                    cmd.Parameters.Add(new SqlParameter("@attributeProductVariableStatusId", filtro.AttributeProductVariableStatusId ?? (object)DBNull.Value));
-
-                    using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await dr.ReadAsync())
-                        {
-                            list.Add(MapearDataReaderAFiltrar(dr));
-                        }
-                    }
-                }
-                return list;
-            }
-            catch (SqlException ex)
-            {
-                throw new Exception($"Error al filtrar variables de atributos de productos en la base de datos: {ex.Message}", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error crítico al filtrar variables de atributos de productos: {ex.Message}", ex);
-            }
-        }
-
-        #endregion
-
-        #region mapeadores
-
-        private int? ObtenerInt(SqlDataReader dr, string column)
-        {
-            try
-            {
-                int ordinal = dr.GetOrdinal(column);
-                if (dr.IsDBNull(ordinal)) return null;
-                object val = dr.GetValue(ordinal);
-                if (val is bool b) return b ? 1 : 0;
-                return Convert.ToInt32(val);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private bool? ObtenerBool(SqlDataReader dr, string column)
-        {
-            try
-            {
-                int ordinal = dr.GetOrdinal(column);
-                if (dr.IsDBNull(ordinal)) return null;
-                object val = dr.GetValue(ordinal);
-                if (val is bool b) return b;
-                return Convert.ToBoolean(val);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private string? ObtenerString(SqlDataReader dr, string column)
-        {
-            try
-            {
-                int ordinal = dr.GetOrdinal(column);
-                if (dr.IsDBNull(ordinal)) return null;
-                return dr.GetValue(ordinal)?.ToString();
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private DateTime? ObtenerDateTime(SqlDataReader dr, string column)
-        {
-            try
-            {
-                int ordinal = dr.GetOrdinal(column);
-                if (dr.IsDBNull(ordinal)) return null;
-                return Convert.ToDateTime(dr.GetValue(ordinal));
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private DM_AttributeProductVariablesListar MapearDataReaderAListar(SqlDataReader dr)
-        {
-            return new DM_AttributeProductVariablesListar
-            {
-                AttributeProductVariableId = ObtenerInt(dr, "attributeProductVariableId"),
-                AttributeProductVariableProductVariableId = ObtenerInt(dr, "attributeProductVariableProductVariableId"),
-                AttributeProductVariableAttributeProductId = ObtenerInt(dr, "attributeProductVariableAttributeProductId"),
-                AttributeProductVariableValue = ObtenerString(dr, "attributeProductVariableValue"),
-                AttributeProductVariableCreatorId = ObtenerInt(dr, "attributeProductVariableCreatorId"),
-                AttributeProductVariableStatusId = ObtenerBool(dr, "attributeProductVariableStatusId")
-            };
-        }
-
-        private DM_AttributeProductVariablesFiltrar MapearDataReaderAFiltrar(SqlDataReader dr)
-        {
-            return new DM_AttributeProductVariablesFiltrar
-            {
-                AttributeProductVariableId = ObtenerInt(dr, "attributeProductVariableId"),
-                AttributeProductVariableProductVariableId = ObtenerInt(dr, "attributeProductVariableProductVariableId"),
-                AttributeProductVariableAttributeProductId = ObtenerInt(dr, "attributeProductVariableAttributeProductId"),
-                AttributeProductVariableValue = ObtenerString(dr, "attributeProductVariableValue"),
-                AttributeProductVariableCreatorId = ObtenerInt(dr, "attributeProductVariableCreatorId"),
-                AttributeProductVariableCreationDate = ObtenerDateTime(dr, "attributeProductVariableCreationDate"),
-                AttributeProductVariableModificatorId = ObtenerInt(dr, "attributeProductVariableModificatorId"),
-                AttributeProductVariableModificationDate = ObtenerDateTime(dr, "attributeProductVariableModificationDate"),
-                AttributeProductVariableStatusId = ObtenerBool(dr, "attributeProductVariableStatusId")
-            };
         }
 
         #endregion

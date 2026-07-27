@@ -4,14 +4,7 @@ namespace APLICATION.DTOs.AttributeProductVariables
 {
     public class AttributeProductVariablesFilterDTOs
     {
-        public int? AttributeProductVariableId { get; set; }
-        public int? AttributeProductVariableProductVariableId { get; set; }
-        public int? AttributeProductVariableAttributeProductId { get; set; }
-        public string? AttributeProductVariableValue { get; set; }
-        public int? AttributeProductVariableCreatorId { get; set; }
-        public DateTime? AttributeProductVariableCreationDate { get; set; }
-        public int? AttributeProductVariableModificatorId { get; set; }
-        public DateTime? AttributeProductVariableModificationDate { get; set; }
-        public bool? AttributeProductVariableStatusId { get; set; }
+        public int? ProductVariableId { get; set; }
+        public string? SearchTerm { get; set; }
     }
 }

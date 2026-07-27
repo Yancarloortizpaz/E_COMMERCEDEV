@@ -1,4 +1,4 @@
-using APLICATION.DTOs.AttributeProductVariables;
+using APLICATION.DTOs.Stocks;
 using APLICATION.Services;
 using DOMAIN.VariablesSalida;
 using Microsoft.AspNetCore.Mvc;
@@ -10,26 +10,44 @@ namespace PRESENTACION.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AttributeProductVariablesController : ControllerBase
+    public class StocksController : ControllerBase
     {
-        private readonly AttributeProductVariablesServices _service;
+        private readonly StocksServices _service;
 
-        public AttributeProductVariablesController(AttributeProductVariablesServices service)
+        public StocksController(StocksServices service)
         {
             _service = service;
         }
 
         #region lectura
 
-        [HttpGet("obtener")]
-        public async Task<IActionResult> Obtener_AttributeProductVariables([FromQuery] AttributeProductVariablesFilterDTOs filter)
+        [HttpGet("listar")]
+        public async Task<IActionResult> Listar_Stocks()
         {
             try
             {
-                var lista = await _service.Obtener_AttributeProductVariables_Async(filter);
+                var lista = await _service.Listar_Stocks_Async();
                 if (lista == null || !lista.Any())
                 {
-                    return NotFound(new { codigo = 404, msj = "No se encontraron atributos de variables para el producto especificado." });
+                    return NotFound(new { codigo = 404, msj = "No se encontraron registros de stock." });
+                }
+                return Ok(new { codigo = 200, msj = "Consulta exitosa", data = lista });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = 500, msj = ex.Message });
+            }
+        }
+
+        [HttpGet("filtrar")]
+        public async Task<IActionResult> Filtrar_Stocks([FromQuery] StocksFilterDTOs filter)
+        {
+            try
+            {
+                var lista = await _service.Filtrar_Stocks_Async(filter);
+                if (lista == null || !lista.Any())
+                {
+                    return NotFound(new { codigo = 404, msj = "No se encontraron resultados para los filtros especificados." });
                 }
                 return Ok(new { codigo = 200, msj = "Consulta exitosa", data = lista });
             }
@@ -44,7 +62,7 @@ namespace PRESENTACION.Controllers
         #region escritura
 
         [HttpPost("insertar")]
-        public async Task<IActionResult> Insertar_AttributeProductVariables([FromBody] AttributeProductVariablesCreateDTOs dto)
+        public async Task<IActionResult> Insertar_Stocks([FromBody] StocksCreateDTOs dto)
         {
             try
             {
@@ -53,7 +71,7 @@ namespace PRESENTACION.Controllers
                     return BadRequest(new { codigo = 400, msj = "Datos de entrada no válidos." });
                 }
 
-                OUTPUT resultado = await _service.Insertar_AttributeProductVariables_Async(dto);
+                OUTPUT resultado = await _service.Insertar_Stocks_Async(dto);
 
                 if (!resultado.IsSuccess)
                 {
@@ -69,16 +87,16 @@ namespace PRESENTACION.Controllers
         }
 
         [HttpPut("actualizar")]
-        public async Task<IActionResult> Actualizar_AttributeProductVariables([FromBody] AttributeProductVariablesUpdateDTOs dto)
+        public async Task<IActionResult> Actualizar_Stocks([FromBody] StocksUpdateDTOs dto)
         {
             try
             {
-                if (!ModelState.IsValid || dto == null || !dto.AttributeProductVariableId.HasValue)
+                if (!ModelState.IsValid || dto == null || !dto.StockId.HasValue)
                 {
-                    return BadRequest(new { codigo = 400, msj = "El identificador del atributo es obligatorio." });
+                    return BadRequest(new { codigo = 400, msj = "El identificador del stock es obligatorio." });
                 }
 
-                OUTPUT resultado = await _service.Actualizar_AttributeProductVariables_Async(dto);
+                OUTPUT resultado = await _service.Actualizar_Stocks_Async(dto);
 
                 if (!resultado.IsSuccess)
                 {
@@ -93,17 +111,17 @@ namespace PRESENTACION.Controllers
             }
         }
 
-        [HttpDelete("{attributeProductVariableId}/{attributeProductVariableModificatorId}")]
-        public async Task<IActionResult> Eliminar_AttributeProductVariables(int? attributeProductVariableId, int? attributeProductVariableModificatorId)
+        [HttpDelete("{stockId}/{stockModificatorId}")]
+        public async Task<IActionResult> Eliminar_Stocks(int? stockId, int? stockModificatorId)
         {
             try
             {
-                if (!attributeProductVariableId.HasValue || !attributeProductVariableModificatorId.HasValue)
+                if (!stockId.HasValue || !stockModificatorId.HasValue)
                 {
-                    return BadRequest(new { codigo = 400, msj = "El ID del atributo y el ID del modificador son requeridos." });
+                    return BadRequest(new { codigo = 400, msj = "El ID del stock y el ID del modificador son requeridos." });
                 }
 
-                OUTPUT resultado = await _service.Eliminar_AttributeProductVariables_Async(attributeProductVariableId, attributeProductVariableModificatorId);
+                OUTPUT resultado = await _service.Eliminar_Stocks_Async(stockId, stockModificatorId);
 
                 if (!resultado.IsSuccess)
                 {

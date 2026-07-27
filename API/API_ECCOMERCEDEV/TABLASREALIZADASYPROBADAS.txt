@@ -44,3 +44,14 @@ en caso que la queramos mostrar
 
 
  14. tabla de categorias de productos realizada correctamente con sus 5 sp en funcionamiento
+
+
+
+ tablas y sp hechas por ya 
+
+ 
+ los	u efaltab
+ marca por proveedo 
+ producto identicador 
+ varia producto typy 
+

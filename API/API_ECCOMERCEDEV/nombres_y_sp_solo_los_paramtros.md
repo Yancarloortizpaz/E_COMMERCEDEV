@@ -1,90 +1,112 @@
-CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_Filter]
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Delete]
 (
-    @SearchTerm VARCHAR(50) = NULL,
-    @i_pageNumber INT = 1,            
+    @stockId INT,
+    @stockModificatorId INT,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
-    @o_pageNumber INT = NULL OUTPUT,
-    @o_pageSize INT = NULL OUTPUT,
-    @o_totalRows INT = NULL OUTPUT
+    @o_templateId INT = NULL OUTPUT
 )
 AS
+
+
+
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Filter]
+    @SearchTerm VARCHAR(50) = NULL, 
+	@ProductVariableId INT = null
+AS BEGIN
+    DECLARE @SearchId INT = TRY_CAST(@SearchTerm AS INT);
+
+    SELECT 
+        stockId,
+        productVariableId,
+        productName,
+        variableValue,
+        unitPrice,
+        currencyISO,
+        quantity,
+        factoryDate,
+        expirationDate,
+        statusId
+
+
+
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_AttributeProductVariables_GetByProductVariable]
+(
+    @ProductVariableId INT = NULL,
+    @SearchTerm VARCHAR(100) = NULL
+)
+AS 
 BEGIN
     SET NOCOUNT ON;
 
-    BEGIN TRY
-      
-        SELECT
-            ProductID,
-            ProductName,
-            ProductVariableID,
-            ProductVariableName,
-            ProductVariablePrice,
-            CurrencyID,
-            CurrencyISO,
-            CategoryID,
-            CategoryName,
-            SubcategoryID,
-            SubcategoryName,
-            SegmentID,
-            SegmentName,
-            MarkID,
-            MarkName,
-            ProviderID,
-            ProviderName,
-            StockID,
-            StockAvilable,
-            StockFactoryDate,
-            StockExpirationDate
+    DECLARE @TerminoBusqueda VARCHAR(102) = NULL;
+    IF @SearchTerm IS NOT NULL AND RTRIM(LTRIM(@SearchTerm)) <> ''
+    BEGIN
+        SET @TerminoBusqueda = '%' + RTRIM(LTRIM(@SearchTerm)) + '%';
+    END
+
+    SELECT 
+        IdAtributoVariable,
+        ValorAtributo,
+        RegistroActivo,
+        IdTipoVariable,
+        TipoVariable,
+        DescripcionTipoVariable,
+        IdVariante,
+        ValorVariante,
+        PrecioVariante,
+        CodigoMoneda,
+        NombreMoneda,
+        IdProducto,
+        NombreProducto,
+        DescripcionProducto,
+        NombreMarca,
+        NombreProveedor,
+        FechaCreacion,
+        CreadoPor,
+        FechaModificacion,
+        ModificadoPor
 
 
 
-            CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Products_List]
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_List]
+AS BEGIN
+    SELECT 
+        stockId,
+        productVariableId,
+        productName,
+        variableValue,
+        unitPrice,
+        currencyISO,
+        quantity,
+        factoryDate,
+        expirationDate,
+        statusId
+
+
+        CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Create]
 (
-    @i_pageNumber INT = NULL,
+    @stockProductVariableId INT,
+    @stockQuantity INT,
+    @stockFactoryDate DATE,
+    @stockExpirationDate DATE,
+    @stockCreatorId INT,
+    @stockStatusId BIT,
     @o_code INT = NULL OUTPUT,
     @o_message VARCHAR(255) = NULL OUTPUT,
-    @o_pageNumber INT = NULL OUTPUT,
-    @o_pageSize INT = NULL OUTPUT,
-    @o_totalRows INT = NULL OUTPUT
+    @o_templateId INT = NULL OUTPUT
 )
 AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @PageSize INT = 5;
-
-    BEGIN TRY
-      
-        SELECT
-            ProductID,
-            ProductName,
-            ProductVariableID,
-            ProductVariableName,
-            ProductVariablePrice,
-            CurrencyID,
-            CurrencyISO,
-            CategoryID,
-            CategoryName,
-            SubcategoryID,
-            SubcategoryName,
-            SegmentID,
-            SegmentName,
-            MarkID,
-            MarkName,
-            ProviderID,
-            ProviderName,
-            StockID,
-            StockAvilable,
-            StockFactoryDate,
-            StockExpirationDate
-
-            DONDE TENEMOS
-             AQUI TENEMOS LOS ARHIVOS QUE NECESITAMOS MODIFICAR TENIENDO EN CUENTA QUE SOLO ES LISTAR Y FILTRAR 
-            < C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\APLICATION\DTOs\Products\
 
 
 
-            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\APLICATION\Services\ProductsServices.cs
-            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\DOMAIN\Products\
-            C:\hector\E_COMMERCEDEV\API\API_ECCOMERCEDEV\INFRASTRUCTURE\Repository\ProductsRepository.cs
+CREATE OR ALTER PROCEDURE [SQM_GENERAL].[sp_Stocks_Update]
+(
+    @stockId INT,
+    @stockQuantityAdjustment INT, -- Positivo para sumar, negativo para restar
+    @stockModificatorId INT,
+    @o_code INT = NULL OUTPUT,
+    @o_message VARCHAR(255) = NULL OUTPUT,
+    @o_templateId INT = NULL OUTPUT
+)
+AS
