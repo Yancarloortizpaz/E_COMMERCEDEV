@@ -1510,3 +1510,492 @@
 {"_e":"metro:client_log","_t":1785184198801,"level":"log","data":["HOME RENDERIZADO"]}
 {"_e":"metro:client_log","_t":1785184201840,"level":"log","data":["HOME RENDERIZADO"]}
 {"_e":"metro:client_log","_t":1785184202047,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"root:init","_t":1785197241888,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785197241893,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785197241903,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785197243294,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785197245087,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785197246084,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785197254039,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785197256449,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785197256450,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785197256455,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785197257932,"id":"1","progress":0.010000000000000002,"total":1,"current":1}
+{"_e":"metro:bundling:progress","_t":1785197258033,"id":"1","progress":0.4235323759133283,"total":63,"current":41}
+{"_e":"metro:bundling:progress","_t":1785197258133,"id":"1","progress":0.568664337543671,"total":122,"current":92}
+{"_e":"metro:bundling:progress","_t":1785197258233,"id":"1","progress":0.568664337543671,"total":162,"current":122}
+{"_e":"metro:bundling:progress","_t":1785197258336,"id":"1","progress":0.6777114580144883,"total":198,"current":163}
+{"_e":"metro:bundling:progress","_t":1785197258436,"id":"1","progress":0.6777114580144883,"total":224,"current":178}
+{"_e":"metro:bundling:progress","_t":1785197258539,"id":"1","progress":0.8548910304862687,"total":252,"current":233}
+{"_e":"metro:bundling:progress","_t":1785197258647,"id":"1","progress":0.8770471151423532,"total":252,"current":236}
+{"_e":"metro:bundling:progress","_t":1785197258749,"id":"1","progress":0.9070294784580498,"total":252,"current":240}
+{"_e":"metro:bundling:progress","_t":1785197258857,"id":"1","progress":0.9228098456196911,"total":254,"current":244}
+{"_e":"metro:bundling:progress","_t":1785197258957,"id":"1","progress":0.9533139066278133,"total":254,"current":248}
+{"_e":"metro:bundling:progress","_t":1785197259065,"id":"1","progress":0.9610174220348442,"total":254,"current":249}
+{"_e":"metro:bundling:progress","_t":1785197259700,"id":"1","progress":0.9687519375038751,"total":254,"current":250}
+{"_e":"metro:bundling:progress","_t":1785197259806,"id":"1","progress":0.9687519375038751,"total":256,"current":250}
+{"_e":"metro:bundling:progress","_t":1785197259896,"id":"1","progress":0.9687519375038751,"total":256,"current":251}
+{"_e":"metro:bundling:progress","_t":1785197260000,"id":"1","progress":0.9687519375038751,"total":265,"current":256}
+{"_e":"metro:bundling:progress","_t":1785197260100,"id":"1","progress":0.9687519375038751,"total":272,"current":259}
+{"_e":"metro:bundling:progress","_t":1785197260200,"id":"1","progress":0.9687519375038751,"total":279,"current":268}
+{"_e":"metro:bundling:progress","_t":1785197260300,"id":"1","progress":0.9687519375038751,"total":292,"current":281}
+{"_e":"metro:bundling:progress","_t":1785197260402,"id":"1","progress":0.9687519375038751,"total":315,"current":292}
+{"_e":"metro:bundling:progress","_t":1785197260502,"id":"1","progress":0.9687519375038751,"total":347,"current":322}
+{"_e":"metro:bundling:progress","_t":1785197260603,"id":"1","progress":0.9687519375038751,"total":385,"current":354}
+{"_e":"metro:bundling:progress","_t":1785197260704,"id":"1","progress":0.9687519375038751,"total":387,"current":368}
+{"_e":"metro:bundling:progress","_t":1785197260804,"id":"1","progress":0.9695449401822331,"total":391,"current":385}
+{"_e":"metro:bundling:progress","_t":1785197260919,"id":"1","progress":0.999,"total":398,"current":398}
+{"_e":"metro:bundling:done","_t":1785197260986,"id":"1","total":398,"ms":4536.7601}
+{"_e":"metro:client_log","_t":1785197261450,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785197261451,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785197261451,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785197261451,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785197275013,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785198180433,"level":"log","data":["Países cargados:","[{\"id\": 1, \"nombre\": \"Nicaragua\"}, {\"id\": 2, \"nombre\": \"Honduras\"}, {\"id\": 3, \"nombre\": \"El Salvador\"}, {\"id\": 4, \"nombre\": \"Guatemala\"}, {\"id\": 5, \"nombre\": \"Costa Rica\"}, {\"id\": 6, \"nombre\": \"Panamá\"}, {\"id\": 7, \"nombre\": \"Belice\"}]"]}
+{"_e":"metro:client_log","_t":1785198180434,"level":"log","data":["Géneros cargados:","[{\"id\": 1, \"nombre\": \"Masculino\"}, {\"id\": 2, \"nombre\": \"Femenino\"}]"]}
+{"_e":"metro:client_log","_t":1785198217101,"level":"log","data":["undefined-undefined-17052004T00:00:00"]}
+{"_e":"metro:client_log","_t":1785198217167,"level":"log","data":["RESPUESTA REGISTER:","{\"errors\": {\"$.userBirthDay\": [\"The JSON value could not be converted to System.Nullable`1[System.DateTime]. Path: $.userBirthDay | LineNumber: 0 | BytePositionInLine: 233.\"], \"user\": [\"The user field is required.\"]}, \"status\": 400, \"title\": \"One or more validation errors occurred.\", \"traceId\": \"00-88dbf32d1228f4dc61891ce311e75186-d076ef5a9b1d8a03-00\", \"type\": \"https://tools.ietf.org/html/rfc9110#section-15.5.1\"}"]}
+{"_e":"metro:client_log","_t":1785198230085,"level":"log","data":["2004-05-17T00:00:00"]}
+{"_e":"metro:client_log","_t":1785198230191,"level":"log","data":["RESPUESTA REGISTER:","{\"codigo\": 200, \"msj\": \"Usuario creado correctamente.\", \"templateId\": 5}"]}
+{"_e":"metro:client_log","_t":1785198234902,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 500, \"msj\": \"Error en el motor SQL al realizar el login.\"}"]}
+{"_e":"metro:bundling:started","_t":1785198404623,"id":"8","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785198404623,"id":"8","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1785198404649,"id":"8","total":1,"ms":25.9433}
+{"_e":"metro:client_log","_t":1785198404853,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785198404853,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785198404853,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785198404853,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785198414066,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785198414246,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3NzkwNDE0LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.cXJS74mbHsue4JT5byGbf-vlxJ9QtWnmMhwyogFo_ls\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785198414247,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785198414248,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198414351,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785198415162,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198416401,"level":"log","data":["Error loading conversations:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785198416403,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198418675,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198419859,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198426428,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198428461,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785198428463,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785198428466,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198428709,"level":"log","data":["ERROR DEL CHATBOT:"]}
+{"_e":"metro:client_log","_t":1785198428710,"level":"log","data":["[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785198428711,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198430509,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785198430510,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"root:init","_t":1785198671456,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785198671457,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785198671461,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785198671988,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785198672567,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785198673005,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785198679961,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785198755835,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785198755836,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785198755840,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785198755940,"id":"1","progress":0.0484,"total":50,"current":11}
+{"_e":"metro:bundling:progress","_t":1785198756040,"id":"1","progress":0.27643745350196625,"total":97,"current":51}
+{"_e":"metro:bundling:progress","_t":1785198756140,"id":"1","progress":0.27643745350196625,"total":156,"current":80}
+{"_e":"metro:bundling:progress","_t":1785198756240,"id":"1","progress":0.7516412759868698,"total":218,"current":189}
+{"_e":"metro:bundling:progress","_t":1785198756343,"id":"1","progress":0.7516412759868698,"total":312,"current":242}
+{"_e":"metro:bundling:progress","_t":1785198756443,"id":"1","progress":0.816751980325431,"total":374,"current":338}
+{"_e":"metro:bundling:progress","_t":1785198756553,"id":"1","progress":0.999,"total":398,"current":398}
+{"_e":"metro:bundling:done","_t":1785198756606,"id":"1","total":398,"ms":770.4406}
+{"_e":"metro:client_log","_t":1785198757035,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785198757036,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785198757036,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785198757036,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785198763338,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785198763628,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3NzkwNzYzLCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.yqS50wB58rmS9Imy13Vq-mqp_92_f7OwIUiofspx79s\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785198763629,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785198763631,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198763756,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785198764565,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198764729,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198770187,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198781806,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198787364,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785198787365,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198821766,"level":"log","data":["STATUS:","500"]}
+{"_e":"metro:client_log","_t":1785198821767,"level":"log","data":["RESPUESTA:","{\"detail\":\"Error al procesar mensaje: ('08001', '[08001] [Microsoft][ODBC Driver 17 for SQL Server]SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].  (-1) (SQLDriverConnect); [08001] [Microsoft][ODBC Driver 17 for SQL Server]Login timeout expired (0); [08001] [Microsoft][ODBC Driver 17 for SQL Server]Invalid connection string attribute (0); [08001] [Microsoft][ODBC Driver 17 for SQL Server]A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online. (-1)')\"}"]}
+{"_e":"metro:client_log","_t":1785198821767,"level":"log","data":["ERROR DEL CHATBOT:"]}
+{"_e":"metro:client_log","_t":1785198821767,"level":"log","data":["[Error: {\"detail\":\"Error al procesar mensaje: ('08001', '[08001] [Microsoft][ODBC Driver 17 for SQL Server]SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].  (-1) (SQLDriverConnect); [08001] [Microsoft][ODBC Driver 17 for SQL Server]Login timeout expired (0); [08001] [Microsoft][ODBC Driver 17 for SQL Server]Invalid connection string attribute (0); [08001] [Microsoft][ODBC Driver 17 for SQL Server]A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online. (-1)')\"}]"]}
+{"_e":"metro:client_log","_t":1785198821769,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785198838958,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199530500,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199530641,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199530642,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199530735,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199530753,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199545485,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199545502,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199545502,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199545658,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199545685,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199550717,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199550735,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199550736,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199550821,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199550856,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199560596,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199562780,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199563725,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199564740,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199565904,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199570812,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199570829,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199570830,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199571064,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199571091,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199573551,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199575308,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199576316,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199579119,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199579584,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199580080,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199580559,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199606977,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199606986,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199606988,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199607171,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199607189,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199609080,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199614775,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199616756,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199620016,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199620029,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785199620030,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199620148,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199620166,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199623856,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785199624200,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:bundling:started","_t":1785200774967,"id":"7","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785200774967,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1785200774990,"id":"7","total":1,"ms":23.5627}
+{"_e":"metro:client_log","_t":1785200775199,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785200775199,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785200775200,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785200775262,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785200790510,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785200790768,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3NzkyNzkwLCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.HorCk-AL25-FOcbrilTkbGSxfj8Q73UypAPRm37teTg\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785200790768,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785200790769,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200790787,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785200791031,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200791591,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200792159,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200796207,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200796222,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200796223,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200796260,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200796276,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200801831,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200801845,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200801847,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200801994,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200802016,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200803487,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200804783,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200806062,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200807719,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200809831,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200811031,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200817126,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200819518,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200824015,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200824031,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200824032,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200824148,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200824164,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200825332,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200826742,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200954074,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200954088,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200954089,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200954130,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200954147,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200958569,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200958582,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200958584,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200959028,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200959049,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200967344,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200967367,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200967368,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200967417,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200967438,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200973167,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200973183,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200973184,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200973308,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200973330,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200978158,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200978177,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785200978179,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200978267,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200978291,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200980254,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200981199,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200982190,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"metro:client_log","_t":1785200982814,"level":"log","data":["HOME RENDERIZADO"]}
+{"_e":"root:init","_t":1785202033135,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785202033136,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785202033142,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785202033695,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785202034351,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785202034765,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785202042053,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785202052358,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785202052358,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785202052365,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785202052464,"id":"1","progress":0.2546081979631344,"total":109,"current":55}
+{"_e":"metro:bundling:progress","_t":1785202052564,"id":"1","progress":0.6400000000000001,"total":205,"current":164}
+{"_e":"metro:bundling:progress","_t":1785202052664,"id":"1","progress":0.6400000000000001,"total":334,"current":249}
+{"_e":"metro:bundling:progress","_t":1785202052765,"id":"1","progress":0.8410695589143333,"total":386,"current":354}
+{"_e":"metro:bundling:done","_t":1785202052891,"id":"1","total":386,"ms":532.6443}
+{"_e":"metro:client_log","_t":1785202053296,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785202053296,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785202053297,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785202053297,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785202062569,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785202062764,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3Nzk0MDYyLCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ._5Mc910Kyd6F9BgjAyAJD7HPrE7YidvtOKIav3Uliro\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785202062764,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785202062852,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785202068798,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202078558,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202088029,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202095845,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202140167,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:bundling:started","_t":1785202722883,"id":"7","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785202722884,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1785202722908,"id":"7","total":1,"ms":24.0319}
+{"_e":"metro:client_log","_t":1785202723141,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785202723141,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785202723142,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785202723142,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785202744785,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785202744981,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3Nzk0NzQ0LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.nJUnWaE2WGT0xcsD8OUTy3aCs_pm3D6DfEHRn_3Y-SU\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785202744982,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785202745003,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785202750309,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202757081,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202763643,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"root:init","_t":1785202867358,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785202867360,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785202867365,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785202867956,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785202868564,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785202868949,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785202876263,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785202879124,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785202879124,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785202879129,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785202879231,"id":"1","progress":0.28994082840236685,"total":117,"current":63}
+{"_e":"metro:bundling:progress","_t":1785202879333,"id":"1","progress":0.7262003780718336,"total":230,"current":196}
+{"_e":"metro:bundling:progress","_t":1785202879433,"id":"1","progress":0.7262003780718336,"total":335,"current":284}
+{"_e":"metro:bundling:progress","_t":1785202879541,"id":"1","progress":0.8517059760376947,"total":389,"current":359}
+{"_e":"metro:bundling:done","_t":1785202879617,"id":"1","total":389,"ms":493.3192}
+{"_e":"metro:client_log","_t":1785202880044,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785202880045,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785202880045,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785202880045,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785202885125,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785202885152,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3Nzk0ODg1LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.x74_ICeL4EggcvLeh7hRBBVM4BhVPDLZ3qCvjZNXntI\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785202885153,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785202885253,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785202889249,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202892355,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202900042,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202906101,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785202910655,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"root:init","_t":1785204372419,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785204372421,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785204372425,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785204373018,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785204373647,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785204374048,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785204381440,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785204384252,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785204384253,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785204384259,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785204384359,"id":"1","progress":0.24115114795918366,"total":112,"current":55}
+{"_e":"metro:bundling:progress","_t":1785204384461,"id":"1","progress":0.26910156250000006,"total":160,"current":83}
+{"_e":"metro:bundling:progress","_t":1785204384560,"id":"1","progress":0.6641890974014633,"total":227,"current":185}
+{"_e":"metro:bundling:progress","_t":1785204384660,"id":"1","progress":0.6641890974014633,"total":296,"current":237}
+{"_e":"metro:bundling:progress","_t":1785204384760,"id":"1","progress":0.7884644053699911,"total":357,"current":317}
+{"_e":"metro:bundling:progress","_t":1785204384860,"id":"1","progress":0.9949811873437541,"total":398,"current":397}
+{"_e":"metro:bundling:done","_t":1785204384915,"id":"1","total":398,"ms":662.3983}
+{"_e":"metro:client_log","_t":1785204385287,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785204385289,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785204385289,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785204385289,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:bundling:started","_t":1785204395170,"id":"7","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785204395170,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1785204395202,"id":"7","total":1,"ms":32.3851}
+{"_e":"metro:client_log","_t":1785204395519,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785204395520,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785204395522,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785204395522,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785204405688,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785204405908,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3Nzk2NDA1LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.m_vv4czRLWHDWN-vbTggBOf4y23EBK7zWBzTZ3-MCcs\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785204405908,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785204406004,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785204412504,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785204421818,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785204430917,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"root:init","_t":1785207965912,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785207965914,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785207965920,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785207966658,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785207967402,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785207967826,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785207975715,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785207988080,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785207988081,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785207988086,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785207988190,"id":"1","progress":0.27643745350196625,"total":97,"current":51}
+{"_e":"metro:bundling:progress","_t":1785207988290,"id":"1","progress":0.6334860474802165,"total":196,"current":156}
+{"_e":"metro:bundling:progress","_t":1785207988390,"id":"1","progress":0.6334860474802165,"total":321,"current":247}
+{"_e":"metro:bundling:progress","_t":1785207988492,"id":"1","progress":0.8410695589143333,"total":386,"current":354}
+{"_e":"metro:bundling:done","_t":1785207988632,"id":"1","total":386,"ms":551.2294}
+{"_e":"metro:client_log","_t":1785207988962,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785207988962,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785207988962,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785207988963,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785208006500,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785208006723,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODAwMDA2LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.McGfC719p5jIxbxQAhNn3Gn1UByqPjbygMnXfT1TgB0\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785208006723,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785208006811,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785208021213,"level":"log","data":["Error al inicializar sesión de chat:","[TypeError: Cannot read properties of undefined (reading 'toString')]"]}
+{"_e":"metro:client_log","_t":1785208028434,"level":"log","data":["Error al inicializar sesión de chat:","[TypeError: Cannot read properties of undefined (reading 'toString')]"]}
+{"_e":"metro:client_log","_t":1785208034869,"level":"log","data":["Error al inicializar sesión de chat:","[TypeError: Cannot read properties of undefined (reading 'toString')]"]}
+{"_e":"root:init","_t":1785208191646,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785208191648,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785208191652,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785208192177,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785208192793,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785208193171,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785208200919,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785208253755,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785208253756,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785208253761,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785208253860,"id":"1","progress":0.25970784023668636,"total":104,"current":53}
+{"_e":"metro:bundling:progress","_t":1785208253960,"id":"1","progress":0.49232318915784007,"total":181,"current":127}
+{"_e":"metro:bundling:progress","_t":1785208254060,"id":"1","progress":0.7398915541511061,"total":236,"current":203}
+{"_e":"metro:bundling:progress","_t":1785208254160,"id":"1","progress":0.7398915541511061,"total":321,"current":247}
+{"_e":"metro:bundling:progress","_t":1785208254260,"id":"1","progress":0.8684005375346168,"total":367,"current":342}
+{"_e":"metro:bundling:progress","_t":1785208254360,"id":"1","progress":0.9899750006312972,"total":398,"current":396}
+{"_e":"metro:bundling:done","_t":1785208254427,"id":"1","total":398,"ms":670.7267}
+{"_e":"metro:client_log","_t":1785208254775,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785208254776,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785208254776,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785208254776,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785208263479,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785208263505,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODAwMjYzLCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.v941DGS7a1cVsticze5xg6ws3l_jlkatdg2c-_RJE8Q\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785208263505,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785208263595,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785208268752,"level":"log","data":["Error al inicializar sesión de chat:","[TypeError: Cannot read properties of undefined (reading 'toString')]"]}
+{"_e":"metro:client_log","_t":1785208273423,"level":"log","data":["Error al crear conversación:","[TypeError: Cannot read properties of undefined (reading 'toString')]"]}
+{"_e":"root:init","_t":1785208404008,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785208404010,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785208404014,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785208404604,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785208405201,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785208405573,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785208412730,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785208475627,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785208475628,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785208475633,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785208475734,"id":"1","progress":0.2595229619081524,"total":106,"current":54}
+{"_e":"metro:bundling:progress","_t":1785208475833,"id":"1","progress":0.364272959630265,"total":169,"current":102}
+{"_e":"metro:bundling:progress","_t":1785208475934,"id":"1","progress":0.6631593939717638,"total":237,"current":193}
+{"_e":"metro:bundling:progress","_t":1785208476034,"id":"1","progress":0.6631593939717638,"total":334,"current":255}
+{"_e":"metro:bundling:progress","_t":1785208476134,"id":"1","progress":0.8458280759215013,"total":386,"current":355}
+{"_e":"metro:bundling:done","_t":1785208476257,"id":"1","total":386,"ms":630.1884}
+{"_e":"metro:client_log","_t":1785208476585,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785208476585,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785208476586,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785208476586,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785208484207,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785208484223,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODAwNDg0LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.EKgPGirZ35sbRTl9RFss7cfaj_kYj7kzvwBx8Z5KN5E\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785208484224,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785208484313,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785208492039,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785208492040,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785208492155,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785208496466,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785208496467,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785208506142,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785208506142,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785208506163,"level":"log","data":["Error saving message:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:bundling:started","_t":1785209196797,"id":"7","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785209196798,"id":"7","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1785209196822,"id":"7","total":1,"ms":25.0814}
+{"_e":"metro:client_log","_t":1785209197029,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785209197029,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785209197030,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785209197030,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785209288075,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785209288279,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODAxMjg4LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.FH3lDyMXhoB_OBsJHUC0mRL5j6C3cXCvz18gBGwd13Y\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785209288279,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785209288299,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785209293795,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785209300446,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785209315174,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"root:init","_t":1785211360387,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785211360389,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785211360396,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785211360978,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785211361689,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785211362108,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785211369465,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785211385915,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785211385915,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785211385936,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785211386036,"id":"1","progress":0.08163265306122448,"total":77,"current":22}
+{"_e":"metro:bundling:progress","_t":1785211386136,"id":"1","progress":0.3686224489795918,"total":168,"current":102}
+{"_e":"metro:bundling:progress","_t":1785211386236,"id":"1","progress":0.7869406867845994,"total":248,"current":220}
+{"_e":"metro:bundling:progress","_t":1785211386336,"id":"1","progress":0.7869406867845994,"total":348,"current":288}
+{"_e":"metro:bundling:progress","_t":1785211386440,"id":"1","progress":0.9344444444444444,"total":390,"current":377}
+{"_e":"metro:bundling:done","_t":1785211386511,"id":"1","total":390,"ms":596.5235}
+{"_e":"metro:client_log","_t":1785211386915,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785211386915,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785211386915,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785211386916,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785211527478,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785211527800,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODAzNTI3LCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.daM97XZUCvX3X6SLLm1SksNNOcxS-_uAY67OfrWGlJQ\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785211527800,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785211527890,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785211541381,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785211551949,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"root:init","_t":1785213287174,"format":"v0-jsonl","version":"57.0.6"}
+{"_e":"env:mode","_t":1785213287176,"nodeEnv":"development","babelEnv":"development","mode":"development"}
+{"_e":"env:load","_t":1785213287182,"mode":"development","files":[],"env":{}}
+{"_e":"devserver:start","_t":1785213287772,"mode":"development","web":true,"baseUrl":"","asyncRoutes":false,"routerRoot":"../..\\..\\app","serverComponents":false,"serverActions":false,"serverRendering":false,"apiRoutes":false,"exporting":false}
+{"_e":"metro:config","_t":1785213288484,"serverRoot":"../..\\..","projectRoot":"../..\\..","exporting":false,"flags":{"autolinkingModuleResolution":false,"serverActions":false,"serverComponents":false,"reactCompiler":false,"optimizeGraph":false,"treeshaking":false,"logbox":false}}
+{"_e":"expo:dev-tools-plugin:load","_t":1785213288899,"plugins":[]}
+{"_e":"metro:instantiate","_t":1785213296052,"atlas":false,"workers":6,"host":"::","port":8081}
+{"_e":"metro:bundling:started","_t":1785213359666,"id":"1","platform":"web","environment":null,"entry":"index.js"}
+{"_e":"metro:bundling:progress","_t":1785213359667,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785213359674,"id":"1","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1785213359775,"id":"1","progress":0.05444444444444445,"total":60,"current":14}
+{"_e":"metro:bundling:progress","_t":1785213359876,"id":"1","progress":0.2629848783694937,"total":156,"current":80}
+{"_e":"metro:bundling:progress","_t":1785213359976,"id":"1","progress":0.657028081274622,"total":227,"current":184}
+{"_e":"metro:bundling:progress","_t":1785213360076,"id":"1","progress":0.657028081274622,"total":340,"current":269}
+{"_e":"metro:bundling:progress","_t":1785213360213,"id":"1","progress":0.9296707896991779,"total":391,"current":377}
+{"_e":"metro:bundling:done","_t":1785213360289,"id":"1","total":391,"ms":622.9492}
+{"_e":"metro:client_log","_t":1785213360628,"level":"info","data":["%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools","font-weight:bold"]}
+{"_e":"metro:client_log","_t":1785213360628,"level":"warn","data":["\"shadow*\" style props are deprecated. Use \"boxShadow\"."]}
+{"_e":"metro:client_log","_t":1785213360628,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1785213360629,"level":"warn","data":["Image: style.tintColor is deprecated. Please use props.tintColor."]}
+{"_e":"metro:client_log","_t":1785213373531,"level":"warn","data":["props.pointerEvents is deprecated. Use style.pointerEvents"]}
+{"_e":"metro:client_log","_t":1785213373738,"level":"log","data":["RESPUESTA C#:","{\"codigo\": 200, \"data\": {\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkQGdtYWlsLmNvbSIsImVtYWlsIjoiZEBnbWFpbC5jb20iLCJ1c2VySWQiOiI1IiwiZXhwIjoxNzg3ODA1MzczLCJpc3MiOiJNaUVjb21tZXJjZUFQSSIsImF1ZCI6Ik1pRWNvbW1lcmNlQXBwTW92aWwifQ.MA5bc0JKxS_kAMuL4-KKpKyb6x2waQn07NSQ6PnRtT0\", \"userEmail\": \"d@gmail.com\", \"userFullName\": \"d@gmail.com\", \"userId\": 5}, \"msj\": \"Login exitoso\"}"]}
+{"_e":"metro:client_log","_t":1785213373738,"level":"log","data":["✅ Login Exitoso para:","d@gmail.com","Rol:","user"]}
+{"_e":"metro:client_log","_t":1785213373844,"level":"warn","data":["Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md"]}
+{"_e":"metro:client_log","_t":1785213382178,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785213385855,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785213392108,"level":"log","data":["URL:","http://127.0.0.1:8000/api/chatbot/chat"]}
+{"_e":"metro:client_log","_t":1785214318724,"level":"log","data":["Error loading conversations:","[TypeError: Failed to fetch]"]}
+{"_e":"metro:client_log","_t":1785214350687,"level":"warn","data":["An error occurred in the <HomeScreen> component.\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://react.dev/link/error-boundaries to learn more about error boundaries.\n"]}
+{"_e":"metro:client_log","_t":1785214350732,"level":"error","data":["[ReferenceError: user is not defined]","\n\n\u001b[1mCode: HomeScreen.tsx\u001b[22m\n\u001b[0m \u001b[90m 36 |\u001b[39m   \u001b[36mconst\u001b[39m [isTyping\u001b[33m,\u001b[39m setIsTyping] \u001b[33m=\u001b[39m useState(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 38 |\u001b[39m   \u001b[36mconst\u001b[39m [currentUser] \u001b[33m=\u001b[39m useState\u001b[33m<\u001b[39m{ email\u001b[33m:\u001b[39m string }\u001b[33m>\u001b[39m({ email\u001b[33m:\u001b[39m user\u001b[33m?\u001b[39m\u001b[33m.\u001b[39memail \u001b[33m?\u001b[39m\u001b[33m?\u001b[39m \u001b[32m\"demo-user\"\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 39 |\u001b[39m   \u001b[36mconst\u001b[39m [hasLoadedHistory\u001b[33m,\u001b[39m setHasLoadedHistory] \u001b[33m=\u001b[39m useState(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 40 |\u001b[39m\n \u001b[90m 41 |\u001b[39m   \u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  HomeScreen (src\\Presentacion\\screens\\HomeScreen.tsx:38:62)\u001b[39m","\n\n\u001b[1mCode: App.js\u001b[22m\n\u001b[0m \u001b[90m 44 |\u001b[39m\n \u001b[90m 45 |\u001b[39m       {currentScreen \u001b[33m===\u001b[39m \u001b[32m'home'\u001b[39m \u001b[33m&&\u001b[39m (\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 46 |\u001b[39m         \u001b[33m<\u001b[39m\u001b[33mHomeScreen\u001b[39m onLogout\u001b[33m=\u001b[39m{handleLogout} \u001b[33m/\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m    |\u001b[39m         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 47 |\u001b[39m       )}\n \u001b[90m 48 |\u001b[39m\n \u001b[90m 49 |\u001b[39m       {currentScreen \u001b[33m===\u001b[39m \u001b[32m'admin'\u001b[39m \u001b[33m&&\u001b[39m (\u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  App (App.js:46:9)\u001b[39m"]}

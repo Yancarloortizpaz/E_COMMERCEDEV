@@ -5,6 +5,7 @@ export interface Message {
   isBot: boolean;
   content: string;
   timestamp: string;
+  user_id: string;   // 👈 nuevo campo obligatorio
   appliedRuleId?: number;
   intent?: string;
   metadata?: string;

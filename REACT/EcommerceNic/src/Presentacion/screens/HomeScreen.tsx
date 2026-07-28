@@ -11,22 +11,23 @@ import {
 
 import { formatCurrency } from './constants';
 import { Product } from '../../Domain/entities/Product';
-import { getProductsUseCase } from '../../di/DI';
+import { getProductsUseCase, sendChatMessageUseCase } from '../../di/DI';
 import { CatalogTab } from './components/CatalogTab';
 import { CartTab } from './components/CartTab';
 import { ChatbotTab } from './components/ChatbotTab';
 import { NosotrosTab } from './components/NosotrosTab';
 import { PaymentModal } from './components/PaymentModal';
-import { sendChatMessageUseCase } from "../../di/DI";
+import { Conversation, Message } from '../../Domain/entities/Chat';
+import { User } from '../../Domain/entities/User';
+
 
 
 interface Props {
   onLogout: () => void;
+  user: User;
 }
 
-import { Conversation, Message } from '../../Domain/entities/Chat';
-
-export const HomeScreen = ({ onLogout }: Props) => {
+export const HomeScreen = ({ onLogout, user }: Props) => {
   const [currentTab, setCurrentTab] = useState<'home' | 'cart' | 'chatbot' | 'nosotros'>('home');
   const [products, setProducts] = useState<Product[]>([]);
   const [cartQuantities, setCartQuantities] = useState<{ [key: string]: number }>({});
@@ -35,25 +36,31 @@ export const HomeScreen = ({ onLogout }: Props) => {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  
-  // CORRECCIÓN: id ahora es numérico
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1, 
-      conversationId: 'default',
-      role: 'assistant',
-      isBot: true,
-      content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
-      timestamp: new Date().toISOString(),
-    },
-  ]);
 
+  const [currentUser] = useState<{ email: string }>({ email: user?.email ?? "demo-user" });
+  const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
+
+  
+  const [messages, setMessages] = useState<Message[]>([
+  {
+    id: 1,
+    conversationId: 'default',
+    role: 'assistant',
+    isBot: true,
+    content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
+    timestamp: new Date().toISOString(),
+    user_id: "chatbot",   // 👈 obligatorio
+  },
+]);
+
+
+  // Cargar catálogo de productos
   const loadProducts = async () => {
     try {
       const result = await getProductsUseCase.execute();
       setProducts(result);
     } catch (error) {
-      console.log('Error loading products in user view:', error);
+      console.log('Error al cargar productos:', error);
     }
   };
 
@@ -61,42 +68,50 @@ export const HomeScreen = ({ onLogout }: Props) => {
     loadProducts();
   }, []);
 
+  // Cargar conversaciones del usuario
   const loadConversations = async (userId?: string) => {
     try {
       const result = await sendChatMessageUseCase.getConversations(userId);
-      const mapped = result.map((conversation: any) => ({
-        id: conversation.id,
+      const mapped: Conversation[] = result.map((conversation: any) => ({
+        id: conversation.id.toString(),
         userId: conversation.userId,
         title: conversation.title ?? 'Nueva conversación',
         startDate: conversation.startDate ?? new Date().toISOString(),
         updatedAt: conversation.updatedAt ?? new Date().toISOString(),
         isActive: conversation.isActive ?? true,
-        messages: Array.isArray(conversation.messages) ? conversation.messages.map((msg: any) => ({
-          id: msg.id ?? Date.now(),
-          conversationId: conversation.id,
-          role: msg.role ?? 'assistant',
-          isBot: msg.isBot ?? msg.role !== 'user',
-          content: msg.content ?? '',
-          timestamp: msg.timestamp ?? new Date().toISOString(),
-          tipo: msg.tipo,
-          productos: msg.productos ?? [],
-        })) : [],
+        messages: Array.isArray(conversation.messages)
+          ? conversation.messages.map((msg: any) => ({
+              id: msg.id ?? Date.now(),
+              conversationId: conversation.id.toString(),
+              role: msg.role ?? 'assistant',
+              isBot: msg.isBot ?? msg.role !== 'user',
+              content: msg.content ?? '',
+              timestamp: msg.timestamp ?? new Date().toISOString(),
+              tipo: msg.tipo,
+              productos: msg.productos ?? [],
+            }))
+          : [],
       }));
+
       setConversations(mapped);
+
       if (mapped.length > 0) {
         setActiveConversationId(mapped[0].id);
         setMessages(mapped[0].messages ?? []);
       }
     } catch (error) {
-      console.log('Error loading conversations:', error);
+      console.log('Error al cargar conversaciones:', error);
     }
   };
 
   useEffect(() => {
-    loadConversations('demo-user');
-  }, []);
+    if (!hasLoadedHistory) {
+      loadConversations(currentUser.email);
+      setHasLoadedHistory(true);
+    }
+  }, [currentUser.email, hasLoadedHistory]);
 
-  // Cart actions
+  // Lógica del Carrito
   const addUnit = (id: string) => setCartQuantities(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
 
   const addProductToCart = (product: Partial<Product> & { id: string | number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
@@ -125,7 +140,7 @@ export const HomeScreen = ({ onLogout }: Props) => {
 
     setCurrentTab('cart');
   };
-  
+
   const removeUnit = (id: string) => {
     setCartQuantities(prev => {
       const currentQty = prev[id] || 0;
@@ -155,7 +170,7 @@ export const HomeScreen = ({ onLogout }: Props) => {
   const shippingCost = subtotal > 0 ? 350 : 0;
   const totalPayment = subtotal + shippingCost;
 
-  // Payment Confirmation Flow
+  // Confirmación de pago
   const handlePaymentSuccess = (method: string) => {
     setPaymentModalVisible(false);
 
@@ -166,95 +181,156 @@ export const HomeScreen = ({ onLogout }: Props) => {
     );
   };
 
+  // Crear conversación manual desde la UI
   const createNewConversation = async () => {
-    const conversation = await sendChatMessageUseCase.createConversation('demo-user', 'Nueva conversación');
-    const newConversation: Conversation = {
-      id: conversation.id,
-      userId: 'demo-user',
-      title: conversation.title ?? 'Nueva conversación',
-      startDate: conversation.startDate ?? new Date().toISOString(),
-      updatedAt: conversation.updatedAt ?? new Date().toISOString(),
-      isActive: true,
-      messages: [],
-    };
-    setConversations(prev => [newConversation, ...prev]);
-    setActiveConversationId(newConversation.id);
-    setMessages([]);
-  };
-
-  const persistMessage = async (conversationId: string, message: Message) => {
     try {
-      await sendChatMessageUseCase.saveMessage(conversationId, {
-        role: message.role,
-        content: message.content,
-        timestamp: message.timestamp,
-        isBot: message.isBot,
-        tipo: message.tipo,
-        productos: message.productos ?? [],
-      });
+      const conversation = await sendChatMessageUseCase.createConversation(currentUser.email, 'Nueva conversación');
+      const realId = conversation.id.toString();
+
+      const newConversation: Conversation = {
+        id: realId,
+        userId: currentUser.email,
+        title: conversation.title ?? 'Nueva conversación',
+        startDate: conversation.startDate ?? new Date().toISOString(),
+        updatedAt: conversation.updatedAt ?? new Date().toISOString(),
+        isActive: true,
+        messages: [],
+      };
+
+      setConversations(prev => [newConversation, ...prev]);
+      setActiveConversationId(realId);
+      setMessages([]);
+      setHasLoadedHistory(true);
     } catch (error) {
-      console.log('Error persisting message:', error);
+      console.log('Error al crear conversación:', error);
+      Alert.alert('Error', 'No se pudo crear una nueva conversación.');
     }
   };
 
-  // Chatbot Send Message Flow
-   const handleSendMessage = async (text: string) => {
-    const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
-    if (!cleanText) return;
-
-    const conversationId = activeConversationId ?? 'default';
-
-    const newUserMsg: Message = { 
-      id: Date.now(), 
-      conversationId,
-      role: 'user', 
-      isBot: false,
-      content: cleanText,
-      timestamp: new Date().toISOString()
-    };
-    setMessages(prev => [...prev, newUserMsg]);
-    await persistMessage(conversationId, newUserMsg);
-    setIsTyping(true);
-
-    try {
-      const response = await sendChatMessageUseCase.execute(cleanText);
-      const botMessage: Message = {
-        id: Date.now() + 1,
-        conversationId,
-        role: 'assistant',
-        isBot: true,
-        content: response.texto,
-        timestamp: new Date().toISOString(),
-        tipo: response.tipo,
-        productos: response.productos ?? [],
-      };
-      setMessages(prev => [...prev, botMessage]);
-      await persistMessage(conversationId, botMessage);
-      setConversations(prev => prev.map(item => item.id === conversationId ? { ...item, updatedAt: new Date().toISOString(), title: item.title && item.title !== 'Nueva conversación' ? item.title : cleanText.slice(0, 30) } : item));
-    } catch (error: any) {
-      console.log('ERROR DEL CHATBOT:');
-      console.log(error);
-
-      const fallbackMessage: Message = {
-        id: Date.now() + 1,
-        conversationId,
-        role: 'assistant',
-        isBot: true,
-        content: '❌ Error al comunicarse con el servidor.',
-        timestamp: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, fallbackMessage]);
-      await persistMessage(conversationId, fallbackMessage);
-    } finally {
-      setIsTyping(false);
-    }
+  // Persistir un mensaje individual en la base de datos
+const persistMessage = async (conversationId: string, message: Message) => {
+  try {
+    await sendChatMessageUseCase.saveMessage(conversationId, {
+      role: message.role,
+      content: message.content,
+      timestamp: message.timestamp,
+      user_id: currentUser.email,   // 👈 ahora sí enviamos el usuario logueado
+      isBot: message.isBot,
+      tipo: message.tipo,
+      productos: message.productos ?? [],
+    });
+  } catch (error) {
+    console.log('Error al guardar mensaje en el backend:', error);
+  }
 };
-  // Logout flow
+
+// Flujo principal de envío de mensajes al Chatbot
+const handleSendMessage = async (text: string) => {
+  const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
+  if (!cleanText) return;
+
+  let currentConvId = activeConversationId;
+
+  // 1. SI NO EXISTE CONVERSACIÓN VÁLIDA O ES 'default', CREAMOS UNA EN EL BACKEND PRIMERO
+  if (!currentConvId || currentConvId === 'default') {
+    try {
+      const titleSnippet = cleanText.length > 25 ? `${cleanText.slice(0, 25)}...` : cleanText;
+      const newConv = await sendChatMessageUseCase.createConversation(currentUser.email, titleSnippet);
+      
+      currentConvId = newConv.id.toString();
+      setActiveConversationId(currentConvId);
+
+      const newConvObj: Conversation = {
+        id: currentConvId,
+        userId: currentUser.email,   // 👈 aquí también usamos el usuario real
+        title: titleSnippet,
+        startDate: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true,
+        messages: [],
+      };
+      setConversations(prev => [newConvObj, ...prev]);
+      setHasLoadedHistory(true);
+    } catch (error) {
+      console.log('Error al inicializar sesión de chat:', error);
+      Alert.alert('Error', 'No se pudo establecer conexión para iniciar la conversación.');
+      return;
+    }
+  }
+
+  // 2. AGREGAR MENSAJE DEL USUARIO AL ESTADO LOCAL
+  const newUserMsg: Message = { 
+    id: Date.now(), 
+    conversationId: currentConvId,
+    role: 'user', 
+    isBot: false,
+    content: cleanText,
+    timestamp: new Date().toISOString(),
+    user_id: currentUser.email,   // 👈 obligatorio en el modelo
+  };
+
+  setMessages(prev => [...prev, newUserMsg]);
+  setIsTyping(true);
+  setHasLoadedHistory(true);
+  await persistMessage(currentConvId, newUserMsg);
+
+  // 4. CONSUMIR LA RESPUESTA DEL CHATBOT
+  try {
+    const response = await sendChatMessageUseCase.execute(cleanText, currentConvId, currentUser.email);
+    
+    const botMessage: Message = {
+      id: Date.now() + 1,
+      conversationId: currentConvId,
+      role: 'assistant',
+      isBot: true,
+      content: response.texto,
+      timestamp: new Date().toISOString(),
+      tipo: response.tipo,
+      productos: response.productos ?? [],
+      user_id: "chatbot",   // 👈 puedes marcarlo fijo para el bot
+    };
+
+    setMessages(prev => [...prev, botMessage]);
+    await persistMessage(currentConvId, botMessage);
+    setHasLoadedHistory(true);
+
+    // Actualizar metadatos de la lista de conversaciones
+    setConversations(prev => prev.map(item => 
+      item.id === currentConvId 
+        ? { 
+            ...item, 
+            updatedAt: new Date().toISOString(), 
+            title: item.title && item.title !== 'Nueva conversación' ? item.title : cleanText.slice(0, 25) 
+          } 
+        : item
+    ));
+
+  } catch (error: any) {
+    console.log('ERROR EN RESPUESTA DE CHATBOT:', error);
+
+    const fallbackMessage: Message = {
+      id: Date.now() + 1,
+      conversationId: currentConvId,
+      role: 'assistant',
+      isBot: true,
+      content: '❌ Error al comunicarse con el servidor.',
+      timestamp: new Date().toISOString(),
+      user_id: "chatbot",
+    };
+    setMessages(prev => [...prev, fallbackMessage]);
+    await persistMessage(currentConvId, fallbackMessage);
+  } finally {
+    setIsTyping(false);
+  }
+};
+
+
+  // Cierre de sesión
   const handleLogout = () => {
     const ejecutarSalida = () => {
       clearCart();
       setCurrentTab('home');
-      // CORRECCIÓN: Restaurando ID numérico inicial
+      setActiveConversationId(null);
       setMessages([
         { 
           id: 1, 
@@ -262,9 +338,11 @@ export const HomeScreen = ({ onLogout }: Props) => {
           role: 'assistant', 
           isBot: true,
           content: '¿Y entonces chele qué andás buscando hoy?', 
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          user_id: "chatbot",   // 👈 obligatorio
         },
       ]);
+      setHasLoadedHistory(false);
       onLogout();
     };
 
@@ -291,12 +369,10 @@ export const HomeScreen = ({ onLogout }: Props) => {
     );
   };
 
-console.log("HOME RENDERIZADO");
-
   return (
     <SafeAreaView style={styles.container}>
       
-      {/* Tab Screen Render */}
+      {/* Vistas según el Tab seleccionado */}
       {currentTab === 'home' && (
         <CatalogTab
           products={products}
@@ -332,6 +408,7 @@ console.log("HOME RENDERIZADO");
             if (selected) {
               setActiveConversationId(conversationId);
               setMessages(selected.messages ?? []);
+              setHasLoadedHistory(true);
             }
           }}
           onNewConversation={createNewConversation}
@@ -341,7 +418,7 @@ console.log("HOME RENDERIZADO");
             addProductToCart(product);
             Alert.alert(
               '🛒 ¡Carrito Actualizado!',
-              `Agregaste "${product.name}" al carrito desde el Chatbot.`,
+              `Agregaste "${product.name ?? product.title}" al carrito desde el Chatbot.`,
               [{ text: 'Ver Carrito', onPress: () => setCurrentTab('cart') }, { text: 'Seguir Chateando', style: 'cancel' }]
             );
           }}
@@ -349,12 +426,10 @@ console.log("HOME RENDERIZADO");
       )}
 
       {currentTab === 'nosotros' && (
-        <NosotrosTab
-          handleLogout={handleLogout}
-        />
+        <NosotrosTab handleLogout={handleLogout} />
       )}
 
-      {/* Shared Payment Modal */}
+      {/* Modal de Pago */}
       <PaymentModal
         isVisible={isPaymentModalVisible}
         onClose={() => setPaymentModalVisible(false)}
@@ -362,7 +437,7 @@ console.log("HOME RENDERIZADO");
         onPaymentSuccess={handlePaymentSuccess}
       />
 
-      {/* Bottom Tab Bar Navigation */}
+      {/* Navegación Inferior */}
       <View style={styles.bottomTabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => setCurrentTab('home')}>
           <Text style={[styles.tabIconBase, currentTab === 'home' && styles.tabIconActive]}>🏠</Text>

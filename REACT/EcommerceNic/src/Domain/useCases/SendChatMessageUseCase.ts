@@ -11,10 +11,12 @@ export class SendChatMessageUseCase {
 
 
     async execute(
-        message:string
+        message:string,
+        conversationId?: string,
+        userId?: string,
     ){
 
-        return await this.repository.sendMessage(message);
+        return await this.repository.sendMessage(message, conversationId, userId);
 
     }
 

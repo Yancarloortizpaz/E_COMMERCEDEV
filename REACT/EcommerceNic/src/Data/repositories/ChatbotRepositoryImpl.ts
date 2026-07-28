@@ -7,10 +7,12 @@ export class ChatbotRepositoryImpl implements ChatbotRepository {
 
 
     async sendMessage(
-        message:string
+        message:string,
+        conversationId?: string,
+        userId?: string,
     ):Promise<ChatbotResponse>{
 
-        return chatbotRemoteDataSource.sendMessage(message);
+        return chatbotRemoteDataSource.sendMessage(message, conversationId, userId);
 
     }
 

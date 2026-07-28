@@ -25,5 +25,13 @@ class Conversation(BaseModel):
     messages: List[Message]
     context: Context
 
+
+# Para crear conversaciones nuevas
+class CreateConversationRequest(BaseModel):
+    userId: str
+    title: str | None = None
+
+
+# Para consultar una conversación existente
 class ConversationRequest(BaseModel):
     conversation_id: str

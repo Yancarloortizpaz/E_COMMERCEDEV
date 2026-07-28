@@ -3,7 +3,9 @@ import { ChatbotConversationResponse, ChatMessagePayload, ChatbotResponse } from
 export interface ChatbotRepository {
 
     sendMessage(
-        message:string
+        message:string,
+        conversationId?: string,
+        userId?: string,
     ): Promise<ChatbotResponse>;
 
     getConversations(userId?: string): Promise<ChatbotConversationResponse[]>;

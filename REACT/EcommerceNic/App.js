@@ -7,8 +7,10 @@ import { AdminDashboardScreen } from './src/Presentacion/screens/AdminDashboardS
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('login');
+  const [currentUser, setCurrentUser] = useState(null);
 
   const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
     if (user.role === 'admin') {
       setCurrentScreen('admin');
     } else {
@@ -42,8 +44,8 @@ export default function App() {
         />
       )}
 
-      {currentScreen === 'home' && (
-        <HomeScreen onLogout={handleLogout} />
+      {currentScreen === 'home' && currentUser && (
+        <HomeScreen user={currentUser} onLogout={handleLogout} />
       )}
 
       {currentScreen === 'admin' && (

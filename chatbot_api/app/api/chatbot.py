@@ -92,11 +92,14 @@ def enviar_mensaje(request: MensajeRequest):
             ],
         }
 
-        # 3. Guardar en SQL Server
+        # 3. Guardar de forma persistente localmente
         res_repo = repo_conversacion.guardar_conversacion(payload_conversacion)
 
-        if isinstance(res_repo, dict) and "conversation_id" in res_repo:
-            respuesta_bot["conversation_id"] = str(res_repo["conversation_id"])
+        if isinstance(res_repo, dict):
+            conversation_id = res_repo.get("conversation_id") or res_repo.get("id")
+            if conversation_id:
+                respuesta_bot["conversation_id"] = str(conversation_id)
+                respuesta_bot["conversationId"] = str(conversation_id)
 
         # 4. Retornar la respuesta limpia
         return respuesta_bot

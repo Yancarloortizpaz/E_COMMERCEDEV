@@ -18,6 +18,7 @@ export interface ChatMessagePayload {
   role: string;
   content: string;
   timestamp: string;
+  user_id: string;  
   isBot?: boolean;
   tipo?: string;
   productos?: any[];
@@ -35,7 +36,7 @@ export interface ChatbotConversationResponse {
 
 class ChatbotRemoteDataSource {
 
-  async sendMessage(message: string): Promise<ChatbotResponse> {
+  async sendMessage(message: string, conversationId?: string, userId?: string): Promise<ChatbotResponse> {
 
     console.log("URL:", `${API_URL}/api/chatbot/chat`);
     const response = await fetch(`${API_URL}/api/chatbot/chat`, {
@@ -45,6 +46,8 @@ class ChatbotRemoteDataSource {
       },
       body: JSON.stringify({
         mensaje: message,
+        conversation_id: conversationId ?? null,
+        user_id: userId ?? 'demo-user',
       }),
     });
 
@@ -75,11 +78,19 @@ class ChatbotRemoteDataSource {
 
   async createConversation(userId: string, title = 'Nueva conversación'): Promise<ChatbotConversationResponse> {
     try {
-      const response = await fetch(`${API_URL}/api/chatbot/conversations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, title }),
-      });
+const response = await fetch(
+  `${API_URL}/api/chatbot/conversations`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userId,
+      title,
+    }),
+  }
+);
       if (!response.ok) {
         return { id: `${Date.now()}`, userId, title, isActive: true };
       }
