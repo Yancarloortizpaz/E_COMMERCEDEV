@@ -68,3 +68,32 @@ VALUES
 (6, 'Lo siento, no logré entender tu consulta. Recuerda que puedo ayudarte a buscar cualquier producto de nuestro catálogo o indicarte los métodos de pago.', 1),
 (6, 'Vaya, no reconozco esa instrucción. ¿Podrías intentar escribiendo el nombre de un producto o marca (ej. Dell, Nike, Zapatillas)?', 1);
 GO
+
+
+-------------------- nuevas reglas 
+
+
+
+INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
+VALUES 
+('Agregar Carrito', 1, 'agregar_carrito', 1),
+('Consultar Carrito', 1, 'consultar_carrito', 1),
+('Eliminar Producto Carrito', 1, 'eliminar_carrito', 1),
+('Procesar Pago', 1, 'procesar_pago', 1),
+('Consultar Orden', 1, 'consultar_orden', 1);
+
+-- Palabras Clave Triggers (Asociadas a ReglaID 7-11)
+INSERT INTO PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
+VALUES 
+-- Regla 7 (Agregar Carrito)
+(8, 'agregar al carrito', 1), (7, 'anadir al carrito', 1), (7, 'añadir al carrito', 1), (7, 'agregar carrito', 1),
+-- Regla 8 (Consultar Carrito)
+(9, 'ver carrito', 1), (8, 'mi carrito', 1), (8, 'consultar carrito', 1), (8, 'carrito', 1),
+-- Regla 9 (Eliminar Producto)
+(10, 'eliminar del carrito', 1), (9, 'quitar del carrito', 1), (9, 'borrar del carrito', 1),
+-- Regla 10 (Procesar Pago)
+(11, 'procesar pago', 1), (10, 'finalizar compra', 1), (10, 'pagar carrito', 1), (10, 'pagar', 1),
+-- Regla 11 (Consultar Orden)
+(12, 'estado de mi orden', 1), (11, 'mi orden', 1), (11, 'ver pedido', 1), (11, 'rastrear orden', 1);
+
+

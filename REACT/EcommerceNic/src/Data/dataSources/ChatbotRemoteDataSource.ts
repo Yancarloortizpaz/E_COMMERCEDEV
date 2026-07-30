@@ -12,7 +12,7 @@ export interface ChatbotResponse {
 
 class ChatbotRemoteDataSource {
 
-  async sendMessage(message: string): Promise<ChatbotResponse> {
+  async sendMessage(message: string, conversacionId: number = 1): Promise<ChatbotResponse> {
 
     console.log("URL:", `${API_URL}/api/chatbot/chat`);
     const response = await fetch(`${API_URL}/api/chatbot/chat`, {
@@ -22,17 +22,18 @@ class ChatbotRemoteDataSource {
       },
       body: JSON.stringify({
         mensaje: message,
+        conversacion_id: conversacionId,
       }),
     });
 
     if (!response.ok) {
-    const text = await response.text();
+      const text = await response.text();
 
-    console.log("STATUS:", response.status);
-    console.log("RESPUESTA:", text);
+      console.log("STATUS:", response.status);
+      console.log("RESPUESTA:", text);
 
-    throw new Error(text);
-}
+      throw new Error(text);
+    }
 
     return await response.json();
   }

@@ -1,5 +1,5 @@
 from app.services.actions_service import procesar_mensaje_db
 
 
-def procesar_mensaje(mensaje):
-    return procesar_mensaje_db(mensaje)
+def procesar_mensaje(mensaje: str, conversacion_id: int = 1):
+    return procesar_mensaje_db(mensaje, conversacion_id)

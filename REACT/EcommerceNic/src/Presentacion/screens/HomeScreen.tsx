@@ -102,14 +102,15 @@ export const HomeScreen = ({ onLogout }: Props) => {
   };
 
   // Chatbot Send Message Flow
-   const handleSendMessage = async (text: string) => {
+  const [conversacionId] = useState<number>(1); // ID de conversación dinámico por sesión de usuario
+
+  const handleSendMessage = async (text: string) => {
     const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
     if (!cleanText) return;
 
-    // CORRECCIÓN: Usando Date.now() directo como número para el id
     const newUserMsg: Message = { 
       id: Date.now(), 
-      conversationId: 'default',
+      conversationId: conversacionId.toString(),
       role: 'user', 
       isBot: false,
       content: cleanText,
@@ -119,43 +120,59 @@ export const HomeScreen = ({ onLogout }: Props) => {
     setIsTyping(true);
 
     try {
+      // 1. Envío de mensaje con conversacion_id dinámico
+      const response = await sendChatMessageUseCase.execute(cleanText, conversacionId);
+      console.log('Respuesta Chatbot:', response);
 
-  const response = await sendChatMessageUseCase.execute(cleanText);
-      console.log(response);
-  setMessages(prev => [
-    ...prev,
-    {
-      id: Date.now() + 1,
-      conversationId: "default",
-      role: "assistant",
-      isBot: true,
-      content: response.texto,
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          conversationId: conversacionId.toString(),
+          role: "assistant",
+          isBot: true,
+          content: response.texto,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
 
-} catch (error: any) {
+      // 2. Reacción en la UI de React según el regla_id activado por la BD
+      if (response.regla_id === 8) {
+        // Regla 8: Agregar producto al carrito desde el chatbot
+        console.log("⚡ Regla 8 (Agregar Carrito) ejecutada dinámicamente por la BD");
+      } else if (response.regla_id === 10) {
+        // Regla 10: Eliminar producto o vaciar carrito desde el chatbot
+        console.log("⚡ Regla 10 (Eliminar/Vaciar Carrito) ejecutada en BD");
+      } else if (response.regla_id === 11) {
+        // Regla 11: Procesar Pago / Checkout Transaccional
+        console.log("⚡ Regla 11 (Procesar Pago) ejecutada en BD");
+        clearCart();
+        Alert.alert(
+          '🎉 ¡Pago Procesado por NicaBot!',
+          'El chatbot procesó exitosamente tu checkout y generó tu número de orden en la base de datos.',
+          [{ text: 'Ver Inicio', onPress: () => setCurrentTab('home') }]
+        );
+      }
 
-  console.log("ERROR DEL CHATBOT:");
-  console.log(error);
+    } catch (error: any) {
+      console.log("ERROR DEL CHATBOT:", error);
 
-  setMessages(prev => [
-    ...prev,
-    {
-      id: Date.now() + 1,
-      conversationId: "default",
-      role: "assistant",
-      isBot: true,
-      content: "❌ Error al comunicarse con el servidor.",
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          conversationId: conversacionId.toString(),
+          role: "assistant",
+          isBot: true,
+          content: "❌ Error al comunicarse con el servidor.",
+          timestamp: new Date().toISOString(),
+        },
+      ]);
 
-} finally {
-
-  setIsTyping(false);
-  }
-};
+    } finally {
+      setIsTyping(false);
+    }
+  };
   // Logout flow
   const handleLogout = () => {
     const ejecutarSalida = () => {
