@@ -24,3 +24,23 @@ Desktop.ini
 
 # Notas privadas
 *.md
+
+# no se si les vay a afectar pero de igual menra lo pondre 
+
+# Python & Entornos Virtuales
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+**/venv/
+.venv/
+*.dist-info/
+
+# Archivos de Logs y Expo (React Native / Expo)
+*.log
+.expo/
+**/dev/logs/
+
+# Variables de Entorno (Seguridad)
+.env
+.env.local

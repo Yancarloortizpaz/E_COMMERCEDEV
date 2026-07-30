@@ -10,11 +10,10 @@ export class SendChatMessageUseCase {
 
 
     async execute(
-        message:string
-    ){
-
-        return await this.repository.sendMessage(message);
-
+        message: string,
+        conversacionId?: number
+    ) {
+        return await this.repository.sendMessage(message, conversacionId);
     }
 
 }
