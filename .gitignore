@@ -23,4 +23,8 @@ ehthumbs.db
 Desktop.ini
 
 # Notas privadas
-*.md
+*.mdvenv/
+chatbot_api/venv/
+__pycache__/
+*.pyc
+.env
