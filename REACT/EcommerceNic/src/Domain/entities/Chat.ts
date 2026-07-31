@@ -8,7 +8,7 @@ export interface Message {
   user_id: string;   // 👈 nuevo campo obligatorio
   appliedRuleId?: number;
   intent?: string;
-  metadata?: string;
+  metadata?: { productos?: any[] } | null; // 👈 corregido
 
   tipo?: string;
   productos?: any[];

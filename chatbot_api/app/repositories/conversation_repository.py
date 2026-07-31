@@ -1,181 +1,306 @@
-﻿import json
-from pathlib import Path
+﻿import logging
 from datetime import datetime, timezone
-from uuid import uuid4
+from typing import Any, Dict, List, Optional
+from app.database.connection import get_connection
+from app.core.models.conversation import ConversationRequest
+import json
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def _parse_timestamp(value) -> datetime:
+    if value is None:
+        return datetime.now(timezone.utc).replace(tzinfo=None)
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, str):
+        s = value.strip()
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+        try:
+            dt = datetime.fromisoformat(s)
+        except Exception:
+            try:
+                if "." in s:
+                    base, _ = s.split(".", 1)
+                    dt = datetime.fromisoformat(base)
+                else:
+                    dt = datetime.fromisoformat(s)
+            except Exception:
+                dt = datetime.now(timezone.utc)
+    else:
+        dt = datetime.now(timezone.utc)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt.replace(tzinfo=None)
 
 
 class ConversationRepository:
-    def __init__(self, storage_path: str | None = None):
-        base_path = Path(storage_path or Path(__file__).resolve().parents[1] / "data" / "conversations.json")
-        base_path.parent.mkdir(parents=True, exist_ok=True)
-        self.storage_path = base_path
-        self._store = self._load_store()
+    def guardar_conversacion(self, conversation: Dict[str, Any]) -> Dict[str, Any]:
+        user_id = conversation.get("userId") or conversation.get("user_id") or "demo-user"
+        messages = conversation.get("messages") or []
+        provided_conv_id = conversation.get("conversation_id") or conversation.get("conversationId")
 
-    def _load_store(self):
-        if not self.storage_path.exists():
-            return {"conversations": []}
+        logger.info("guardar_conversacion called; user_id=%s messages_count=%d provided_conv_id=%s",
+                    user_id, len(messages), provided_conv_id)
 
+        conn = get_connection()
+        cursor = conn.cursor()
         try:
-            with self.storage_path.open("r", encoding="utf-8") as fh:
-                data = json.load(fh)
-            return data if isinstance(data, dict) else {"conversations": []}
-        except json.JSONDecodeError:
-            return {"conversations": []}
+            conversation_id: Optional[int] = None
 
-    def _save_store(self):
-        with self.storage_path.open("w", encoding="utf-8") as fh:
-            json.dump(self._store, fh, ensure_ascii=False, indent=2)
+            if provided_conv_id is not None:
+                cursor.execute("SELECT ConversacionID FROM dbo.HistorialConversaciones WHERE ConversacionID = ?", provided_conv_id)
+                row = cursor.fetchone()
+                if row:
+                    conversation_id = int(row.ConversacionID)
+                    cursor.execute(
+                        "UPDATE dbo.HistorialConversaciones SET UsuarioID = ?, FechaFin = GETDATE(), Activo = 1 WHERE ConversacionID = ?",
+                        user_id,
+                        conversation_id
+                    )
+                else:
+                    cursor.execute(
+                        "INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
+                        user_id
+                    )
+                    conversation_id = int(cursor.fetchone()[0])
+            else:
+                cursor.execute(
+                    "INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
+                    user_id
+                )
+                conversation_id = int(cursor.fetchone()[0])
 
-    def _normalize_conversation_id(self, conversation_id):
-        if conversation_id in (None, "", "default", "default_session"):
-            return None
-        return str(conversation_id)
+            if not conversation_id:
+                raise RuntimeError("No se pudo obtener el ConversacionID generado por la base de datos.")
 
-    def _coerce_message(self, message):
-        if hasattr(message, "model_dump"):
-            return message.model_dump()
-        if hasattr(message, "dict"):
-            return message.dict()
-        if isinstance(message, dict):
-            return message
-        raise TypeError("message must be a dict or Pydantic model")
+            # Insertar mensajes asociados, ahora guardando MetadataJson
+            for msg in messages:
+                role = (msg.get("role") or "").lower()
+                is_bot_flag = msg.get("isBot")
+                is_bot = 1 if (is_bot_flag is True or role in ("assistant", "bot", "chatbot")) else 0
 
-    def _coerce_conversation(self, conversation):
-        if hasattr(conversation, "model_dump"):
-            return conversation.model_dump()
-        if hasattr(conversation, "dict"):
-            return conversation.dict()
-        if isinstance(conversation, dict):
-            return conversation
-        raise TypeError("conversation must be a dict or Pydantic model")
+                texto = msg.get("content") or msg.get("texto") or ""
+                if texto is None:
+                    texto = ""
 
-    def _create_conversation_entry(self, conversation_data, conversation_id):
-        now = datetime.now(timezone.utc).isoformat()
-        title = conversation_data.get("title") or "Nueva conversación"
-        return {
-            "id": str(conversation_id),
-            "conversation_id": str(conversation_id),
-            "user_id": conversation_data.get("user_id") or "demo-user",
-            "title": title,
-            "language": (conversation_data.get("context") or {}).get("language", "es"),
-            "lastIntent": None,
-            "createdAt": now,
-            "updatedAt": now,
-            "messages": [],
-            "context": conversation_data.get("context") or {"language": "es", "session_variables": {}},
-        }
+                timestamp = _parse_timestamp(msg.get("timestamp"))
+                rule_id = msg.get("appliedRuleId") or msg.get("ReglaActivadaID")
 
-    def guardar_conversacion(self, conversation):
-        conversation_data = self._coerce_conversation(conversation)
-        user_id = conversation_data.get("user_id") or conversation_data.get("userId") or "demo-user"
-        raw_conversation_id = self._normalize_conversation_id(conversation_data.get("conversation_id"))
-        messages = conversation_data.get("messages") or []
+                # metadata puede venir como dict/string/list; normalizar a JSON string o NULL
+                metadata = msg.get("metadata") or msg.get("Metadata") or msg.get("productos")
+                metadata_json = None
+                if metadata is not None:
+                    try:
+                        # si ya es string y parece JSON, dejarlo; si es objeto, serializar
+                        if isinstance(metadata, str):
+                            # intentar parsear para validar
+                            try:
+                                json.loads(metadata)
+                                metadata_json = metadata
+                            except Exception:
+                                metadata_json = json.dumps(metadata, default=str)
+                        else:
+                            metadata_json = json.dumps(metadata, default=str)
+                    except Exception:
+                        metadata_json = json.dumps(str(metadata))
 
-        existing = None
-        if raw_conversation_id:
-            existing = next(
-                (item for item in self._store.get("conversations", []) if item.get("id") == raw_conversation_id),
-                None,
-            )
+                cursor.execute(
+                    """INSERT INTO dbo.HistorialMensajes
+                       (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    conversation_id,
+                    is_bot,
+                    texto,
+                    timestamp,
+                    rule_id,
+                    metadata_json
+                )
 
-        if existing is None:
-            conversation_id = str(uuid4())
-            entry = self._create_conversation_entry(conversation_data, conversation_id)
-            entry["user_id"] = user_id
-            self._store.setdefault("conversations", []).append(entry)
-            existing = entry
-
-        for message in messages:
-            message_data = self._coerce_message(message)
-            normalized = {
-                "id": str(uuid4()),
-                "conversationId": existing["id"],
-                "role": (message_data.get("role") or "assistant").lower(),
-                "content": message_data.get("content") or message_data.get("texto") or "",
-                "timestamp": message_data.get("timestamp") or datetime.now(timezone.utc).isoformat(),
-                "isBot": (message_data.get("role") or "").lower() in {"assistant", "bot", "chatbot"},
-                "user_id": user_id,
-                "appliedRuleId": message_data.get("appliedRuleId") or message_data.get("ReglaActivadaID"),
-                "tipo": message_data.get("tipo"),
-                "productos": message_data.get("productos") or [],
-                "metadata": message_data.get("metadata"),
-            }
-            existing["messages"].append(normalized)
-
-        existing["user_id"] = user_id
-        existing["updatedAt"] = datetime.now(timezone.utc).isoformat()
-        if existing["messages"] and existing.get("title") == "Nueva conversación":
-            first_user = next((m for m in existing["messages"] if m.get("role") == "user"), None)
-            if first_user:
-                preview = first_user.get("content", "")[:30]
-                existing["title"] = preview if preview else "Nueva conversación"
-
-        self._save_store()
-        return {"status": "ok", "id": existing["id"], "conversation_id": existing["id"]}
+            conn.commit()
+            return {"status": "ok", "conversation_id": conversation_id}
+        except Exception as ex:
+            conn.rollback()
+            logger.exception("Error al guardar conversación")
+            raise RuntimeError(f"Error al guardar conversación: {ex}")
+        finally:
+            cursor.close()
+            conn.close()
 
     def guardar_mensaje(self, conversation_id, message):
-        conversation_id = self._normalize_conversation_id(conversation_id) or str(uuid4())
-        payload = {
-            "conversation_id": conversation_id,
-            "user_id": getattr(message, "user_id", None) or "demo-user",
-            "messages": [
-                {
-                    "role": getattr(message, "role", "assistant"),
-                    "content": getattr(message, "content", ""),
-                    "timestamp": getattr(message, "timestamp", datetime.now(timezone.utc).isoformat()),
-                    "appliedRuleId": getattr(message, "appliedRuleId", None),
-                    "tipo": getattr(message, "tipo", None),
-                    "productos": getattr(message, "productos", []) or [],
-                }
-            ],
-        }
-        return self.guardar_conversacion(payload)
-
-    def obtener_historial(self, conversation_request):
-        if hasattr(conversation_request, "conversation_id"):
-            raw_id = conversation_request.conversation_id
-        elif isinstance(conversation_request, dict):
-            raw_id = conversation_request.get("conversation_id")
-        elif isinstance(conversation_request, (int, str)):
-            raw_id = conversation_request
-        else:
-            raise TypeError("conversation_request must be a dict, str, int or Pydantic model")
-
-        conversation_id = self._normalize_conversation_id(raw_id)
         if not conversation_id:
-            return []
+            raise RuntimeError("conversation_id es requerido para guardar un mensaje.")
 
-        entry = next((item for item in self._store.get("conversations", []) if item.get("id") == conversation_id), None)
-        if not entry:
-            return []
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT ConversacionID FROM dbo.HistorialConversaciones WHERE ConversacionID = ?", conversation_id)
+            if not cursor.fetchone():
+                raise RuntimeError(f"La conversación {conversation_id} no existe en la base de datos.")
 
-        historial = []
-        for message in entry.get("messages", []):
-            historial.append({
-                "id": message.get("id"),
-                "conversationId": entry["id"],
-                "isBot": message.get("isBot", message.get("role") != "user"),
-                "role": message.get("role", "assistant"),
-                "content": message.get("content", ""),
-                "timestamp": message.get("timestamp") or datetime.now(timezone.utc).isoformat(),
-                "appliedRuleId": message.get("appliedRuleId"),
-                "tipo": message.get("tipo"),
-                "productos": message.get("productos") or [],
-            })
-        return historial
+            role = (message.get("role") or "").lower()
+            is_bot_flag = message.get("isBot")
+            is_bot = 1 if (is_bot_flag is True or role in ("assistant", "bot", "chatbot")) else 0
 
-    def listar_conversaciones_usuario(self, user_id):
-        conversaciones = []
-        for item in self._store.get("conversations", []):
-            if item.get("user_id") == user_id:
-                conversaciones.append({
-                    "id": item.get("id"),
-                    "userId": item.get("user_id"),
-                    "title": item.get("title") or "Nueva conversación",
-                    "language": item.get("language") or "es",
-                    "lastIntent": item.get("lastIntent") or "",
-                    "isActive": True,
-                    "updatedAt": item.get("updatedAt"),
-                    "messages": item.get("messages", []),
+            texto = message.get("content") or message.get("texto") or ""
+            if texto is None:
+                texto = ""
+
+            timestamp = _parse_timestamp(message.get("timestamp"))
+            rule_id = message.get("appliedRuleId") or message.get("ReglaActivadaID")
+
+            metadata = message.get("metadata") or message.get("Metadata") or message.get("productos")
+            metadata_json = None
+            if metadata is not None:
+                try:
+                    if isinstance(metadata, str):
+                        try:
+                            json.loads(metadata)
+                            metadata_json = metadata
+                        except Exception:
+                            metadata_json = json.dumps(metadata, default=str)
+                    else:
+                        metadata_json = json.dumps(metadata, default=str)
+                except Exception:
+                    metadata_json = json.dumps(str(metadata))
+
+            cursor.execute(
+                """INSERT INTO dbo.HistorialMensajes
+                   (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                conversation_id,
+                is_bot,
+                texto,
+                timestamp,
+                rule_id,
+                metadata_json
+            )
+
+            conn.commit()
+            return {"status": "ok", "conversation_id": conversation_id}
+        except Exception as ex:
+            conn.rollback()
+            logger.exception("Error al guardar mensaje")
+            raise RuntimeError(f"Error al guardar mensaje: {ex}")
+        finally:
+            cursor.close()
+            conn.close()
+
+    def obtener_historial(self, conversation_request: ConversationRequest) -> List[Dict[str, Any]]:
+        conversation_id = conversation_request.conversation_id
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """SELECT MensajeID, ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson
+                   FROM dbo.HistorialMensajes
+                   WHERE ConversacionID = ?
+                   ORDER BY FechaHora ASC""",
+                conversation_id
+            )
+            historial: List[Dict[str, Any]] = []
+            for row in cursor.fetchall():
+                # intentar parsear metadata JSON si existe
+                metadata_val = None
+                productos = []
+                try:
+                    if row.MetadataJson:
+                        metadata_val = json.loads(row.MetadataJson)
+                        # si metadata_val es dict con key productos, extraer
+                        if isinstance(metadata_val, dict) and "productos" in metadata_val:
+                            productos = metadata_val.get("productos") or []
+                        else:
+                            # si metadata_val es lista o dict, asignarlo a productos si tiene sentido
+                            if isinstance(metadata_val, list):
+                                productos = metadata_val
+                            else:
+                                productos = []
+                except Exception:
+                    # si no es JSON válido, dejar como string
+                    metadata_val = row.MetadataJson
+                    productos = []
+
+                historial.append({
+                    "id": row.MensajeID,
+                    "conversationId": row.ConversacionID,
+                    "role": "assistant" if bool(row.ChatBot) else "user",
+                    "content": row.Texto or "",
+                    "timestamp": row.FechaHora.isoformat() if row.FechaHora else None,
+                    "isBot": bool(row.ChatBot),
+                    "user_id": None,
+                    "appliedRuleId": row.ReglaActivadaID,
+                    "tipo": None,
+                    "productos": productos,
+                    "metadata": metadata_val,
                 })
-        return sorted(conversaciones, key=lambda item: item.get("updatedAt", ""), reverse=True)
+            return historial
+        finally:
+            cursor.close()
+            conn.close()
+
+    def listar_conversaciones(self, user_id: str) -> List[Dict[str, Any]]:
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "SELECT ConversacionID, UsuarioID, FechaInicio, FechaFin, Activo FROM dbo.HistorialConversaciones WHERE UsuarioID = ?",
+                user_id
+            )
+            conversaciones: List[Dict[str, Any]] = []
+            for row in cursor.fetchall():
+                conv_id = row.ConversacionID
+                cursor.execute(
+                    """SELECT MensajeID, ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson
+                       FROM dbo.HistorialMensajes
+                       WHERE ConversacionID = ?
+                       ORDER BY FechaHora ASC""",
+                    conv_id
+                )
+                mensajes = []
+                for m in cursor.fetchall():
+                    metadata_val = None
+                    productos = []
+                    try:
+                        if m.MetadataJson:
+                            metadata_val = json.loads(m.MetadataJson)
+                            if isinstance(metadata_val, dict) and "productos" in metadata_val:
+                                productos = metadata_val.get("productos") or []
+                            elif isinstance(metadata_val, list):
+                                productos = metadata_val
+                    except Exception:
+                        metadata_val = m.MetadataJson
+                        productos = []
+
+                    mensajes.append({
+                        "id": m.MensajeID,
+                        "conversationId": m.ConversacionID,
+                        "role": "assistant" if bool(m.ChatBot) else "user",
+                        "content": m.Texto or "",
+                        "timestamp": m.FechaHora.isoformat() if m.FechaHora else None,
+                        "isBot": bool(m.ChatBot),
+                        "user_id": user_id,
+                        "appliedRuleId": m.ReglaActivadaID,
+                        "productos": productos,
+                        "metadata": metadata_val
+                    })
+
+                conversaciones.append({
+                    "id": conv_id,
+                    "conversation_id": conv_id,
+                    "user_id": user_id,
+                    "title": mensajes[0]["content"][:30] if mensajes else "Nueva conversación",
+                    "language": "es",
+                    "lastIntent": None,
+                    "createdAt": row.FechaInicio.isoformat() if row.FechaInicio else None,
+                    "updatedAt": row.FechaFin.isoformat() if row.FechaFin else None,
+                    "isActive": bool(row.Activo),
+                    "messages": mensajes,
+                    "context": {"language": "es", "session_variables": {}}
+                })
+
+            return conversaciones
+        finally:
+            cursor.close()
+            conn.close()

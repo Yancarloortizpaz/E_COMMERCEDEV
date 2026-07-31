@@ -19,8 +19,8 @@ import { NosotrosTab } from './components/NosotrosTab';
 import { PaymentModal } from './components/PaymentModal';
 import { Conversation, Message } from '../../Domain/entities/Chat';
 import { User } from '../../Domain/entities/User';
-
-
+import { normalizeMetadata } from '../hooks/normalizeMetadata';
+import { SidebarHistorial } from '../components/SidebarHistorial';
 
 interface Props {
   onLogout: () => void;
@@ -40,19 +40,17 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const [currentUser] = useState<{ email: string }>({ email: user?.email ?? "demo-user" });
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
-  
   const [messages, setMessages] = useState<Message[]>([
-  {
-    id: 1,
-    conversationId: 'default',
-    role: 'assistant',
-    isBot: true,
-    content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
-    timestamp: new Date().toISOString(),
-    user_id: "chatbot",   // 👈 obligatorio
-  },
-]);
-
+    {
+      id: 1,
+      conversationId: 'default',
+      role: 'assistant',
+      isBot: true,
+      content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
+      timestamp: new Date().toISOString(),
+      user_id: "chatbot",   // 👈 obligatorio
+    },
+  ]);
 
   // Cargar catálogo de productos
   const loadProducts = async () => {
@@ -89,6 +87,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
               timestamp: msg.timestamp ?? new Date().toISOString(),
               tipo: msg.tipo,
               productos: msg.productos ?? [],
+              metadata: normalizeMetadata(msg.metadata), // 👈 aquí
             }))
           : [],
       }));
@@ -185,7 +184,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const createNewConversation = async () => {
     try {
       const conversation = await sendChatMessageUseCase.createConversation(currentUser.email, 'Nueva conversación');
-      const realId = conversation.id.toString();
+      const realId = (conversation.conversation_id ?? conversation.id ?? Date.now()).toString();
 
       const newConversation: Conversation = {
         id: realId,
@@ -208,122 +207,123 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   };
 
   // Persistir un mensaje individual en la base de datos
-const persistMessage = async (conversationId: string, message: Message) => {
-  try {
-    await sendChatMessageUseCase.saveMessage(conversationId, {
-      role: message.role,
-      content: message.content,
-      timestamp: message.timestamp,
-      user_id: currentUser.email,   // 👈 ahora sí enviamos el usuario logueado
-      isBot: message.isBot,
-      tipo: message.tipo,
-      productos: message.productos ?? [],
-    });
-  } catch (error) {
-    console.log('Error al guardar mensaje en el backend:', error);
-  }
-};
-
-// Flujo principal de envío de mensajes al Chatbot
-const handleSendMessage = async (text: string) => {
-  const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
-  if (!cleanText) return;
-
-  let currentConvId = activeConversationId;
-
-  // 1. SI NO EXISTE CONVERSACIÓN VÁLIDA O ES 'default', CREAMOS UNA EN EL BACKEND PRIMERO
-  if (!currentConvId || currentConvId === 'default') {
+  const persistMessage = async (conversationId: string, message: Message) => {
     try {
-      const titleSnippet = cleanText.length > 25 ? `${cleanText.slice(0, 25)}...` : cleanText;
-      const newConv = await sendChatMessageUseCase.createConversation(currentUser.email, titleSnippet);
-      
-      currentConvId = newConv.id.toString();
-      setActiveConversationId(currentConvId);
-
-      const newConvObj: Conversation = {
-        id: currentConvId,
-        userId: currentUser.email,   // 👈 aquí también usamos el usuario real
-        title: titleSnippet,
-        startDate: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true,
-        messages: [],
-      };
-      setConversations(prev => [newConvObj, ...prev]);
-      setHasLoadedHistory(true);
+      await sendChatMessageUseCase.saveMessage(conversationId, {
+        role: message.role,
+        content: message.content,
+        timestamp: message.timestamp,
+        user_id: currentUser.email,   // 👈 ahora sí enviamos el usuario logueado
+        isBot: message.isBot,
+        tipo: message.tipo,
+        productos: message.productos ?? [],
+        metadata: normalizeMetadata(message.metadata), // opcional
+      });
     } catch (error) {
-      console.log('Error al inicializar sesión de chat:', error);
-      Alert.alert('Error', 'No se pudo establecer conexión para iniciar la conversación.');
-      return;
+      console.log('Error al guardar mensaje en el backend:', error);
     }
-  }
-
-  // 2. AGREGAR MENSAJE DEL USUARIO AL ESTADO LOCAL
-  const newUserMsg: Message = { 
-    id: Date.now(), 
-    conversationId: currentConvId,
-    role: 'user', 
-    isBot: false,
-    content: cleanText,
-    timestamp: new Date().toISOString(),
-    user_id: currentUser.email,   // 👈 obligatorio en el modelo
   };
 
-  setMessages(prev => [...prev, newUserMsg]);
-  setIsTyping(true);
-  setHasLoadedHistory(true);
-  await persistMessage(currentConvId, newUserMsg);
+  // Flujo principal de envío de mensajes al Chatbot
+  const handleSendMessage = async (text: string) => {
+    const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
+    if (!cleanText) return;
 
-  // 4. CONSUMIR LA RESPUESTA DEL CHATBOT
-  try {
-    const response = await sendChatMessageUseCase.execute(cleanText, currentConvId, currentUser.email);
-    
-    const botMessage: Message = {
-      id: Date.now() + 1,
+    let currentConvId = activeConversationId;
+
+    // 1. SI NO EXISTE CONVERSACIÓN VÁLIDA O ES 'default', CREAMOS UNA EN EL BACKEND PRIMERO
+    if (!currentConvId || currentConvId === 'default') {
+      try {
+        const titleSnippet = cleanText.length > 25 ? `${cleanText.slice(0, 25)}...` : cleanText;
+        const newConv = await sendChatMessageUseCase.createConversation(currentUser.email, titleSnippet);
+        
+        currentConvId = (newConv.conversation_id ?? newConv.id ?? Date.now()).toString();
+        setActiveConversationId(currentConvId);
+
+        const newConvObj: Conversation = {
+          id: currentConvId,
+          userId: currentUser.email,   // 👈 aquí también usamos el usuario real
+          title: titleSnippet,
+          startDate: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: true,
+          messages: [],
+        };
+        setConversations(prev => [newConvObj, ...prev]);
+        setHasLoadedHistory(true);
+      } catch (error) {
+        console.log('Error al inicializar sesión de chat:', error);
+        Alert.alert('Error', 'No se pudo establecer conexión para iniciar la conversación.');
+        return;
+      }
+    }
+
+    // 2. AGREGAR MENSAJE DEL USUARIO AL ESTADO LOCAL
+    const newUserMsg: Message = { 
+      id: Date.now(), 
       conversationId: currentConvId,
-      role: 'assistant',
-      isBot: true,
-      content: response.texto,
+      role: 'user', 
+      isBot: false,
+      content: cleanText,
       timestamp: new Date().toISOString(),
-      tipo: response.tipo,
-      productos: response.productos ?? [],
-      user_id: "chatbot",   // 👈 puedes marcarlo fijo para el bot
+      user_id: currentUser.email,   // 👈 obligatorio en el modelo
     };
 
-    setMessages(prev => [...prev, botMessage]);
-    await persistMessage(currentConvId, botMessage);
+    setMessages(prev => [...prev, newUserMsg]);
+    setIsTyping(true);
     setHasLoadedHistory(true);
+    await persistMessage(currentConvId, newUserMsg);
 
-    // Actualizar metadatos de la lista de conversaciones
-    setConversations(prev => prev.map(item => 
-      item.id === currentConvId 
-        ? { 
-            ...item, 
-            updatedAt: new Date().toISOString(), 
-            title: item.title && item.title !== 'Nueva conversación' ? item.title : cleanText.slice(0, 25) 
-          } 
-        : item
-    ));
+    // 4. CONSUMIR LA RESPUESTA DEL CHATBOT
+    try {
+      const response = await sendChatMessageUseCase.execute(cleanText, currentConvId, currentUser.email);
+      
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        conversationId: currentConvId,
+        role: 'assistant',
+        isBot: true,
+        content: response.texto,
+        timestamp: new Date().toISOString(),
+        tipo: response.tipo,
+        productos: response.productos ?? [],
+        metadata: normalizeMetadata(response.metadata), // 👈 agrega esto
+        user_id: "chatbot",   // 👈 puedes marcarlo fijo para el bot
+      };
 
-  } catch (error: any) {
-    console.log('ERROR EN RESPUESTA DE CHATBOT:', error);
+      setMessages(prev => [...prev, botMessage]);
+      await persistMessage(currentConvId, botMessage);
+      setHasLoadedHistory(true);
 
-    const fallbackMessage: Message = {
-      id: Date.now() + 1,
-      conversationId: currentConvId,
-      role: 'assistant',
-      isBot: true,
-      content: '❌ Error al comunicarse con el servidor.',
-      timestamp: new Date().toISOString(),
-      user_id: "chatbot",
-    };
-    setMessages(prev => [...prev, fallbackMessage]);
-    await persistMessage(currentConvId, fallbackMessage);
-  } finally {
-    setIsTyping(false);
-  }
-};
+      // Actualizar metadatos de la lista de conversaciones
+      setConversations(prev => prev.map(item => 
+        item.id === currentConvId 
+          ? { 
+              ...item, 
+              updatedAt: new Date().toISOString(), 
+              title: item.title && item.title !== 'Nueva conversación' ? item.title : cleanText.slice(0, 25) 
+            } 
+          : item
+      ));
 
+    } catch (error: any) {
+      console.log('ERROR EN RESPUESTA DE CHATBOT:', error);
+
+      const fallbackMessage: Message = {
+        id: Date.now() + 1,
+        conversationId: currentConvId,
+        role: 'assistant',
+        isBot: true,
+        content: '❌ Error al comunicarse con el servidor.',
+        timestamp: new Date().toISOString(),
+        user_id: "chatbot",
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
+      await persistMessage(currentConvId, fallbackMessage);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   // Cierre de sesión
   const handleLogout = () => {
@@ -371,7 +371,6 @@ const handleSendMessage = async (text: string) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      
       {/* Vistas según el Tab seleccionado */}
       {currentTab === 'home' && (
         <CatalogTab
@@ -398,31 +397,56 @@ const handleSendMessage = async (text: string) => {
         />
       )}
 
-      {currentTab === 'chatbot' && (
-        <ChatbotTab
-          messages={messages}
+      {/* AQUÍ ESTÁ EL CAMBIO CLAVE: SidebarHistorial ahora envuelve a ChatbotTab */}
+      
+        <SidebarHistorial
           conversations={conversations}
           activeConversationId={activeConversationId}
-          onSelectConversation={(conversationId) => {
-            const selected = conversations.find((item) => item.id === conversationId);
+          onSelectConversation={(id) => {
+            const selected = conversations.find((c) => c.id === id);
             if (selected) {
-              setActiveConversationId(conversationId);
-              setMessages(selected.messages ?? []);
+              setActiveConversationId(id);
+              const normalizedMessages = (selected.messages ?? []).map(m => ({
+                ...m,
+                metadata: normalizeMetadata(m.metadata),
+              }));
+              setMessages(normalizedMessages);
               setHasLoadedHistory(true);
             }
           }}
-          onNewConversation={createNewConversation}
-          sendMessage={handleSendMessage}
-          isTyping={isTyping}
-          onAddProductToCart={(product) => {
-            addProductToCart(product);
-            Alert.alert(
-              '🛒 ¡Carrito Actualizado!',
-              `Agregaste "${product.name ?? product.title}" al carrito desde el Chatbot.`,
-              [{ text: 'Ver Carrito', onPress: () => setCurrentTab('cart') }, { text: 'Seguir Chateando', style: 'cancel' }]
-            );
-          }}
-        />
+        >
+          <ChatbotTab
+            messages={messages}
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={(conversationId) => {
+              const selected = conversations.find((item) => item.id === conversationId);
+              if (selected) {
+                setActiveConversationId(conversationId);
+                const normalizedMessages = (selected.messages ?? []).map(m => ({
+                  ...m,
+                  metadata: normalizeMetadata(m.metadata),
+                }));
+                setMessages(normalizedMessages);
+                setHasLoadedHistory(true);
+              }
+            }}
+            onNewConversation={createNewConversation}
+            sendMessage={handleSendMessage}
+            isTyping={isTyping}
+            onAddProductToCart={(product) => {
+              addProductToCart(product);
+              Alert.alert(
+                '🛒 ¡Carrito Actualizado!',
+                `Agregaste "${product.name ?? product.title}" al carrito desde el Chatbot.`,
+                [
+                  { text: 'Ver Carrito', onPress: () => setCurrentTab('cart') },
+                  { text: 'Seguir Chateando', style: 'cancel' }
+                ]
+              );
+            }}
+          />
+        </SidebarHistorial>
       )}
 
       {currentTab === 'nosotros' && (
@@ -466,27 +490,55 @@ const handleSendMessage = async (text: string) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    paddingBottom: 70, // 👈 deja espacio para la barra inferior
+  },
   bottomTabBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 68,
-    backgroundColor: '#FFFFFF',
+    height: 60, // 👈 define altura fija
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingBottom: Platform.OS === 'ios' ? 14 : 4,
+    borderTopColor: '#E2E8F0',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // 👈 sombra suave en Android
   },
-  tabItem: { alignItems: 'center', justifyContent: 'center' },
-  tabIconBase: { fontSize: 20, opacity: 0.6 },
-  tabIconActive: { opacity: 1 },
-  tabIconActiveBot: { opacity: 1, color: '#3B82F6' },
-  tabIconWrapper: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  tabIconWrapperActive: { backgroundColor: '#EFF6FF' },
-  tabText: { fontSize: 11, color: '#94A3B8', fontWeight: '600', marginTop: 2 },
-  tabTextActive: { color: '#3B82F6', fontWeight: '800' },
+  tabItem: {
+    alignItems: 'center',
+  },
+  tabIconBase: {
+    fontSize: 22,
+    color: '#64748B',
+  },
+  tabIconActive: {
+    color: '#3B82F6',
+  },
+  tabIconActiveBot: {
+    color: '#3B82F6',
+  },
+  tabText: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  tabTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  tabIconWrapper: {
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: '#E2E8F0',
+  },
+  tabIconWrapperActive: {
+    backgroundColor: '#DBEAFE',
+  },
 });

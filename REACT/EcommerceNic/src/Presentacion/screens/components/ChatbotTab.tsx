@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { QUICK_REPLIES } from '../constants';
 import { Conversation, Message } from '../../../Domain/entities/Chat';
+import {ProductCard } from '../components/ProductCard';
 
 interface ChatbotTabProps {
   messages: Message[];
@@ -129,7 +130,7 @@ export const ChatbotTab = ({
         </View>
       </View>
       <View style={styles.headerDivider} />
-
+      {/*
       <View style={styles.historyBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
           {conversations.map((conversation) => (
@@ -154,7 +155,7 @@ export const ChatbotTab = ({
           <Text style={styles.newConversationText}>+ Nueva</Text>
         </TouchableOpacity>
       </View>
-
+        */}
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
@@ -217,41 +218,47 @@ export const ChatbotTab = ({
                     )}
 
                     {/* Tarjetas de productos */}
-                    {!isUser &&
-                      msg.tipo === 'productos' &&
-                      msg.productos?.map((producto: any) => (
-                        <View
-                          key={producto.ProductID}
-                          style={styles.productCard}
-                        >
-                          <Text style={styles.productName}>
-                            {producto.ProductName}
-                          </Text>
-
-                          <Text style={styles.productDescription}>
-                            {producto.ProductVariableName}
-                          </Text>
-
-                          <Text style={styles.productPrice}>
-                            {producto.CurrencyISO}{' '}{producto.ProductVariablePrice}
-                          </Text>
-
-                          <TouchableOpacity
-                            style={styles.productAddButton}
-                            onPress={() =>
-                              onAddProductToCart?.({
-                                id: producto.ProductID,
-                                name: producto.ProductName,
-                                price: producto.ProductVariablePrice,
-                              })
-                            }
-                          >
-                            <Text style={styles.productAddButtonText}>
-                              🛒 Agregar al carrito
+                    {!isUser && (
+                      <>
+                        {msg.tipo === 'productos' && msg.productos?.map((producto: any) => (
+                          <View key={producto.ProductID} style={styles.productCard}>
+                            <Text style={styles.productName}>{producto.ProductName}</Text>
+                            <Text style={styles.productDescription}>{producto.ProductVariableName}</Text>
+                            <Text style={styles.productPrice}>
+                              {producto.CurrencyISO} {producto.ProductVariablePrice}
                             </Text>
-                          </TouchableOpacity>
-                        </View>
-                      ))}
+                            <TouchableOpacity
+                              style={styles.productAddButton}
+                              onPress={() =>
+                                onAddProductToCart?.({
+                                  id: producto.ProductID,
+                                  name: producto.ProductName,
+                                  price: producto.ProductVariablePrice,
+                                })
+                              }
+                            >
+                              <Text style={styles.productAddButtonText}>🛒 Agregar al carrito</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+
+                        {/* fallback: si productos vienen en metadata */}
+                        {msg.metadata && typeof msg.metadata === 'object' && (msg.metadata as { productos?: any[] }).productos?.map((producto: any, idx: number) => (
+                          <ProductCard
+                            key={producto.ProductID ?? idx}
+                            product={{
+                              id: producto.ProductID ?? producto.id,
+                              title: producto.ProductName ?? producto.title,
+                              subtitle: producto.ProductVariableName ?? producto.subtitle,
+                              numericPrice: producto.ProductVariablePrice ?? producto.numericPrice,
+                              image: producto.image,
+                            }}
+                            onAddToCart={onAddProductToCart!}
+                          />
+                        ))}
+
+                      </>
+                    )}
 
                     {/* Hora */}
                     {msg.timestamp && (
