@@ -39,7 +39,6 @@ chatbot_api/venv/
 # Sistema
 Thumbs.db
 ehthumbs.db
-<<<<<<< HEAD
 Desktop.ini
 
 # Notas privadas
@@ -48,6 +47,11 @@ chatbot_api/venv/
 __pycache__/
 *.pyc
 .env
-=======
 Desktop.ini
->>>>>>> feature/duclis
+.agent/
+.agents/
+**/.agent/
+**/.agents/
+*.md
+venv/
+**/venv/
