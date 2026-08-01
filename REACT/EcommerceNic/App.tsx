@@ -4,12 +4,15 @@ import { LoginScreen } from './src/Presentacion/screens/loginScreen';
 import { RegisterScreen } from './src/Presentacion/screens/RegisterScreen';
 import { HomeScreen } from './src/Presentacion/screens/HomeScreen';
 import { AdminDashboardScreen } from './src/Presentacion/screens/AdminDashboardScreen';
+import { User } from './src/Domain/entities/User';
+
+type ScreenName = 'login' | 'register' | 'home' | 'admin';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('login');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentScreen, setCurrentScreen] = useState<ScreenName>('login');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const handleLoginSuccess = (user) => {
+  const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
     if (user.role === 'admin') {
       setCurrentScreen('admin');
@@ -23,6 +26,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    setCurrentUser(null);
     setCurrentScreen('login');
   };
 
