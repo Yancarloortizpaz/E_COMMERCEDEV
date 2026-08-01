@@ -397,8 +397,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         />
       )}
 
-      {/* AQUÍ ESTÁ EL CAMBIO CLAVE: SidebarHistorial ahora envuelve a ChatbotTab */}
-      
+      {currentTab === 'chatbot' && (
         <SidebarHistorial
           conversations={conversations}
           activeConversationId={activeConversationId}
