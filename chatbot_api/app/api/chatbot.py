@@ -23,7 +23,6 @@ def sanitizar_json(obj):
     """
     if isinstance(obj, Decimal):
         return float(obj)
-    # datetime.date también será convertido por isinstance(obj, datetime)
     try:
         from datetime import date
         if isinstance(obj, date) and not isinstance(obj, datetime):
@@ -53,8 +52,8 @@ def obtener_reglas():
 def enviar_mensaje(request: Dict[str, Any] = Body(...)):
     """
     Endpoint principal:
-      - Si recibe 'mensaje' llama al motor (procesar_mensaje), persiste user+assistant y devuelve la respuesta del bot.
-      - Si no recibe 'mensaje' pero sí 'messages', persiste la conversación tal cual.
+      - Si recibe 'mensaje' llama al motor (procesar_mensaje) pasando conversation_id real.
+      - Persiste la conversación y devuelve la respuesta del bot.
     """
     try:
         logger.info("POST /chat payload keys: %s", list(request.keys()))
@@ -80,9 +79,9 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
             conversation_id = res_repo.get("conversation_id") if isinstance(res_repo, dict) else res_repo
             return {"status": "ok", "conversation_id": conversation_id}
 
-        # Llamada al motor/reglas
+        # Llamada al motor/reglas pasando el conversation_id del usuario
         try:
-            respuesta_bot = procesar_mensaje(mensaje_text)
+            respuesta_bot = procesar_mensaje(mensaje_text, conversacion_id=provided_conv_id or 1)
         except Exception as ex_proc:
             logger.exception("Error en procesar_mensaje")
             raise HTTPException(status_code=500, detail=f"Error interno en motor: {ex_proc}")
@@ -92,10 +91,9 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
             logger.warning("procesar_mensaje devolvió tipo inesperado: %s", type(respuesta_bot))
             respuesta_bot = {"texto": str(respuesta_bot)}
 
-        # Sanitizar profundamente la respuesta del motor (decimales, fechas, etc.)
+        # Sanitizar profundamente la respuesta del motor
         respuesta_bot = sanitizar_json(respuesta_bot)
 
-        # Mapeo flexible: texto y productos/items/cards
         bot_text = (
             respuesta_bot.get("texto")
             or respuesta_bot.get("text")
@@ -113,16 +111,14 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
         )
         productos = productos if isinstance(productos, list) else [productos] if productos else []
 
-        # Sanitizar productos antes de serializar
         productos_sanitizados = sanitizar_json(productos)
 
-        # Serializar metadata de forma segura
         try:
             metadata_json = json.dumps({"productos": productos_sanitizados}, default=str)
         except Exception:
             metadata_json = json.dumps({"productos": str(productos_sanitizados)})
 
-        # Construir payload para persistir (user + assistant)
+        # Construir payload para la conversación persistida (asociando al user_id real del usuario)
         payload_conversacion = {
             "conversation_id": provided_conv_id,
             "userId": user_id,
@@ -152,7 +148,6 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
             ],
         }
 
-        # Persistir conversación y mensajes
         try:
             res_repo = repo_conversacion.guardar_conversacion(payload_conversacion)
         except Exception as ex_repo:
@@ -161,19 +156,15 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
 
         conversation_id = res_repo.get("conversation_id") if isinstance(res_repo, dict) else res_repo
 
-        # Preparar respuesta final para el cliente: asegurarnos de que sea serializable
-        respuesta_final = dict(respuesta_bot)  # copia
+        respuesta_final = dict(respuesta_bot)
         respuesta_final["conversation_id"] = str(conversation_id)
         respuesta_final["conversationId"] = str(conversation_id)
-        # incluir productos sanitizados para que la UI pueda renderizar cards
         respuesta_final["productos"] = productos_sanitizados
         respuesta_final["texto"] = bot_text
 
-        # Asegurar serialización final (fallback default=str)
         try:
             json.dumps(respuesta_final, default=str)
         except Exception:
-            # si algo raro queda, convertir valores problemáticos a str
             for k, v in list(respuesta_final.items()):
                 try:
                     json.dumps({k: v}, default=str)
@@ -183,11 +174,9 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
         return respuesta_final
 
     except HTTPException:
-        # Re-lanzar HTTPException tal cual (ya fue registrado)
         raise
     except Exception as ex:
         logger.exception("Error en endpoint /chat")
-        # devolver detalle mínimo para depuración desde la app
         raise HTTPException(status_code=500, detail=f"Error interno al procesar mensaje: {str(ex)}")
 
 

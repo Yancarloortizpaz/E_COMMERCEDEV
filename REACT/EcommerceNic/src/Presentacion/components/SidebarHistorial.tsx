@@ -8,16 +8,23 @@ import {
   ScrollView,
   Platform
 } from 'react-native';
-import Icon from '@react-native-vector-icons/ionicons'; // 👈 Usando tu misma ruta de iconos
+import Icon from '@react-native-vector-icons/ionicons';
 
 interface Props {
   conversations: { id: string; title?: string }[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
-  children?: React.ReactNode; // 👈 Prop clave para envolver el Chatbot
+  onNewConversation?: () => void;
+  children?: React.ReactNode;
 }
 
-export const SidebarHistorial = ({ conversations, activeConversationId, onSelectConversation, children }: Props) => {
+export const SidebarHistorial = ({ 
+  conversations, 
+  activeConversationId, 
+  onSelectConversation, 
+  onNewConversation,
+  children 
+}: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   
   // Animaciones
@@ -60,6 +67,13 @@ export const SidebarHistorial = ({ conversations, activeConversationId, onSelect
     toggleSidebar();
   };
 
+  const handleNewChat = () => {
+    if (onNewConversation) {
+      onNewConversation();
+    }
+    toggleSidebar();
+  };
+
   return (
     <View style={styles.container}>
       {/* Contenedor principal que muestra el ChatbotTab */}
@@ -87,6 +101,12 @@ export const SidebarHistorial = ({ conversations, activeConversationId, onSelect
             <Icon name="close-outline" size={26} color="#94A3B8" />
           </TouchableOpacity>
         </View>
+
+        {/* Botón + Nueva Conversación en el Sidebar */}
+        <TouchableOpacity style={styles.newChatButton} onPress={handleNewChat}>
+          <Icon name="add-circle-outline" size={22} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.newChatText}>Nueva conversación</Text>
+        </TouchableOpacity>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {conversations.length === 0 ? (
@@ -149,7 +169,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   overlay: {
-    // 👇 Solución al error de absoluteFillObject
     position: 'absolute',
     top: 0,
     left: 0,
@@ -177,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 60 : 30,
-    paddingBottom: 20,
+    paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#334155',
@@ -186,6 +205,23 @@ const styles = StyleSheet.create({
     color: '#F1F5F9',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  newChatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3B82F6',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  newChatText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
   scrollContent: {
     padding: 16,
@@ -200,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   activeItem: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#334155',
   },
   chatIcon: {
     marginRight: 12,
@@ -218,6 +254,5 @@ const styles = StyleSheet.create({
     color: '#64748B',
     textAlign: 'center',
     marginTop: 40,
-    fontSize: 15,
   },
 });

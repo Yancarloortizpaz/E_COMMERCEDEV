@@ -1,99 +1,213 @@
 USE [DB_EcommerceAgent];
 GO
 
-
--- 1. REGLAS DEL SISTEMA EXPERTO (Identificadores del 1 al 6 estables)
-
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES 
-('Saludo Inicial', 1, 'cargar_saludos_db', 1),
-('Buscar Producto', 1, 'buscar_producto_en_db', 1),
-('Metodos de Pago', 0, NULL, 1),
-('Despedida', 0, NULL, 1),
-('Sin Resultados', 0, NULL, 1),
-('No Reconocido', 0, NULL, 1);
-
-
--- 2. PALABRAS CLAVE (TRIGGERS ADMINISTRATIVOS DE CONTROL EXCLUSIVO)
-
-INSERT INTO PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
-VALUES 
--- Triggers para Saludo (ReglaID = 1)
-(1, 'hola', 1), (1, 'buenos dias', 1), (1, 'buenas tardes', 1), (1, 'buenas noches', 1), (1, 'que tal', 1),
-
--- Triggers para MÈtodos de Pago (ReglaID = 3)
-(3, 'pagar', 1), (3, 'pago', 1), (3, 'tarjeta', 1), (3, 'efectivo', 1), (3, 'transferencia', 1), (3, 'puedo pagar', 1),
-
--- Triggers para Despedida (ReglaID = 4)
-(4, 'adios', 1), (4, 'gracias', 1), (4, 'chao', 1), (4, 'hasta luego', 1);
-
--- Nota: La Regla 2 (Buscar Producto) ya no tiene triggers fijos aquÌ. 
--- Ser· evaluada din·micamente mediante el descarte de las anteriores.
-
-
--- 3. PLANTILLAS DE RESPUESTA DE VARIACI”N ALEATORIA
-
--- Saludo Inicial (ReglaID = 1)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(1, '°Hola! Bienvenido a nuestra tienda virtual. øQuÈ producto deseas buscar hoy?', 1),
-(1, '°QuÈ gusto saludarte! øBuscas alg˙n artÌculo o marca en nuestro cat·logo en este momento?', 1);
-
--- Buscar Producto con marcador [@TABLA] (ReglaID = 2)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(2, '°Perfecto! He consultado nuestro inventario en tiempo real y encontrÈ estas opciones para ti: \n [@TABLA]', 1),
-(2, 'Claro que sÌ, aquÌ tienes los detalles de los productos disponibles que coinciden con tu b˙squeda: \n [@TABLA]', 1);
-
--- MÈtodos de Pago (ReglaID = 3)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(3, 'Contamos con m˙ltiples opciones de pago: Tarjetas de crÈdito/dÈbito, transferencias y pagos seguros integrados.', 1);
-
--- Despedida (ReglaID = 4)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(4, '°Fue un placer ayudarte! Si deseas buscar otro producto, solo escribe su nombre aquÌ.', 1),
-(4, 'Gracias por escribirnos. °Vuelve pronto!', 1);
-
--- Sin Resultados (ReglaID = 5)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(5, 'Disculpa, busquÈ en nuestro cat·logo pero actualmente no contamos con existencias de ese producto.', 1),
-(5, 'Por el momento no tenemos disponible ese artÌculo en nuestro inventario. øTe gustarÌa buscar otra marca o producto?', 1);
-
--- No Reconocido / Fallback estricto (ReglaID = 6)
-INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
-VALUES 
-(6, 'Lo siento, no logrÈ entender tu consulta. Recuerda que puedo ayudarte a buscar cualquier producto de nuestro cat·logo o indicarte los mÈtodos de pago.', 1),
-(6, 'Vaya, no reconozco esa instrucciÛn. øPodrÌas intentar escribiendo el nombre de un producto o marca (ej. Dell, Nike, Zapatillas)?', 1);
+-- ============================================================================
+-- 1. LIMPIEZA / INICIALIZACI√ìN DE TABLAS DE REGLAS
+-- ============================================================================
+SET IDENTITY_INSERT ReglasChatbot OFF;
 GO
 
+-- 2. REGLAS UNIFICADAS DEL SISTEMA EXPERTO (ID 1 AL 12)
 
--------------------- nuevas reglas 
+MERGE INTO ReglasChatbot AS Target
+USING (VALUES 
+    (1,  'Saludo Inicial',              1, 'cargar_saludos_db',      1),
+    (2,  'Buscar Producto',             1, 'buscar_producto_en_db',  1),
+    (3,  'Metodos de Pago',             0, NULL,                     1),
+    (4,  'Despedida',                   0, NULL,                     1),
+    (5,  'Sin Resultados',              0, NULL,                     1),
+    (6,  'No Reconocido',               0, NULL,                     1),
+    (7,  'Soporte Humano / Asistencia', 1, 'soporte_humano',         1),
+    (8,  'Agregar Carrito',             1, 'agregar_carrito',        1),
+    (9,  'Consultar Carrito',           1, 'consultar_carrito',      1),
+    (10, 'Eliminar Producto Carrito',    1, 'eliminar_carrito',       1),
+    (11, 'Procesar Pago',               1, 'procesar_pago',          1),
+    (12, 'Consultar Orden',             1, 'consultar_orden',        1)
+) AS Source (ReglaID, NombreRegla, AccionDinamica, AccionPython, Activo)
+ON Target.ReglaID = Source.ReglaID
+WHEN MATCHED THEN 
+    UPDATE SET 
+        Target.NombreRegla = Source.NombreRegla,
+        Target.AccionDinamica = Source.AccionDinamica,
+        Target.AccionPython = Source.AccionPython,
+        Target.Activo = Source.Activo
+WHEN NOT MATCHED THEN
+    INSERT (NombreRegla, AccionDinamica, AccionPython, Activo)
+    VALUES (Source.NombreRegla, Source.AccionDinamica, Source.AccionPython, Source.Activo);
+GO
 
+-- ============================================================================
+-- 3. PALABRAS CLAVE Y TRIGGERS ADMINISTRATIVOS (PalabrasClaveRegla)
+-- ============================================================================
 
+DELETE FROM PalabrasClaveRegla;
+GO
 
-INSERT INTO ReglasChatbot (NombreRegla, AccionDinamica, AccionPython, Activo)
-VALUES 
-('Agregar Carrito', 1, 'agregar_carrito', 1),
-('Consultar Carrito', 1, 'consultar_carrito', 1),
-('Eliminar Producto Carrito', 1, 'eliminar_carrito', 1),
-('Procesar Pago', 1, 'procesar_pago', 1),
-('Consultar Orden', 1, 'consultar_orden', 1);
-
--- Palabras Clave Triggers (Asociadas a ReglaID 7-11)
 INSERT INTO PalabrasClaveRegla (ReglaID, PalabraClave, Activo)
 VALUES 
--- Regla 7 (Agregar Carrito)
-(8, 'agregar al carrito', 1), (7, 'anadir al carrito', 1), (7, 'aÒadir al carrito', 1), (7, 'agregar carrito', 1),
--- Regla 8 (Consultar Carrito)
-(9, 'ver carrito', 1), (8, 'mi carrito', 1), (8, 'consultar carrito', 1), (8, 'carrito', 1),
--- Regla 9 (Eliminar Producto)
-(10, 'eliminar del carrito', 1), (9, 'quitar del carrito', 1), (9, 'borrar del carrito', 1),
--- Regla 10 (Procesar Pago)
-(11, 'procesar pago', 1), (10, 'finalizar compra', 1), (10, 'pagar carrito', 1), (10, 'pagar', 1),
--- Regla 11 (Consultar Orden)
-(12, 'estado de mi orden', 1), (11, 'mi orden', 1), (11, 'ver pedido', 1), (11, 'rastrear orden', 1);
+-- Regla 1: Saludos
+(1, 'hola', 1),
+(1, 'buenos dias', 1),
+(1, 'buenas tardes', 1),
+(1, 'buenas noches', 1),
+(1, 'que tal', 1),
+(1, 'saludos', 1),
+(1, 'hola buenas', 1),
+(1, 'inicio', 1),
+(1, 'comenzar', 1),
 
+-- Regla 3: M√©todos de Pago
+(3, 'puedo pagar', 1),
+(3, 'metodos de pago', 1),
+(3, 'formas de pago', 1),
+(3, 'como puedo pagar', 1),
+(3, 'tarjeta de credito', 1),
+(3, 'tarjeta de debito', 1),
+(3, 'transferencia bancaria', 1),
+(3, 'pago en efectivo', 1),
 
+-- Regla 4: Despedidas
+(4, 'hasta luego', 1),
+(4, 'muchas gracias', 1),
+(4, 'nos vemos', 1),
+(4, 'adios', 1),
+(4, 'gracias', 1),
+(4, 'chao', 1),
+(4, 'chao gracias', 1),
+
+-- Regla 7: Soporte Humano / Asistencia
+(7, 'hablar con un agente', 1),
+(7, 'atencion al cliente', 1),
+(7, 'soporte tecnico', 1),
+(7, 'ayuda humana', 1),
+(7, 'contactar agente', 1),
+(7, 'servicio al cliente', 1),
+(7, 'soporte', 1),
+
+-- Regla 8: Agregar al Carrito
+(8, 'agregar al carrito', 1),
+(8, 'anadir al carrito', 1),
+(8, 'a√±adir al carrito', 1),
+(8, 'agregar carrito', 1),
+(8, 'anadir carrito', 1),
+(8, 'a√±adir carrito', 1),
+(8, 'agregar producto', 1),
+(8, 'meter al carrito', 1),
+(8, 'comprar producto', 1),
+(8, 'agrega al carrito', 1),
+(8, 'agrega carrito', 1),
+
+-- Regla 9: Consultar Carrito
+(9, 'consultar carrito', 1),
+(9, 'ver mi carrito', 1),
+(9, 'ver carrito', 1),
+(9, 'mi carrito', 1),
+(9, 'mostrar carrito', 1),
+(9, 'revisar carrito', 1),
+(9, 'carrito de compras', 1),
+
+-- Regla 10: Eliminar / Vaciar Carrito
+(10, 'eliminar del carrito', 1),
+(10, 'quitar del carrito', 1),
+(10, 'borrar del carrito', 1),
+(10, 'vaciar carrito', 1),
+(10, 'limpiar carrito', 1),
+(10, 'eliminar todo del carrito', 1),
+(10, 'borrar todo el carrito', 1),
+(10, 'eliminar producto', 1),
+(10, 'quitar producto', 1),
+(10, 'borrar producto', 1),
+(10, 'eliminar el', 1),
+(10, 'quitar el', 1),
+(10, 'borrar el', 1),
+(10, 'eliminar', 1),
+(10, 'quitar', 1),
+(10, 'borrar', 1),
+(10, 'vaciar', 1),
+(10, 'limpiar', 1),
+
+-- Regla 11: Procesar Pago / Checkout
+(11, 'procesar pago', 1),
+(11, 'finalizar compra', 1),
+(11, 'pagar carrito', 1),
+(11, 'proceder al pago', 1),
+(11, 'checkout', 1),
+(11, 'completar pedido', 1),
+
+-- Regla 12: Consultar Estado de Orden
+(12, 'estado de mi orden', 1),
+(12, 'estado de mi pedido', 1),
+(12, 'rastrear orden', 1),
+(12, 'rastrear pedido', 1),
+(12, 'ver mi orden', 1),
+(12, 'ver mi pedido', 1),
+(12, 'mis ordenes', 1),
+(12, 'mis pedidos', 1);
+GO
+
+-- ============================================================================
+-- 4. PLANTILLAS DE RESPUESTA DE VARIACI√ìN ALEATORIA (SIN EMOJIS, CON SIN√ìNIMOS)
+-- ============================================================================
+
+DELETE FROM PlantillasRespuesta;
+GO
+
+INSERT INTO PlantillasRespuesta (ReglaID, TextoRespuesta, Activo)
+VALUES 
+-- Regla 1: Saludo Inicial
+(1, 'Hola. Qu√© gusto tenerte por aqu√≠. Dime, ¬øqu√© andas buscando hoy en nuestra tienda?', 1),
+(1, 'Un cordial saludo. ¬øBuscas alg√∫n producto, marca o categor√≠a en particular?', 1),
+(1, 'Hola. Con gusto te atiendo. Puedes consultar nuestro cat√°logo, revisar tu carrito o rastrear tus compras.', 1),
+
+-- Regla 2: Buscar Producto (Con marcador de posici√≥n [@TABLA])
+(2, 'Excelente. Consult√© el inventario al instante y encontr√© estas opciones para ti: \n[@TABLA]', 1),
+(2, 'Revis√© nuestro cat√°logo y estos son los art√≠culos disponibles que se adaptan a tu b√∫squeda: \n[@TABLA]', 1),
+(2, 'Aqu√≠ tienes el listado de productos que coinciden con lo que solicitaste: \n[@TABLA]', 1),
+
+-- Regla 3: M√©todos de Pago
+(3, 'Disponemos de diversas opciones de pago: tarjetas de cr√©dito o d√©bito (Visa/MasterCard), transferencia bancaria directa y pago en efectivo.', 1),
+(3, 'Puedes abonar tus compras con tarjeta, transferencia o efectivo contra entrega. Al estar listo tu carrito, solo indica "procesar pago".', 1),
+
+-- Regla 4: Despedida
+(4, 'Ha sido un gusto atenderte. Si necesitas consultar algo m√°s en otro momento, aqu√≠ estar√©.', 1),
+(4, 'Muchas gracias por tu visita. Que tengas un excelente d√≠a. Hasta pronto.', 1),
+(4, 'Agradecemos tu preferencia. Cualquier otra duda, quedo a tu disposici√≥n.', 1),
+
+-- Regla 5: Sin Resultados
+(5, 'Lamentablemente busqu√© en la base de datos pero no disponemos de existencias de ese art√≠culo.', 1),
+(5, 'En este momento no contamos con ese producto en nuestro inventario. ¬øTe gustar√≠a intentar buscando otro t√©rmino o marca?', 1),
+
+-- Regla 6: No Reconocido / Fallback
+(6, 'No logr√© comprender tu mensaje. Recuerda que puedes pedirme buscar productos, escribir "ver carrito" o "procesar pago".', 1),
+(6, 'No reconozco esa instrucci√≥n. Intenta ingresando el nombre de un art√≠culo o una de las opciones del men√∫.', 1),
+
+-- Regla 7: Soporte Humano / Asistencia
+(7, 'Entendido. Notifiqu√© al equipo de atenci√≥n para que un ejecutivo le d√© seguimiento personal a tu caso.', 1),
+(7, 'Solicitud registrada. Un representante del departamento de soporte te contactar√° a la brevedad.', 1),
+(7, 'De acuerdo. Deriv√© tu consulta con nuestro personal de servicio al cliente para brindarte asistencia directa.', 1),
+
+-- Regla 8: Agregar al Carrito
+(8, 'Buena elecci√≥n. A√±ad√≠ el producto a tu carrito de compras.', 1),
+(8, 'Listo. El art√≠culo ha sido guardado exitosamente en tu lista de compras.', 1),
+(8, 'Agregado. El producto ya forma parte de tu pedido actual.', 1),
+
+-- Regla 9: Consultar Carrito
+(9, 'Te comparto el detalle de los productos que tienes seleccionados en tu carrito:\n[@TABLA_CARRITO]\n\nMonto a cancelar: C$ [@TOTAL_CARRITO]', 1),
+(9, 'As√≠ se encuentra tu carrito de compras al d√≠a de hoy:\n[@TABLA_CARRITO]\n\nTotal estimado: C$ [@TOTAL_CARRITO]', 1),
+(9, 'Aqu√≠ tienes el desglose de los art√≠culos acumulados en tu pedido:\n[@TABLA_CARRITO]\n\nSuma total: C$ [@TOTAL_CARRITO]', 1),
+
+-- Regla 10: Eliminar Producto Carrito
+(10, 'El art√≠culo seleccionado fue retirado de tu carrito.', 1),
+(10, 'Procesado. Quitamos ese producto de tu lista de compras.', 1),
+(10, 'Listo. Eliminamos el registro de tu pedido actual.', 1),
+
+-- Regla 11: Procesar Pago
+(11, 'Operaci√≥n exitosa. Tu transacci√≥n ha sido aprobada y generamos la Orden de Compra #[@ORDEN_ID].', 1),
+(11, 'Pago completado con √©xito. Qued√≥ registrada la Orden #[@ORDEN_ID]. Muchas gracias por tu compra.', 1),
+(11, 'Confirmado. Procesamos tu pago sin inconvenientes. Tu pedido corresponde al n√∫mero #[@ORDEN_ID].', 1),
+
+-- Regla 12: Consultar Orden
+(12, 'Tu pedido reciente es el #[@ORDEN_ID] registrado el [@FECHA_ORDEN]. Estado actual: [@ESTADO_ORDEN] | Total: [@CURRENCY] [@TOTAL_ORDEN].', 1),
+(12, 'Verifiqu√© tu compra: Es la orden #[@ORDEN_ID] del [@FECHA_ORDEN]. Estatus: [@ESTADO_ORDEN] | Importe total: [@CURRENCY] [@TOTAL_ORDEN].', 1),
+(12, 'Aqu√≠ constan los datos de tu pedido #[@ORDEN_ID] de fecha [@FECHA_ORDEN]: Estado: [@ESTADO_ORDEN] | Monto: [@CURRENCY] [@TOTAL_ORDEN].', 1);
+GO

@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from app.database.connection import get_connection
@@ -37,8 +37,17 @@ def _parse_timestamp(value) -> datetime:
 
 
 class ConversationRepository:
+    def _detect_table_name(self, cursor) -> str:
+        """Determina si la base de datos utiliza 'HistorialConversaciones' o 'Conversaciones'."""
+        try:
+            cursor.execute("SELECT TOP 1 1 FROM dbo.HistorialConversaciones")
+            cursor.fetchone()
+            return "HistorialConversaciones"
+        except Exception:
+            return "Conversaciones"
+
     def guardar_conversacion(self, conversation: Dict[str, Any]) -> Dict[str, Any]:
-        user_id = conversation.get("userId") or conversation.get("user_id") or "demo-user"
+        user_id = str(conversation.get("userId") or conversation.get("user_id") or "demo-user")
         messages = conversation.get("messages") or []
         provided_conv_id = conversation.get("conversation_id") or conversation.get("conversationId")
 
@@ -48,27 +57,29 @@ class ConversationRepository:
         conn = get_connection()
         cursor = conn.cursor()
         try:
+            table_name = self._detect_table_name(cursor)
+            msg_table_name = "HistorialMensajes" if table_name == "HistorialConversaciones" else "Mensajes"
             conversation_id: Optional[int] = None
 
             if provided_conv_id is not None:
-                cursor.execute("SELECT ConversacionID FROM dbo.HistorialConversaciones WHERE ConversacionID = ?", provided_conv_id)
+                cursor.execute(f"SELECT ConversacionID FROM dbo.{table_name} WHERE ConversacionID = ?", provided_conv_id)
                 row = cursor.fetchone()
                 if row:
                     conversation_id = int(row.ConversacionID)
                     cursor.execute(
-                        "UPDATE dbo.HistorialConversaciones SET UsuarioID = ?, FechaFin = GETDATE(), Activo = 1 WHERE ConversacionID = ?",
+                        f"UPDATE dbo.{table_name} SET UsuarioID = ?, Activo = 1 WHERE ConversacionID = ?",
                         user_id,
                         conversation_id
                     )
                 else:
                     cursor.execute(
-                        "INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
+                        f"INSERT INTO dbo.{table_name} (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
                         user_id
                     )
                     conversation_id = int(cursor.fetchone()[0])
             else:
                 cursor.execute(
-                    "INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
+                    f"INSERT INTO dbo.{table_name} (UsuarioID, FechaInicio, Activo) OUTPUT INSERTED.ConversacionID VALUES (?, GETDATE(), 1)",
                     user_id
                 )
                 conversation_id = int(cursor.fetchone()[0])
@@ -76,11 +87,12 @@ class ConversationRepository:
             if not conversation_id:
                 raise RuntimeError("No se pudo obtener el ConversacionID generado por la base de datos.")
 
-            # Insertar mensajes asociados, ahora guardando MetadataJson
+            # Insertar mensajes asociados
             for msg in messages:
                 role = (msg.get("role") or "").lower()
                 is_bot_flag = msg.get("isBot")
                 is_bot = 1 if (is_bot_flag is True or role in ("assistant", "bot", "chatbot")) else 0
+                rol_str = "assistant" if is_bot else "user"
 
                 texto = msg.get("content") or msg.get("texto") or ""
                 if texto is None:
@@ -89,14 +101,11 @@ class ConversationRepository:
                 timestamp = _parse_timestamp(msg.get("timestamp"))
                 rule_id = msg.get("appliedRuleId") or msg.get("ReglaActivadaID")
 
-                # metadata puede venir como dict/string/list; normalizar a JSON string o NULL
                 metadata = msg.get("metadata") or msg.get("Metadata") or msg.get("productos")
                 metadata_json = None
                 if metadata is not None:
                     try:
-                        # si ya es string y parece JSON, dejarlo; si es objeto, serializar
                         if isinstance(metadata, str):
-                            # intentar parsear para validar
                             try:
                                 json.loads(metadata)
                                 metadata_json = metadata
@@ -107,17 +116,20 @@ class ConversationRepository:
                     except Exception:
                         metadata_json = json.dumps(str(metadata))
 
-                cursor.execute(
-                    """INSERT INTO dbo.HistorialMensajes
-                       (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
-                       VALUES (?, ?, ?, ?, ?, ?)""",
-                    conversation_id,
-                    is_bot,
-                    texto,
-                    timestamp,
-                    rule_id,
-                    metadata_json
-                )
+                if msg_table_name == "HistorialMensajes":
+                    cursor.execute(
+                        """INSERT INTO dbo.HistorialMensajes
+                           (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
+                           VALUES (?, ?, ?, ?, ?, ?)""",
+                        conversation_id, is_bot, texto, timestamp, rule_id, metadata_json
+                    )
+                else:
+                    cursor.execute(
+                        """INSERT INTO dbo.Mensajes
+                           (ConversacionID, Rol, ChatBot, Contenido, FechaHora, ReglaActivadaID)
+                           VALUES (?, ?, ?, ?, ?, ?)""",
+                        conversation_id, rol_str, is_bot, texto, timestamp, rule_id
+                    )
 
             conn.commit()
             return {"status": "ok", "conversation_id": conversation_id}
@@ -136,13 +148,17 @@ class ConversationRepository:
         conn = get_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute("SELECT ConversacionID FROM dbo.HistorialConversaciones WHERE ConversacionID = ?", conversation_id)
+            table_name = self._detect_table_name(cursor)
+            msg_table_name = "HistorialMensajes" if table_name == "HistorialConversaciones" else "Mensajes"
+
+            cursor.execute(f"SELECT ConversacionID FROM dbo.{table_name} WHERE ConversacionID = ?", conversation_id)
             if not cursor.fetchone():
                 raise RuntimeError(f"La conversación {conversation_id} no existe en la base de datos.")
 
             role = (message.get("role") or "").lower()
             is_bot_flag = message.get("isBot")
             is_bot = 1 if (is_bot_flag is True or role in ("assistant", "bot", "chatbot")) else 0
+            rol_str = "assistant" if is_bot else "user"
 
             texto = message.get("content") or message.get("texto") or ""
             if texto is None:
@@ -166,17 +182,20 @@ class ConversationRepository:
                 except Exception:
                     metadata_json = json.dumps(str(metadata))
 
-            cursor.execute(
-                """INSERT INTO dbo.HistorialMensajes
-                   (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
-                conversation_id,
-                is_bot,
-                texto,
-                timestamp,
-                rule_id,
-                metadata_json
-            )
+            if msg_table_name == "HistorialMensajes":
+                cursor.execute(
+                    """INSERT INTO dbo.HistorialMensajes
+                       (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    conversation_id, is_bot, texto, timestamp, rule_id, metadata_json
+                )
+            else:
+                cursor.execute(
+                    """INSERT INTO dbo.Mensajes
+                       (ConversacionID, Rol, ChatBot, Contenido, FechaHora, ReglaActivadaID)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    conversation_id, rol_str, is_bot, texto, timestamp, rule_id
+                )
 
             conn.commit()
             return {"status": "ok", "conversation_id": conversation_id}
@@ -193,40 +212,45 @@ class ConversationRepository:
         conn = get_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute(
-                """SELECT MensajeID, ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson
-                   FROM dbo.HistorialMensajes
-                   WHERE ConversacionID = ?
-                   ORDER BY FechaHora ASC""",
-                conversation_id
-            )
+            table_name = self._detect_table_name(cursor)
+            msg_table_name = "HistorialMensajes" if table_name == "HistorialConversaciones" else "Mensajes"
+
+            if msg_table_name == "HistorialMensajes":
+                cursor.execute(
+                    """SELECT MensajeID, ConversacionID, ChatBot, Texto AS Contenido, FechaHora, ReglaActivadaID, MetadataJson
+                       FROM dbo.HistorialMensajes
+                       WHERE ConversacionID = ?
+                       ORDER BY FechaHora ASC""",
+                    conversation_id
+                )
+            else:
+                cursor.execute(
+                    """SELECT MensajeID, ConversacionID, ChatBot, Contenido, FechaHora, ReglaActivadaID, NULL AS MetadataJson
+                       FROM dbo.Mensajes
+                       WHERE ConversacionID = ?
+                       ORDER BY FechaHora ASC""",
+                    conversation_id
+                )
+
             historial: List[Dict[str, Any]] = []
             for row in cursor.fetchall():
-                # intentar parsear metadata JSON si existe
                 metadata_val = None
                 productos = []
-                try:
-                    if row.MetadataJson:
+                if hasattr(row, 'MetadataJson') and row.MetadataJson:
+                    try:
                         metadata_val = json.loads(row.MetadataJson)
-                        # si metadata_val es dict con key productos, extraer
                         if isinstance(metadata_val, dict) and "productos" in metadata_val:
                             productos = metadata_val.get("productos") or []
-                        else:
-                            # si metadata_val es lista o dict, asignarlo a productos si tiene sentido
-                            if isinstance(metadata_val, list):
-                                productos = metadata_val
-                            else:
-                                productos = []
-                except Exception:
-                    # si no es JSON válido, dejar como string
-                    metadata_val = row.MetadataJson
-                    productos = []
+                        elif isinstance(metadata_val, list):
+                            productos = metadata_val
+                    except Exception:
+                        metadata_val = row.MetadataJson
 
                 historial.append({
                     "id": row.MensajeID,
                     "conversationId": row.ConversacionID,
                     "role": "assistant" if bool(row.ChatBot) else "user",
-                    "content": row.Texto or "",
+                    "content": row.Contenido or "",
                     "timestamp": row.FechaHora.isoformat() if row.FechaHora else None,
                     "isBot": bool(row.ChatBot),
                     "user_id": None,
@@ -244,40 +268,53 @@ class ConversationRepository:
         conn = get_connection()
         cursor = conn.cursor()
         try:
+            table_name = self._detect_table_name(cursor)
+            msg_table_name = "HistorialMensajes" if table_name == "HistorialConversaciones" else "Mensajes"
+
             cursor.execute(
-                "SELECT ConversacionID, UsuarioID, FechaInicio, FechaFin, Activo FROM dbo.HistorialConversaciones WHERE UsuarioID = ?",
+                f"SELECT ConversacionID, UsuarioID, FechaInicio, Activo FROM dbo.{table_name} WHERE UsuarioID = ?",
                 user_id
             )
             conversaciones: List[Dict[str, Any]] = []
             for row in cursor.fetchall():
                 conv_id = row.ConversacionID
-                cursor.execute(
-                    """SELECT MensajeID, ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID, MetadataJson
-                       FROM dbo.HistorialMensajes
-                       WHERE ConversacionID = ?
-                       ORDER BY FechaHora ASC""",
-                    conv_id
-                )
+
+                if msg_table_name == "HistorialMensajes":
+                    cursor.execute(
+                        """SELECT MensajeID, ConversacionID, ChatBot, Texto AS Contenido, FechaHora, ReglaActivadaID, MetadataJson
+                           FROM dbo.HistorialMensajes
+                           WHERE ConversacionID = ?
+                           ORDER BY FechaHora ASC""",
+                        conv_id
+                    )
+                else:
+                    cursor.execute(
+                        """SELECT MensajeID, ConversacionID, ChatBot, Contenido, FechaHora, ReglaActivadaID, NULL AS MetadataJson
+                           FROM dbo.Mensajes
+                           WHERE ConversacionID = ?
+                           ORDER BY FechaHora ASC""",
+                        conv_id
+                    )
+
                 mensajes = []
                 for m in cursor.fetchall():
                     metadata_val = None
                     productos = []
-                    try:
-                        if m.MetadataJson:
+                    if hasattr(m, 'MetadataJson') and m.MetadataJson:
+                        try:
                             metadata_val = json.loads(m.MetadataJson)
                             if isinstance(metadata_val, dict) and "productos" in metadata_val:
                                 productos = metadata_val.get("productos") or []
                             elif isinstance(metadata_val, list):
                                 productos = metadata_val
-                    except Exception:
-                        metadata_val = m.MetadataJson
-                        productos = []
+                        except Exception:
+                            metadata_val = m.MetadataJson
 
                     mensajes.append({
                         "id": m.MensajeID,
                         "conversationId": m.ConversacionID,
                         "role": "assistant" if bool(m.ChatBot) else "user",
-                        "content": m.Texto or "",
+                        "content": m.Contenido or "",
                         "timestamp": m.FechaHora.isoformat() if m.FechaHora else None,
                         "isBot": bool(m.ChatBot),
                         "user_id": user_id,
@@ -294,7 +331,7 @@ class ConversationRepository:
                     "language": "es",
                     "lastIntent": None,
                     "createdAt": row.FechaInicio.isoformat() if row.FechaInicio else None,
-                    "updatedAt": row.FechaFin.isoformat() if row.FechaFin else None,
+                    "updatedAt": None,
                     "isActive": bool(row.Activo),
                     "messages": mensajes,
                     "context": {"language": "es", "session_variables": {}}
