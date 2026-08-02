@@ -37,7 +37,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
-  const [currentUser] = useState<{ email: string }>({ email: user?.email ?? "demo-user" });
+  const currentUserEmail = user?.email ?? "demo-user";
+  const currentUser = { email: currentUserEmail };
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
@@ -93,22 +94,16 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
       }));
 
       setConversations(mapped);
-
-      if (mapped.length > 0) {
-        setActiveConversationId(mapped[0].id);
-        setMessages(mapped[0].messages ?? []);
-      }
     } catch (error) {
       console.log('Error al cargar conversaciones:', error);
     }
   };
 
   useEffect(() => {
-    if (!hasLoadedHistory) {
+    if (currentUser.email) {
       loadConversations(currentUser.email);
-      setHasLoadedHistory(true);
     }
-  }, [currentUser.email, hasLoadedHistory]);
+  }, [currentUser.email]);
 
   // Lógica del Carrito
   const addUnit = (id: string) => setCartQuantities(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
@@ -180,30 +175,20 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     );
   };
 
-  // Crear conversación manual desde la UI
-  const createNewConversation = async () => {
-    try {
-      const conversation = await sendChatMessageUseCase.createConversation(currentUser.email, 'Nueva conversación');
-      const realId = (conversation.conversation_id ?? conversation.id ?? Date.now()).toString();
-
-      const newConversation: Conversation = {
-        id: realId,
-        userId: currentUser.email,
-        title: conversation.title ?? 'Nueva conversación',
-        startDate: conversation.startDate ?? new Date().toISOString(),
-        updatedAt: conversation.updatedAt ?? new Date().toISOString(),
-        isActive: true,
-        messages: [],
-      };
-
-      setConversations(prev => [newConversation, ...prev]);
-      setActiveConversationId(realId);
-      setMessages([]);
-      setHasLoadedHistory(true);
-    } catch (error) {
-      console.log('Error al crear conversación:', error);
-      Alert.alert('Error', 'No se pudo crear una nueva conversación.');
-    }
+  // Crear conversación manual desde la UI (dejar pantalla limpia en blanco)
+  const createNewConversation = () => {
+    setActiveConversationId(null);
+    setMessages([
+      {
+        id: Date.now(),
+        conversationId: 'default',
+        role: 'assistant',
+        isBot: true,
+        content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
+        timestamp: new Date().toISOString(),
+        user_id: "chatbot",
+      },
+    ]);
   };
 
   // Persistir un mensaje individual en la base de datos
@@ -410,9 +395,9 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
                 metadata: normalizeMetadata(m.metadata),
               }));
               setMessages(normalizedMessages);
-              setHasLoadedHistory(true);
             }
           }}
+          onNewConversation={createNewConversation}
         >
           <ChatbotTab
             messages={messages}

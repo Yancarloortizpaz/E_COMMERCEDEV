@@ -1,6 +1,5 @@
-USE [DB_EcommerceAgent]
+USE [DB_EcommerceAgent];
 GO
-
 
 CREATE OR ALTER PROCEDURE dbo.SP_ProcesarMensajeChatbot
     @w_ConversacionID VARCHAR(50),
@@ -11,21 +10,35 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    DECLARE @v_ConvIDInt INT = TRY_CAST(@w_ConversacionID AS INT);
+
+    -- -------------------------------------------------------------------------
     -- 1. REGISTRAR O RECUPERAR LA CONVERSACIÓN Y EL MENSAJE ENTRANTE DEL USUARIO
-    IF NOT EXISTS (SELECT 1 FROM Conversaciones WHERE ConversacionID = CAST(@w_ConversacionID AS VARCHAR(50)))
+    -- -------------------------------------------------------------------------
+    IF @v_ConvIDInt IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.HistorialConversaciones WHERE ConversacionID = @v_ConvIDInt)
     BEGIN
-        INSERT INTO Conversaciones (ConversacionID, UsuarioID, FechaInicio, Activo)
-        VALUES (CAST(@w_ConversacionID AS VARCHAR(50)), '1', GETDATE(), 1); -- Default UsuarioID = '1'
+        INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo)
+        VALUES ('1', GETDATE(), 1); -- Default UsuarioID = '1'
+        
+        SET @v_ConvIDInt = SCOPE_IDENTITY();
+    END
+    ELSE IF @v_ConvIDInt IS NULL
+    BEGIN
+        INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo)
+        VALUES ('1', GETDATE(), 1);
+        
+        SET @v_ConvIDInt = SCOPE_IDENTITY();
     END
 
-    INSERT INTO Mensajes (ConversacionID, Rol, ChatBot, Contenido, FechaHora, ReglaActivadaID)
-    VALUES (CAST(@w_ConversacionID AS VARCHAR(50)), 'user', 0, @w_TextoUsuario, GETDATE(), NULL);
+    -- Registrar el mensaje del usuario (ChatBot = 0 para usuario)
+    INSERT INTO dbo.HistorialMensajes (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID)
+    VALUES (@v_ConvIDInt, 0, @w_TextoUsuario, GETDATE(), NULL);
 
     -- Obtener UsuarioID numérico asociado a la conversación (default 1)
     DECLARE @v_UserId INT = 1;
     SELECT @v_UserId = COALESCE(TRY_CAST(UsuarioID AS INT), 1)
-    FROM Conversaciones
-    WHERE ConversacionID = CAST(@w_ConversacionID AS VARCHAR(50));
+    FROM dbo.HistorialConversaciones
+    WHERE ConversacionID = @v_ConvIDInt;
 
     DECLARE @v_ReglaID INT = NULL;
     DECLARE @v_PlantillaTexto NVARCHAR(MAX) = '';
@@ -33,15 +46,19 @@ BEGIN
     DECLARE @v_EsBusquedaPorDescarte BIT = 0;
     DECLARE @w_TextoLower VARCHAR(1000) = LOWER(TRIM(@w_TextoUsuario));
 
+    -- -------------------------------------------------------------------------
     -- 2. EVALUAR SI EL TEXTO CONTIENE UN TRIGGER DE PALABRA CLAVE
+    -- -------------------------------------------------------------------------
     SELECT TOP 1 
         @v_ReglaID = ReglaID
     FROM PalabrasClaveRegla
     WHERE Activo = 1
       AND CHARINDEX(LOWER(PalabraClave), @w_TextoLower) > 0
-    ORDER BY LEN(PalabraClave) DESC; -- Preferir coincidencias de frases más largas
+    ORDER BY LEN(PalabraClave) DESC; -- Preferir coincidencias de frases más largas primero
 
+    -- -------------------------------------------------------------------------
     -- 3. INVERSIÓN DE LA REGLA: Si no coincide con ningún trigger fijo, se asume Buscar Producto (Regla 2)
+    -- -------------------------------------------------------------------------
     IF @v_ReglaID IS NULL
     BEGIN
         SET @v_ReglaID = 2; 
@@ -51,11 +68,12 @@ BEGIN
     SET @v_FiltroTexto = TRIM(@w_TextoUsuario);
     SET @o_ReglaActivadaID = @v_ReglaID;
 
-    -- 4. HELPER DENTRO DEL SP PARA EXTRAER NÚMEROS DEL TEXTO (Cantidad / IDs)
+    -- -------------------------------------------------------------------------
+    -- 4. HELPER EXTRAER NÚMEROS DEL TEXTO (Cantidad / IDs de Producto)
+    -- -------------------------------------------------------------------------
     DECLARE @v_FirstNum INT = NULL;
     DECLARE @v_SecondNum INT = NULL;
 
-    -- Limpiar espacios dobles o múltiples a un solo espacio
     DECLARE @v_TextClean VARCHAR(1000) = TRIM(@w_TextoUsuario);
     WHILE CHARINDEX('  ', @v_TextClean) > 0
         SET @v_TextClean = REPLACE(@v_TextClean, '  ', ' ');
@@ -85,12 +103,19 @@ BEGIN
         SET @v_Pos = @v_Pos + 1;
     END;
 
-    -- 5. CONTROL DE FLUJO SEGÚN REGLA ACTIVADA
+    -- -------------------------------------------------------------------------
+    -- 5. CONTROL DE FLUJO SEGÚN LA REGLA ACTIVADA
+    -- -------------------------------------------------------------------------
 
-    
+    -- REGLA 1: SALUDO INICIAL
+    IF @v_ReglaID = 1
+    BEGIN
+        SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 1 AND Activo = 1 ORDER BY NEWID();
+        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Hola. Qué gusto tenerte por aquí. ¿En qué te puedo asistir hoy?');
+    END
+
     -- REGLA 2: BUSCAR PRODUCTO
-    
-    IF @v_ReglaID = 2
+    ELSE IF @v_ReglaID = 2
     BEGIN
         DECLARE @CoincidenceScore TABLE (
             ProductID INT, ProductName VARCHAR(50), ProductVariableID INT, ProductVariableName VARCHAR(50),
@@ -116,7 +141,7 @@ BEGIN
             WHERE StockAvilable > 0;
 
             IF @v_PlantillaTexto IS NULL OR @v_PlantillaTexto = ''
-                SET @v_PlantillaTexto = 'Encontré estas opciones disponibles en nuestro catálogo:' + CHAR(13) + CHAR(10) + '[@TABLA]';
+                SET @v_PlantillaTexto = 'Excelente. Consulté el inventario al instante y encontré estas opciones para ti:' + CHAR(13) + CHAR(10) + '[@TABLA]';
 
             SET @o_TextoRespuesta = REPLACE(@v_PlantillaTexto, '[@TABLA]', @v_ListaFormateada);
         END
@@ -125,40 +150,117 @@ BEGIN
             IF @v_EsBusquedaPorDescarte = 1 AND LEN(@v_FiltroTexto) < 4
             BEGIN
                 SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 6 AND Activo = 1 ORDER BY NEWID();
-                SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Lo siento, no logré entender tu consulta.');
+                SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'No logré comprender tu mensaje. Intenta ingresando el nombre de un artículo.');
                 SET @o_ReglaActivadaID = 6;
             END
             ELSE
             BEGIN
                 SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 5 AND Activo = 1 ORDER BY NEWID();
-                SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'No encontramos productos que coincidan con tu búsqueda.');
+                SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'En este momento no contamos con existencias de ese producto.');
                 SET @o_ReglaActivadaID = 5;
             END
         END
     END
 
-    
-    -- REGLA 8: AGREGAR CARRITO
-    
+    -- REGLA 3: MÉTODOS DE PAGO
+    ELSE IF @v_ReglaID = 3
+    BEGIN
+        SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 3 AND Activo = 1 ORDER BY NEWID();
+        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Disponemos de diversas opciones de pago: tarjetas de crédito o débito, transferencia bancaria y efectivo.');
+    END
+
+    -- REGLA 4: DESPEDIDA
+    ELSE IF @v_ReglaID = 4
+    BEGIN
+        SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 4 AND Activo = 1 ORDER BY NEWID();
+        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Ha sido un gusto atenderte. Que tengas un excelente día.');
+    END
+
+    -- REGLA 7: SOPORTE HUMANO / ASISTENCIA
+    ELSE IF @v_ReglaID = 7
+    BEGIN
+        SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 7 AND Activo = 1 ORDER BY NEWID();
+        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Solicitud registrada. Un representante del departamento de soporte te contactará a la brevedad.');
+    END
+
+    -- REGLA 8: AGREGAR CARRITO (Soporta ID numérico directo O Búsqueda por Nombre de Producto con Cantidad dinámica)
     ELSE IF @v_ReglaID = 8
     BEGIN
         DECLARE @v_ProdVarId INT = NULL;
         DECLARE @v_Cantidad INT = 1;
 
+        -- Limpiar comandos desencadenantes para aislar el término de búsqueda o ID
+        DECLARE @v_SearchProductStr VARCHAR(500) = @w_TextoLower;
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agregar al carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'anadir al carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'añadir al carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agregar carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'anadir carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'añadir carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agregar producto', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'meter al carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'comprar producto', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agrega al carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agrega carrito', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agrega', '');
+        SET @v_SearchProductStr = REPLACE(@v_SearchProductStr, 'agregar', '');
+        SET @v_SearchProductStr = TRIM(@v_SearchProductStr);
+
+        -- Caso A: Se proporcionó cantidad + ID numérico directo (ej: "agregar 2 del producto 5")
         IF @v_SecondNum IS NOT NULL
         BEGIN
             SET @v_Cantidad = @v_FirstNum;
             SET @v_ProdVarId = @v_SecondNum;
         END
-        ELSE IF @v_FirstNum IS NOT NULL
+        -- Caso B: Se proporcionó ID directo exclusivamente numérico (ej: "5" o "producto 5")
+        ELSE IF @v_FirstNum IS NOT NULL AND (ISNUMERIC(@v_SearchProductStr) = 1 OR @v_SearchProductStr = CAST(@v_FirstNum AS VARCHAR) OR @v_SearchProductStr = 'producto ' + CAST(@v_FirstNum AS VARCHAR) OR @v_SearchProductStr = 'del producto ' + CAST(@v_FirstNum AS VARCHAR))
         BEGIN
             SET @v_Cantidad = 1;
             SET @v_ProdVarId = @v_FirstNum;
-        END;
+        END
+
+        -- Caso C: Búsqueda por Nombre de Producto (con o sin Cantidad explícita)
+        IF @v_ProdVarId IS NULL
+        BEGIN
+            -- Si había un primer número especificado al inicio (ej: "20 del producto Sony Xperia"), se toma como cantidad
+            IF @v_FirstNum IS NOT NULL
+            BEGIN
+                SET @v_Cantidad = @v_FirstNum;
+            END
+
+            -- Limpiar prefijos de cantidad y conectores del texto de búsqueda
+            IF @v_FirstNum IS NOT NULL AND @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + '%'
+                SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, LEN(CAST(@v_FirstNum AS VARCHAR)) + 1, 500));
+
+            IF @v_SearchProductStr LIKE 'del producto %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 14, 500));
+            IF @v_SearchProductStr LIKE 'producto %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 10, 500));
+            IF @v_SearchProductStr LIKE 'de %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 4, 500));
+            IF @v_SearchProductStr LIKE 'el %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 4, 500));
+
+            IF LEN(@v_SearchProductStr) > 0
+            BEGIN
+                DECLARE @SearchCartScore TABLE (
+                    ProductID INT, ProductName VARCHAR(50), ProductVariableID INT, ProductVariableName VARCHAR(50),
+                    ProductVariablePrice DECIMAL(18,2), CurrencyID INT, CurrencyISO CHAR(5), CategoryID INT,
+                    CategoryName VARCHAR(50), SubcategoryID INT, SubcategoryName VARCHAR(50), SegmentID INT,
+                    SegmentName VARCHAR(50), MarkID INT, MarkName VARCHAR(50), ProviderID INT,
+                    ProviderName VARCHAR(50), StockID INT, StockAvilable INT, StockFactoryDate DATE, StockExpirationDate DATE,
+                    CoincidenceScore INT
+                );
+
+                INSERT INTO @SearchCartScore
+                EXEC dbo.SP_ListarGeneralProducts_Filtro @01_FilterText = @v_SearchProductStr;
+
+                SELECT TOP 1 @v_ProdVarId = ProductVariableID 
+                FROM @SearchCartScore 
+                WHERE StockAvilable > 0 
+                ORDER BY CoincidenceScore DESC;
+            END
+        END
 
         IF @v_ProdVarId IS NULL
         BEGIN
-            SET @o_TextoRespuesta = 'Para agregar un producto al carrito, por favor indica el ID del producto (ejemplo: "agregar 2 del producto 5" o "agregar producto 3").';
+            SET @o_TextoRespuesta = 'No fue posible identificar el producto solicitado. Intenta indicando el nombre exacto o su número de ID (ejemplo: "agregar al carrito Sony Xperia 1 V" o "agregar producto 5").';
         END
         ELSE
         BEGIN
@@ -183,21 +285,23 @@ BEGIN
                 INNER JOIN [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_Products] P ON PV.productVariableProductId = P.productId
                 WHERE PV.productVariableId = @v_ProdVarId;
 
-                SET @o_TextoRespuesta = ' ¡Producto agregado al carrito exitosamente!' + CHAR(13) + CHAR(10) +
+                SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 8 AND Activo = 1 ORDER BY NEWID();
+                IF @v_PlantillaTexto IS NULL OR @v_PlantillaTexto = ''
+                    SET @v_PlantillaTexto = 'Buena elección. Añadí el producto a tu carrito de compras.';
+
+                SET @o_TextoRespuesta = @v_PlantillaTexto + CHAR(13) + CHAR(10) +
                                         '- Producto: ' + ISNULL(@v_NombreProducto, 'ID ' + CAST(@v_ProdVarId AS VARCHAR)) + CHAR(13) + CHAR(10) +
                                         '- Cantidad: ' + CAST(@v_Cantidad AS VARCHAR) + CHAR(13) + CHAR(10) +
                                         'Escribe "ver carrito" para revisar tus productos o "procesar pago" para finalizar.';
             END
             ELSE
             BEGIN
-                SET @o_TextoRespuesta = ' No se pudo agregar al carrito: ' + ISNULL(@v_Message, 'Error desconocido');
+                SET @o_TextoRespuesta = 'No se pudo agregar al carrito: ' + ISNULL(@v_Message, 'Error desconocido');
             END
         END
     END
 
-    
     -- REGLA 9: CONSULTAR CARRITO
-    
     ELSE IF @v_ReglaID = 9
     BEGIN
         DECLARE @v_CartIdCons INT = NULL;
@@ -210,7 +314,7 @@ BEGIN
             WHERE cartDetailCartId = @v_CartIdCons AND cartDetailStatusId = 1
         )
         BEGIN
-            SET @o_TextoRespuesta = ' Tu carrito de compras está actualmente vacío. ¡Agrega productos buscando en nuestro catálogo!';
+            SET @o_TextoRespuesta = 'Tu carrito de compras se encuentra vacío en este momento. Agrega artículos explorando nuestro catálogo.';
         END
         ELSE
         BEGIN
@@ -229,15 +333,13 @@ BEGIN
 
             SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 9 AND Activo = 1 ORDER BY NEWID();
             IF @v_PlantillaTexto IS NULL OR @v_PlantillaTexto = ''
-                SET @v_PlantillaTexto = ' Aquí tienes los productos en tu carrito:' + CHAR(13) + CHAR(10) + '[@TABLA_CARRITO]' + CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10) + '💰 Total a pagar: C$ [@TOTAL_CARRITO]';
+                SET @v_PlantillaTexto = 'Te comparto el detalle de los productos que tienes seleccionados en tu carrito:' + CHAR(13) + CHAR(10) + '[@TABLA_CARRITO]' + CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10) + 'Monto a cancelar: C$ [@TOTAL_CARRITO]';
 
             SET @o_TextoRespuesta = REPLACE(REPLACE(@v_PlantillaTexto, '[@TABLA_CARRITO]', @v_TablaCarrito), '[@TOTAL_CARRITO]', CAST(@v_TotalCarrito AS VARCHAR));
         END
     END
 
-    
-    -- REGLA 10: ELIMINAR PRODUCTO CARRITO (O VACIAR CARRITO)
-    
+    -- REGLA 10: ELIMINAR / VACIAR CARRITO (Soporta ID numérico directo, Nombre de Producto o Vaciar Todo)
     ELSE IF @v_ReglaID = 10
     BEGIN
         DECLARE @v_CartIdDel INT = NULL;
@@ -250,7 +352,7 @@ BEGIN
             WHERE cartDetailCartId = @v_CartIdDel AND cartDetailStatusId = 1
         )
         BEGIN
-            SET @o_TextoRespuesta = 'No tienes productos en tu carrito activo para eliminar.';
+            SET @o_TextoRespuesta = 'No registras artículos activos en tu carrito para remover.';
         END
         ELSE IF @w_TextoLower LIKE '%vaciar%' OR @w_TextoLower LIKE '%limpiar%' OR @w_TextoLower LIKE '%borrar todo%' OR @w_TextoLower LIKE '%eliminar todo%'
         BEGIN
@@ -258,53 +360,94 @@ BEGIN
             SET cartDetailStatusId = 0, cartDetailModificationDate = GETDATE()
             WHERE cartDetailCartId = @v_CartIdDel AND cartDetailStatusId = 1;
 
-            SET @o_TextoRespuesta = ' Tu carrito de compras ha sido vaciado completamente.';
+            SET @o_TextoRespuesta = 'Procesado. Se ha vaciado la totalidad de tu carrito de compras.';
         END
         ELSE
         BEGIN
-            DECLARE @v_TargetProdId INT = @v_FirstNum;
+            DECLARE @v_CartDetailId INT = NULL;
 
-            IF @v_TargetProdId IS NULL
+            -- Limpiar la cadena del mensaje quitando palabras desencadenantes
+            DECLARE @v_SearchDelStr VARCHAR(500) = @w_TextoLower;
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'eliminar del carrito', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'quitar del carrito', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'borrar del carrito', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'eliminar producto', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'quitar producto', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'borrar producto', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'eliminar el', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'quitar el', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'borrar el', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'eliminar', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'quitar', '');
+            SET @v_SearchDelStr = REPLACE(@v_SearchDelStr, 'borrar', '');
+            SET @v_SearchDelStr = TRIM(@v_SearchDelStr);
+
+            IF @v_SearchDelStr LIKE 'el %' SET @v_SearchDelStr = TRIM(SUBSTRING(@v_SearchDelStr, 4, 500));
+            IF @v_SearchDelStr LIKE 'del producto %' SET @v_SearchDelStr = TRIM(SUBSTRING(@v_SearchDelStr, 14, 500));
+            IF @v_SearchDelStr LIKE 'producto %' SET @v_SearchDelStr = TRIM(SUBSTRING(@v_SearchDelStr, 10, 500));
+
+            -- 1. Si el string resultante es EXCLUSIVAMENTE numérico (ej: "3" o "18"), buscar por ID exacto
+            IF ISNUMERIC(@v_SearchDelStr) = 1
             BEGIN
-                SET @o_TextoRespuesta = 'Para eliminar un producto, indica el ID del producto (ej: "eliminar producto 5") o escribe "vaciar carrito" para removerlo todo.';
-            END
-            ELSE
-            BEGIN
-                DECLARE @v_CartDetailId INT = NULL;
-                
+                DECLARE @v_NumID INT = TRY_CAST(@v_SearchDelStr AS INT);
                 SELECT TOP 1 @v_CartDetailId = cartDetailId
                 FROM [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_CartDetails]
                 WHERE cartDetailCartId = @v_CartIdDel 
                   AND cartDetailStatusId = 1
-                  AND (cartDetailProductVariableId = @v_TargetProdId OR cartDetailId = @v_TargetProdId);
+                  AND (cartDetailProductVariableId = @v_NumID OR cartDetailId = @v_NumID);
+            END
 
-                IF @v_CartDetailId IS NULL
+            -- 2. Si NO fue encontrado por ID exclusivamente numérico (o si incluye texto como "air max 90"), buscar por NOMBRE en el carrito
+            IF @v_CartDetailId IS NULL AND LEN(@v_SearchDelStr) > 0
+            BEGIN
+                SELECT TOP 1 @v_CartDetailId = CD.cartDetailId
+                FROM [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_CartDetails] CD
+                INNER JOIN [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_ProductVariables] PV ON CD.cartDetailProductVariableId = PV.productVariableId
+                INNER JOIN [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_Products] P ON PV.productVariableProductId = P.productId
+                WHERE CD.cartDetailCartId = @v_CartIdDel 
+                  AND CD.cartDetailStatusId = 1
+                  AND (LOWER(P.productName) LIKE '%' + @v_SearchDelStr + '%' OR LOWER(PV.productVariableValue) LIKE '%' + @v_SearchDelStr + '%');
+            END
+
+            -- 3. Fallback: Si sigue sin encontrarse pero había un número en el mensaje (ej: "eliminar 3")
+            IF @v_CartDetailId IS NULL AND @v_FirstNum IS NOT NULL
+            BEGIN
+                SELECT TOP 1 @v_CartDetailId = cartDetailId
+                FROM [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_CartDetails]
+                WHERE cartDetailCartId = @v_CartIdDel 
+                  AND cartDetailStatusId = 1
+                  AND (cartDetailProductVariableId = @v_FirstNum OR cartDetailId = @v_FirstNum);
+            END
+
+            IF @v_CartDetailId IS NULL
+            BEGIN
+                SET @o_TextoRespuesta = 'No se encontró el producto especificado en tu carrito activo. Indica el ID del producto (ejemplo: "eliminar producto 3"), el nombre o escribe "vaciar carrito".';
+            END
+            ELSE
+            BEGIN
+                DECLARE @v_CodeDel INT, @v_MsgDel VARCHAR(255), @v_TplDel INT;
+
+                EXEC [DB_ECOMMERCE].[SQM_GENERAL].[sp_CartDetails_Delete]
+                    @cartDetailId = @v_CartDetailId,
+                    @cartDetailModificatorId = @v_UserId,
+                    @o_code = @v_CodeDel OUTPUT,
+                    @o_message = @v_MsgDel OUTPUT,
+                    @o_templateId = @v_TplDel OUTPUT;
+
+                IF @v_CodeDel = 200
                 BEGIN
-                    SET @o_TextoRespuesta = 'No se encontró el producto ID ' + CAST(@v_TargetProdId AS VARCHAR) + ' en tu carrito activo.';
+                    SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 10 AND Activo = 1 ORDER BY NEWID();
+                    SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'El artículo seleccionado fue retirado de tu carrito.');
                 END
                 ELSE
                 BEGIN
-                    DECLARE @v_CodeDel INT, @v_MsgDel VARCHAR(255), @v_TplDel INT;
-
-                    EXEC [DB_ECOMMERCE].[SQM_GENERAL].[sp_CartDetails_Delete]
-                        @cartDetailId = @v_CartDetailId,
-                        @cartDetailModificatorId = @v_UserId,
-                        @o_code = @v_CodeDel OUTPUT,
-                        @o_message = @v_MsgDel OUTPUT,
-                        @o_templateId = @v_TplDel OUTPUT;
-
-                    IF @v_CodeDel = 200
-                        SET @o_TextoRespuesta = ' El producto ha sido eliminado de tu carrito exitosamente.';
-                    ELSE
-                        SET @o_TextoRespuesta = ' No se pudo eliminar el producto: ' + ISNULL(@v_MsgDel, 'Error desconocido');
+                    SET @o_TextoRespuesta = 'No fue posible eliminar el producto: ' + ISNULL(@v_MsgDel, 'Error desconocido');
                 END
             END
         END
     END
 
-    
     -- REGLA 11: PROCESAR PAGO
-    
     ELSE IF @v_ReglaID = 11
     BEGIN
         DECLARE @v_CartIdPay INT = NULL;
@@ -317,7 +460,7 @@ BEGIN
             WHERE cartDetailCartId = @v_CartIdPay AND cartDetailStatusId = 1
         )
         BEGIN
-            SET @o_TextoRespuesta = ' Tu carrito está vacío. Agrega productos antes de procesar el pago.';
+            SET @o_TextoRespuesta = 'Tu carrito se encuentra vacío. Añade productos antes de solicitar el pago.';
         END
         ELSE
         BEGIN
@@ -335,11 +478,11 @@ BEGIN
 
             IF @v_AddrId IS NULL
             BEGIN
-                SET @o_TextoRespuesta = '📍 No tienes una dirección de entrega activa registrada en tu usuario. Por favor agrega una dirección para finalizar tu pedido.';
+                SET @o_TextoRespuesta = 'No registras una dirección de entrega activa en tu perfil. Por favor agrega una dirección para procesar el pedido.';
             END
             ELSE IF @v_PayMethodId IS NULL
             BEGIN
-                SET @o_TextoRespuesta = '💳 No tienes un método de pago activo registrado en tu usuario. Por favor agrega un método de pago para finalizar tu pedido.';
+                SET @o_TextoRespuesta = 'No cuentas con un método de pago activo registrado. Por favor asocia una forma de pago para finalizar.';
             END
             ELSE
             BEGIN
@@ -365,21 +508,19 @@ BEGIN
                 BEGIN
                     SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 11 AND Activo = 1 ORDER BY NEWID();
                     IF @v_PlantillaTexto IS NULL OR @v_PlantillaTexto = ''
-                        SET @v_PlantillaTexto = '🎉 ¡Pago procesado con éxito! Se ha generado tu Orden de Compra #[@ORDEN_ID]. ¡Gracias por elegirnos!';
+                        SET @v_PlantillaTexto = 'Operación exitosa. Tu transacción ha sido aprobada y generamos la Orden de Compra #[@ORDEN_ID].';
 
                     SET @o_TextoRespuesta = REPLACE(@v_PlantillaTexto, '[@ORDEN_ID]', CAST(@v_OrderIdGenerado AS VARCHAR));
                 END
                 ELSE
                 BEGIN
-                    SET @o_TextoRespuesta = ' No se pudo procesar el pago: ' + ISNULL(@v_MsgPay, 'Error en el checkout.');
+                    SET @o_TextoRespuesta = 'No se logró procesar el pago: ' + ISNULL(@v_MsgPay, 'Inconveniente en la orden de pago.');
                 END
             END
         END
     END
 
-    
     -- REGLA 12: CONSULTAR ORDEN
-    
     ELSE IF @v_ReglaID = 12
     BEGIN
         DECLARE @v_OrdId INT = NULL, @v_OrdStatus VARCHAR(50) = NULL, @v_OrdTotal DECIMAL(18,2) = NULL, @v_OrdDate DATETIME = NULL, @v_OrdCurrency CHAR(5) = NULL;
@@ -396,13 +537,13 @@ BEGIN
 
         IF @v_OrdId IS NULL
         BEGIN
-            SET @o_TextoRespuesta = '📦 No hemos encontrado órdenes registradas para tu usuario.';
+            SET @o_TextoRespuesta = 'No constan órdenes o pedidos registrados a tu nombre.';
         END
         ELSE
         BEGIN
             SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = 12 AND Activo = 1 ORDER BY NEWID();
             IF @v_PlantillaTexto IS NULL OR @v_PlantillaTexto = ''
-                SET @v_PlantillaTexto = '📦 Tu última orden es la #[@ORDEN_ID] del [@FECHA_ORDEN]. Estado: [@ESTADO_ORDEN] | Total: [@CURRENCY] [@TOTAL_ORDEN].';
+                SET @v_PlantillaTexto = 'Tu pedido reciente es el #[@ORDEN_ID] registrado el [@FECHA_ORDEN]. Estado actual: [@ESTADO_ORDEN] | Total: [@CURRENCY] [@TOTAL_ORDEN].';
 
             SET @o_TextoRespuesta = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
                 @v_PlantillaTexto, 
@@ -414,19 +555,18 @@ BEGIN
         END
     END
 
-    
-    -- FLUJO DE CONTROL ESTÁTICO (Saludos, Métodos de Pago, Despedidas, etc.)
-    
+    -- FLUJO GENERAL POR DEFECTO
     ELSE
     BEGIN
         SELECT TOP 1 @v_PlantillaTexto = TextoRespuesta FROM PlantillasRespuesta WHERE ReglaID = @v_ReglaID AND Activo = 1 ORDER BY NEWID();
-        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Gracias por comunicarte con nosotros.');
+        SET @o_TextoRespuesta = ISNULL(@v_PlantillaTexto, 'Agradecemos tu comunicación.');
     END
 
+    -- -------------------------------------------------------------------------
     -- 6. REGISTRAR LA RESPUESTA FINAL EMITIDA POR EL BOT
-    INSERT INTO Mensajes (ConversacionID, Rol, ChatBot, Contenido, FechaHora, ReglaActivadaID)
-    VALUES (CAST(@w_ConversacionID AS VARCHAR(50)), 'assistant', 1, LEFT(@o_TextoRespuesta, 1000), GETDATE(), @o_ReglaActivadaID);
+    -- -------------------------------------------------------------------------
+    INSERT INTO dbo.HistorialMensajes (ConversacionID, ChatBot, Texto, FechaHora, ReglaActivadaID)
+    VALUES (@v_ConvIDInt, 1, LEFT(@o_TextoRespuesta, 1000), GETDATE(), @o_ReglaActivadaID);
 
 END
 GO
-

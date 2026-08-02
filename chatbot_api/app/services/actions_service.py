@@ -1,11 +1,14 @@
+from typing import Union, Dict, Any
 from app.database.connection import get_connection
 from app.repositories.products_repository import buscar_producto
 
 
-def procesar_mensaje_db(mensaje, conversacion_id: int = 1):
+def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1) -> Dict[str, Any]:
     try:
         conn = get_connection()
         cursor = conn.cursor()
+
+        conv_id_str = str(conversacion_id) if conversacion_id is not None else "1"
 
         cursor.execute(
             """
@@ -14,7 +17,7 @@ def procesar_mensaje_db(mensaje, conversacion_id: int = 1):
             EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT;
             SELECT @o_TextoRespuesta AS TextoRespuesta, @o_ReglaActivadaID AS ReglaActivadaID;
             """,
-            conversacion_id,
+            conv_id_str,
             mensaje,
         )
 
@@ -25,35 +28,35 @@ def procesar_mensaje_db(mensaje, conversacion_id: int = 1):
         conn.close()
 
         if resultado:
+            regla_id = resultado.ReglaActivadaID
+            texto_respuesta = resultado.TextoRespuesta or "No se obtuvo respuesta del agente."
 
-            print("Regla:", resultado.ReglaActivadaID)
-            print("Respuesta:", resultado.TextoRespuesta)
+            print(f"[Engine] Regla Activada: {regla_id} | Respuesta: {texto_respuesta[:50]}...")
 
-            # Regla 2 = búsqueda de productos
-            if resultado.ReglaActivadaID == 2:
-
+            # Regla 2 = Búsqueda de productos (adjunta la lista de productos para cards en Frontend)
+            if regla_id == 2:
                 productos = buscar_producto(mensaje)
-
                 return {
                     "tipo": "productos",
-                    "texto": "Encontré estos productos para ti.",
+                    "texto": texto_respuesta,
                     "regla_id": 2,
                     "productos": productos,
                 }
 
             return {
                 "tipo": "texto",
-                "texto": resultado.TextoRespuesta,
-                "regla_id": resultado.ReglaActivadaID,
+                "texto": texto_respuesta,
+                "regla_id": regla_id,
             }
 
         return {
             "tipo": "texto",
-            "texto": "No se obtuvo respuesta del agente.",
+            "texto": "No se obtuvo respuesta del motor de reglas.",
             "regla_id": None,
         }
 
     except Exception as ex:
+        print(f"[Engine Error] Exception: {ex}")
         return {
             "tipo": "texto",
             "texto": f"Error al procesar mensaje en la base de datos: {ex}",
