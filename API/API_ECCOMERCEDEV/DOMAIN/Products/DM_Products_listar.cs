@@ -25,5 +25,6 @@ namespace DOMAIN.Products
         public int? StockAvilable { get; set; }
         public DateTime? StockFactoryDate { get; set; }
         public DateTime? StockExpirationDate { get; set; }
+        public string? ProductImageURL { get; set; }
     }
 }

@@ -11,7 +11,15 @@ import {
 
 import { formatCurrency } from './constants';
 import { Product } from '../../Domain/entities/Product';
-import { getProductsUseCase, sendChatMessageUseCase } from '../../di/DI';
+import { CartItem } from '../../Domain/entities/CartItem';
+import {
+  getProductsUseCase,
+  sendChatMessageUseCase,
+  getCartByUserUseCase,
+  addToCartUseCase,
+  updateCartQuantityUseCase,
+  deleteCartItemUseCase,
+} from '../../di/DI';
 import { CatalogTab } from './components/CatalogTab';
 import { CartTab } from './components/CartTab';
 import { ChatbotTab } from './components/ChatbotTab';
@@ -32,6 +40,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [cartQuantities, setCartQuantities] = useState<{ [key: string]: number }>({});
   const [chatbotCartProducts, setChatbotCartProducts] = useState<Product[]>([]);
+  const [dbCartItems, setDbCartItems] = useState<CartItem[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
@@ -39,6 +48,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
 
   const currentUserEmail = user?.email ?? "demo-user";
   const currentUser = { email: currentUserEmail };
+  const numericUserId = parseInt(user?.id || '1', 10) || 1;
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
@@ -49,7 +59,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
       isBot: true,
       content: '¿Y entonces chele qué andás buscando hoy? ¡Preguntame sobre celulares, consolas, hardware, audio o monitores!',
       timestamp: new Date().toISOString(),
-      user_id: "chatbot",   // 👈 obligatorio
+      user_id: "chatbot",
     },
   ]);
 
@@ -66,6 +76,44 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  // Cargar carrito activo desde C# API (CartDetailsController)
+  const loadCartFromDb = async () => {
+    try {
+      const items = await getCartByUserUseCase.execute(numericUserId);
+      setDbCartItems(items);
+
+      const newQuantities: { [key: string]: number } = {};
+      const extraProducts: Product[] = [];
+
+      items.forEach(item => {
+        const pId = String(item.varianteId || item.productoId);
+        newQuantities[pId] = item.cantidad;
+
+        extraProducts.push({
+          id: pId,
+          title: item.productoNombre || 'Producto',
+          subtitle: item.varianteEspecificacion || item.productoDescripcion || '',
+          numericPrice: item.precioUnitario ?? 0,
+          tag: '',
+          brand: 'NIC STORE',
+          category: 'cart',
+          image: item.productoImagenUrl || 'https://placehold.co/300x300/png?text=Producto',
+        });
+      });
+
+      setCartQuantities(newQuantities);
+      setChatbotCartProducts(extraProducts);
+    } catch (error) {
+      console.log('Error al cargar carrito desde C# API:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (numericUserId) {
+      loadCartFromDb();
+    }
+  }, [numericUserId, currentTab]);
 
   // Cargar conversaciones del usuario
   const loadConversations = async (userId?: string) => {
@@ -88,7 +136,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
               timestamp: msg.timestamp ?? new Date().toISOString(),
               tipo: msg.tipo,
               productos: msg.productos ?? [],
-              metadata: normalizeMetadata(msg.metadata), // 👈 aquí
+              metadata: normalizeMetadata(msg.metadata),
             }))
           : [],
       }));
@@ -100,63 +148,61 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   };
 
   useEffect(() => {
-    if (currentUser.email) {
-      loadConversations(currentUser.email);
+    if (numericUserId) {
+      loadConversations(String(numericUserId));
     }
-  }, [currentUser.email]);
+  }, [numericUserId]);
 
-  // Lógica del Carrito
-  const addUnit = (id: string) => setCartQuantities(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+  // Lógica del Carrito conectada a C# API CartDetailsController
+  const addUnit = async (id: string) => {
+    const targetId = parseInt(id, 10);
+    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
 
-  const addProductToCart = (product: Partial<Product> & { id: string | number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
-    const normalizedId = product.id.toString();
-    const existingProduct = products.find((item) => item.id === normalizedId);
-
-    if (existingProduct) {
-      addUnit(normalizedId);
+    if (existingItem) {
+      await updateCartQuantityUseCase.execute(existingItem.detalleCarritoId, existingItem.cantidad + 1, numericUserId);
     } else {
-      const fallbackProduct: Product = {
-        id: normalizedId,
-        title: product.title ?? product.name ?? 'Producto agregado',
-        subtitle: product.subtitle ?? 'Agregado desde el chatbot',
-        numericPrice: Number(product.numericPrice ?? product.price ?? 0),
-        tag: '',
-        brand: product.brand ?? 'NIC STORE',
-        category: 'chatbot',
-        image: product.image ?? 'https://placehold.co/300x300/png?text=Producto',
-      };
-
-      setCartQuantities(prev => ({ ...prev, [normalizedId]: (prev[normalizedId] || 0) + 1 }));
-      setChatbotCartProducts(prev =>
-        prev.some((item) => item.id === normalizedId) ? prev : [...prev, fallbackProduct]
-      );
+      const matchedProduct = products.find(p => p.id === id);
+      const varId = matchedProduct?.productVariableId || targetId;
+      await addToCartUseCase.execute(numericUserId, varId, 1);
     }
+    await loadCartFromDb();
+  };
 
+  const addProductToCart = async (product: Partial<Product> & { id: string | number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
+    const normalizedId = product.id.toString();
+    await addUnit(normalizedId);
     setCurrentTab('cart');
   };
 
-  const removeUnit = (id: string) => {
-    setCartQuantities(prev => {
-      const currentQty = prev[id] || 0;
-      if (currentQty <= 1) {
-        const updated = { ...prev };
-        delete updated[id];
-        return updated;
+  const removeUnit = async (id: string) => {
+    const targetId = parseInt(id, 10);
+    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
+
+    if (existingItem) {
+      if (existingItem.cantidad > 1) {
+        await updateCartQuantityUseCase.execute(existingItem.detalleCarritoId, existingItem.cantidad - 1, numericUserId);
+      } else {
+        await deleteCartItemUseCase.execute(existingItem.detalleCarritoId, numericUserId);
       }
-      return { ...prev, [id]: currentQty - 1 };
-    });
+      await loadCartFromDb();
+    }
   };
 
-  const deleteFromCart = (id: string) => {
-    setCartQuantities(prev => {
-      const updated = { ...prev };
-      delete updated[id];
-      return updated;
-    });
+  const deleteFromCart = async (id: string) => {
+    const targetId = parseInt(id, 10);
+    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
+
+    if (existingItem) {
+      await deleteCartItemUseCase.execute(existingItem.detalleCarritoId, numericUserId);
+      await loadCartFromDb();
+    }
   };
 
-  const clearCart = () => {
-    setCartQuantities({});
+  const clearCart = async () => {
+    for (const item of dbCartItems) {
+      await deleteCartItemUseCase.execute(item.detalleCarritoId, numericUserId);
+    }
+    await loadCartFromDb();
   };
 
   const totalItemsInCart = Object.values(cartQuantities).reduce((acc, qty) => acc + qty, 0);
@@ -165,13 +211,14 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const totalPayment = subtotal + shippingCost;
 
   // Confirmación de pago
-  const handlePaymentSuccess = (method: string) => {
+  const handlePaymentSuccess = async (method: string) => {
     setPaymentModalVisible(false);
+    await clearCart();
 
     Alert.alert(
       '📦 ¡Pedido Procesado con Éxito!',
       `Monto: ${formatCurrency(totalPayment)}\nMétodo: ${method}\n\nPronto nos pondremos en contacto para coordinar la entrega. ¡Gracias por comprar en Nic Store!`,
-      [{ text: '¡Excelente!', onPress: () => { clearCart(); setCurrentTab('home'); } }]
+      [{ text: '¡Excelente!', onPress: () => { setCurrentTab('home'); } }]
     );
   };
 
@@ -198,36 +245,35 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         role: message.role,
         content: message.content,
         timestamp: message.timestamp,
-        user_id: currentUser.email,   // 👈 ahora sí enviamos el usuario logueado
+        user_id: currentUser.email,
         isBot: message.isBot,
         tipo: message.tipo,
         productos: message.productos ?? [],
-        metadata: normalizeMetadata(message.metadata), // opcional
+        metadata: normalizeMetadata(message.metadata),
       });
     } catch (error) {
       console.log('Error al guardar mensaje en el backend:', error);
     }
   };
 
-  // Flujo principal de envío de mensajes al Chatbot
+  // Flujo principal de envío de mensajes al Chatbot (Intacto y Conversacional)
   const handleSendMessage = async (text: string) => {
     const cleanText = text.replace(/📱 |🎮 |💻 |🎧 |🔥 /g, '').trim();
     if (!cleanText) return;
 
     let currentConvId = activeConversationId;
 
-    // 1. SI NO EXISTE CONVERSACIÓN VÁLIDA O ES 'default', CREAMOS UNA EN EL BACKEND PRIMERO
     if (!currentConvId || currentConvId === 'default') {
       try {
         const titleSnippet = cleanText.length > 25 ? `${cleanText.slice(0, 25)}...` : cleanText;
-        const newConv = await sendChatMessageUseCase.createConversation(currentUser.email, titleSnippet);
+        const newConv = await sendChatMessageUseCase.createConversation(String(numericUserId), titleSnippet);
         
         currentConvId = (newConv.conversation_id ?? newConv.id ?? Date.now()).toString();
         setActiveConversationId(currentConvId);
 
         const newConvObj: Conversation = {
           id: currentConvId,
-          userId: currentUser.email,   // 👈 aquí también usamos el usuario real
+          userId: currentUser.email,
           title: titleSnippet,
           startDate: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -243,7 +289,6 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
       }
     }
 
-    // 2. AGREGAR MENSAJE DEL USUARIO AL ESTADO LOCAL
     const newUserMsg: Message = { 
       id: Date.now(), 
       conversationId: currentConvId,
@@ -251,7 +296,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
       isBot: false,
       content: cleanText,
       timestamp: new Date().toISOString(),
-      user_id: currentUser.email,   // 👈 obligatorio en el modelo
+      user_id: currentUser.email,
     };
 
     setMessages(prev => [...prev, newUserMsg]);
@@ -259,9 +304,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     setHasLoadedHistory(true);
     await persistMessage(currentConvId, newUserMsg);
 
-    // 4. CONSUMIR LA RESPUESTA DEL CHATBOT
     try {
-      const response = await sendChatMessageUseCase.execute(cleanText, currentConvId, currentUser.email);
+      const response = await sendChatMessageUseCase.execute(cleanText, currentConvId, String(numericUserId));
       
       const botMessage: Message = {
         id: Date.now() + 1,
@@ -272,15 +316,14 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         timestamp: new Date().toISOString(),
         tipo: response.tipo,
         productos: response.productos ?? [],
-        metadata: normalizeMetadata(response.metadata), // 👈 agrega esto
-        user_id: "chatbot",   // 👈 puedes marcarlo fijo para el bot
+        metadata: normalizeMetadata(response.metadata),
+        user_id: "chatbot",
       };
 
       setMessages(prev => [...prev, botMessage]);
       await persistMessage(currentConvId, botMessage);
       setHasLoadedHistory(true);
 
-      // Actualizar metadatos de la lista de conversaciones
       setConversations(prev => prev.map(item => 
         item.id === currentConvId 
           ? { 
@@ -313,7 +356,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   // Cierre de sesión
   const handleLogout = () => {
     const ejecutarSalida = () => {
-      clearCart();
+      setCartQuantities({});
       setCurrentTab('home');
       setActiveConversationId(null);
       setMessages([
@@ -324,7 +367,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
           isBot: true,
           content: '¿Y entonces chele qué andás buscando hoy?', 
           timestamp: new Date().toISOString(),
-          user_id: "chatbot",   // 👈 obligatorio
+          user_id: "chatbot",
         },
       ]);
       setHasLoadedHistory(false);
@@ -422,7 +465,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
               addProductToCart(product);
               Alert.alert(
                 '🛒 ¡Carrito Actualizado!',
-                `Agregaste "${product.name ?? product.title}" al carrito desde el Chatbot.`,
+                `Agregaste "${product.name ?? product.title}" al carrito.`,
                 [
                   { text: 'Ver Carrito', onPress: () => setCurrentTab('cart') },
                   { text: 'Seguir Chateando', style: 'cancel' }
@@ -477,14 +520,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    paddingBottom: 70, // 👈 deja espacio para la barra inferior
+    paddingBottom: 70,
   },
   bottomTabBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60, // 👈 define altura fija
+    height: 60,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -494,7 +537,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3, // 👈 sombra suave en Android
+    elevation: 3,
   },
   tabItem: {
     alignItems: 'center',

@@ -48,13 +48,22 @@ export const API_CONFIG = {
 
 /**
  * Helper para realizar peticiones HTTP de forma segura evitando SyntaxError al parsear JSON no válido (ej. errores 500 HTML)
+ * Incluye un AbortController con timeout de 15 segundos para resiliencia de red.
  */
 export async function safeFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   let response: Response;
   try {
-    response = await fetch(url, options);
+    response = await fetch(url, { ...options, signal: controller.signal });
   } catch (err: any) {
+    if (err.name === 'AbortError') {
+      throw new Error('La solicitud tardó demasiado. Verificá tu conexión e intentá de nuevo.');
+    }
     throw new Error(`Error de red al conectar con el servidor: ${err.message || 'Sin conexión'}`);
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const contentType = response.headers.get('content-type');

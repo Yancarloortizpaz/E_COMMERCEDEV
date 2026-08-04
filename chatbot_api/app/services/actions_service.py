@@ -3,23 +3,40 @@ from app.database.connection import get_connection
 from app.repositories.products_repository import buscar_producto
 
 
-def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1) -> Dict[str, Any]:
+def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1, user_id: str = "1") -> Dict[str, Any]:
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
         conv_id_str = str(conversacion_id) if conversacion_id is not None else "1"
+        user_id_str = str(user_id) if user_id is not None else "1"
 
-        cursor.execute(
-            """
-            DECLARE @o_TextoRespuesta NVARCHAR(MAX);
-            DECLARE @o_ReglaActivadaID INT;
-            EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT;
-            SELECT @o_TextoRespuesta AS TextoRespuesta, @o_ReglaActivadaID AS ReglaActivadaID;
-            """,
-            conv_id_str,
-            mensaje,
-        )
+        try:
+            cursor.execute(
+                """
+                DECLARE @o_TextoRespuesta NVARCHAR(MAX);
+                DECLARE @o_ReglaActivadaID INT;
+                EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT, ?;
+                SELECT @o_TextoRespuesta AS TextoRespuesta, @o_ReglaActivadaID AS ReglaActivadaID;
+                """,
+                conv_id_str,
+                mensaje,
+                user_id_str,
+            )
+        except Exception as ex_sp:
+            if "8144" in str(ex_sp) or "too many arguments" in str(ex_sp).lower():
+                cursor.execute(
+                    """
+                    DECLARE @o_TextoRespuesta NVARCHAR(MAX);
+                    DECLARE @o_ReglaActivadaID INT;
+                    EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT;
+                    SELECT @o_TextoRespuesta AS TextoRespuesta, @o_ReglaActivadaID AS ReglaActivadaID;
+                    """,
+                    conv_id_str,
+                    mensaje,
+                )
+            else:
+                raise ex_sp
 
         resultado = cursor.fetchone()
 

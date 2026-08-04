@@ -264,16 +264,20 @@ class ConversationRepository:
             cursor.close()
             conn.close()
 
-    def listar_conversaciones(self, user_id: str) -> List[Dict[str, Any]]:
+    def listar_conversaciones(self, user_id: str, email: str = None) -> List[Dict[str, Any]]:
         conn = get_connection()
         cursor = conn.cursor()
         try:
             table_name = self._detect_table_name(cursor)
             msg_table_name = "HistorialMensajes" if table_name == "HistorialConversaciones" else "Mensajes"
 
+            target_user = str(user_id) if user_id else ""
+            target_email = str(email) if email else target_user
+
             cursor.execute(
-                f"SELECT ConversacionID, UsuarioID, FechaInicio, Activo FROM dbo.{table_name} WHERE UsuarioID = ?",
-                user_id
+                f"SELECT ConversacionID, UsuarioID, FechaInicio, Activo FROM dbo.{table_name} WHERE UsuarioID = ? OR UsuarioID = ? ORDER BY FechaInicio DESC",
+                target_user,
+                target_email
             )
             conversaciones: List[Dict[str, Any]] = []
             for row in cursor.fetchall():

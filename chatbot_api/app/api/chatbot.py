@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 from decimal import Decimal
 from fastapi import APIRouter, HTTPException, Body
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from app.repositories.conversation_repository import ConversationRepository
 from app.repositories.reglas_repository import cargar_reglas
@@ -79,9 +79,9 @@ def enviar_mensaje(request: Dict[str, Any] = Body(...)):
             conversation_id = res_repo.get("conversation_id") if isinstance(res_repo, dict) else res_repo
             return {"status": "ok", "conversation_id": conversation_id}
 
-        # Llamada al motor/reglas pasando el conversation_id del usuario
+        # Llamada al motor/reglas pasando el conversation_id del usuario y el user_id
         try:
-            respuesta_bot = procesar_mensaje(mensaje_text, conversacion_id=provided_conv_id or 1)
+            respuesta_bot = procesar_mensaje(mensaje_text, conversacion_id=provided_conv_id or 1, user_id=user_id)
         except Exception as ex_proc:
             logger.exception("Error en procesar_mensaje")
             raise HTTPException(status_code=500, detail=f"Error interno en motor: {ex_proc}")
@@ -212,9 +212,9 @@ def get_history(conversation_id: int):
 
 
 @router.get("/users/{user_id}/conversations")
-def list_user_conversations(user_id: str):
+def list_user_conversations(user_id: str, email: Optional[str] = None):
     try:
-        return repo_conversacion.listar_conversaciones(user_id)
+        return repo_conversacion.listar_conversaciones(user_id, email)
     except Exception as ex:
         logger.exception("Error en list_user_conversations")
         raise HTTPException(status_code=500, detail=str(ex))

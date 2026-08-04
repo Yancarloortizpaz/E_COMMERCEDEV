@@ -46,7 +46,8 @@ BEGIN
             StockID,
             StockAvilable,
             StockFactoryDate,
-            StockExpirationDate
+            StockExpirationDate,
+            ProductImageURL
         FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK)
         ORDER BY ProductID ASC, ProviderID DESC
         OFFSET ((ISNULL(@i_pageNumber, 1) - 1) * @PageSize) ROWS

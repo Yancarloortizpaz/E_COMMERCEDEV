@@ -1,0 +1,33 @@
+import { ApiProduct } from '../../Domain/entities/ProductApiResponse';
+import { Product } from '../../Domain/entities/Product';
+import { API_CONFIG } from '../dataSources/apiConfig';
+
+const PLACEHOLDER_IMAGE = 'https://placehold.co/400x400/F1F5F9/94A3B8?text=Sin+Imagen';
+
+export function mapApiToProduct(apiProduct: ApiProduct): Product {
+  let imageUrl = PLACEHOLDER_IMAGE;
+
+  if (apiProduct.productImageURL && apiProduct.productImageURL.trim().length > 0) {
+    const rawUrl = apiProduct.productImageURL.trim();
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('file://')) {
+      imageUrl = rawUrl;
+    } else {
+      // Si la URL es relativa (/images/product.jpg), anteponer BASE_URL
+      imageUrl = `${API_CONFIG.BASE_URL}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
+    }
+  }
+
+  return {
+    id: String(apiProduct.productVariableID || apiProduct.productID),
+    title: apiProduct.productName || 'Producto sin nombre',
+    subtitle: apiProduct.productVariableName || apiProduct.subcategoryName || '',
+    numericPrice: apiProduct.productVariablePrice ?? 0,
+    tag: apiProduct.segmentName || '',
+    brand: apiProduct.markName || 'NIC STORE',
+    category: apiProduct.categoryName || 'General',
+    image: imageUrl,
+    categoryId: apiProduct.categoryID,
+    stockAvailable: apiProduct.stockAvilable ?? 0,
+    productVariableId: apiProduct.productVariableID || apiProduct.productID,
+  };
+}
