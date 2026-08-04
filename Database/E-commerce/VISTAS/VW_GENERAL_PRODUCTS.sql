@@ -6,9 +6,9 @@ AS
 SELECT
 	P.productId [ProductID],
 	P.productName [ProductName],
-	VP.productVariableId [ProductVariableID],
-	VP.productVariableValue [ProductVariableName],
-	VP.productVariablePrice [ProductVariablePrice],
+	MIN(VP.productVariableId) [ProductVariableID],
+	MIN(VP.productVariableValue) [ProductVariableName],
+	MIN(VP.productVariablePrice) [ProductVariablePrice],
 	C.currencyId [CurrencyID],
 	C.currencyISO [CurrencyISO],
 	GP.categoryId [CategoryID],
@@ -21,10 +21,11 @@ SELECT
 	M.markName [MarkName],
 	PR.providerId [ProviderID],
 	PR.providerName [ProviderName],
-	ST.stockId [StockID],
-	ST.stockQuantity [StockAvilable],
-	ST.stockFactoryDate [StockFactoryDate],
-	ST.stockExpirationDate [StockExpirationDate]
+	MIN(ST.stockId) [StockID],
+	SUM(ISNULL(ST.stockQuantity, 0)) [StockAvilable],
+	MIN(ST.stockFactoryDate) [StockFactoryDate],
+	MIN(ST.stockExpirationDate) [StockExpirationDate],
+	MIN(IMG.productImageURL) [ProductImageURL]
 FROM SQM_GENERAL.Tbl_Products (NOLOCK) P
 INNER JOIN SQM_GENERAL.Tbl_ProductVariables (NOLOCK) VP
 	ON P.productId = VP.productVariableProductId AND VP.productVariableStatusId = 1
@@ -38,9 +39,16 @@ INNER JOIN SQM_CATALOGS.Tbl_Marks (NOLOCK) M
 	ON MxP.markByProviderMarkId = M.markId AND M.markStatusId = 1
 INNER JOIN SQM_CATALOGS.Tbl_Providers (NOLOCK) PR
 	ON MxP.markByProviderProviderId = PR.providerId AND PR.providerStatusId = 1
-INNER JOIN SQM_GENERAL.Tbl_Stocks (NOLOCK) ST
+LEFT JOIN SQM_GENERAL.Tbl_Stocks (NOLOCK) ST
 	ON VP.productVariableId = ST.stockProductVariableId AND ST.stockStatusId = 1
+LEFT JOIN SQM_GENERAL.Tbl_ProductImages (NOLOCK) IMG
+	ON P.productId = IMG.productImageProductId AND IMG.productImageIsPrincipal = 1 AND IMG.productImageStatusId = 1
 WHERE P.productStatusId = 1
+GROUP BY
+	P.productId, P.productName, C.currencyId, C.currencyISO,
+	GP.categoryId, GP.categoryName, GP.subCategoryId, GP.subCategoryName,
+	GP.segmentId, GP.segmentName, M.markId, M.markName,
+	PR.providerId, PR.providerName;
 GO
 
-select * from  SQM_GENERAL.VW_GENERAL_PRODUCTS
+SELECT * FROM SQM_GENERAL.VW_GENERAL_PRODUCTS;

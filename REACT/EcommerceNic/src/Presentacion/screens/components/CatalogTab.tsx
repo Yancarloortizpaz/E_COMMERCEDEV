@@ -3,18 +3,22 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TextInput,
   TouchableOpacity,
   Image,
   Platform,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { CATEGORIES, formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useProducts } from '../../hooks/useProducts';
+import { ProductImage } from '../../components/ProductImage';
 
 interface CatalogTabProps {
-  products: Product[];
+  products?: Product[];
   cartQuantities: { [key: string]: number };
   addUnit: (id: string) => void;
   removeUnit: (id: string) => void;
@@ -57,7 +61,7 @@ const SkeletonCard = () => {
 };
 
 export const CatalogTab = ({
-  products,
+  products: initialProducts,
   cartQuantities,
   addUnit,
   removeUnit,
@@ -66,14 +70,36 @@ export const CatalogTab = ({
 }: CatalogTabProps) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    return matchesCategory && product.title.toLowerCase().includes(search.toLowerCase());
-  });
+  // Determinar término de búsqueda para la API
+  const selectedCategoryObj = CATEGORIES.find(c => c.id === selectedCategory);
+  const categorySearchTerm = (selectedCategory !== 'all' && selectedCategoryObj) ? selectedCategoryObj.name : '';
+  const searchTermForApi = debouncedSearch.trim().length > 0 ? debouncedSearch : categorySearchTerm;
 
-  return (
-    <View style={styles.tabContent}>
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useProducts(searchTermForApi);
+
+  const displayProducts: Product[] = data?.pages
+    ? data.pages.flatMap(page => page.mappedProducts || [])
+    : (initialProducts || []);
+
+  const handleEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  const renderHeader = () => (
+    <View>
       <View style={styles.header}>
         <View style={styles.profileSection}>
           <Image source={require('../../../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
@@ -97,22 +123,25 @@ export const CatalogTab = ({
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollPadding}>
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            placeholder="Buscar productos..."
-            placeholderTextColor="#94A3B8"
-            value={search}
-            onChangeText={setSearch}
-            style={styles.searchInput}
-          />
-        </View>
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          placeholder="Buscar productos..."
+          placeholderTextColor="#94A3B8"
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+        />
+      </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-          {CATEGORIES.map((cat) => (
+      <View style={styles.categoriesContainer}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={CATEGORIES}
+          keyExtractor={(cat) => cat.id}
+          renderItem={({ item: cat }) => (
             <TouchableOpacity
-              key={cat.id}
               onPress={() => setSelectedCategory(cat.id)}
               style={[styles.categoryPill, selectedCategory === cat.id && styles.categoryPillActive]}
             >
@@ -120,81 +149,135 @@ export const CatalogTab = ({
                 {cat.name}
               </Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          )}
+        />
+      </View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Catálogo de Productos</Text>
-          <TouchableOpacity onPress={() => setSelectedCategory('all')}>
-            <Text style={styles.seeAllLink}>Ver todo</Text>
-          </TouchableOpacity>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Catálogo de Productos</Text>
+        <TouchableOpacity onPress={() => { setSelectedCategory('all'); setSearch(''); }}>
+          <Text style={styles.seeAllLink}>Ver todo</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (isFetchingNextPage) {
+      return (
+        <View style={styles.footerLoading}>
+          <ActivityIndicator size="small" color="#4F46E5" />
+          <Text style={styles.footerLoadingText}>Cargando más productos...</Text>
+        </View>
+      );
+    }
+    if (!hasNextPage && displayProducts.length > 0) {
+      return (
+        <View style={styles.footerEnd}>
+          <Text style={styles.footerEndText}>📦 Has visto todos los productos disponibles</Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
+  const renderItem = ({ item: product }: { item: Product }) => {
+    const currentQuantity = cartQuantities[product.id] || 0;
+    return (
+      <View style={styles.card}>
+        <View style={styles.imageWrapper}>
+          <ProductImage url={product.image} style={styles.productImage} />
+          <View style={styles.tagsContainer}>
+            {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
+            <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
+          </View>
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
+          <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
+          <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
         </View>
 
-        <View style={styles.grid}>
-          {products.length === 0 ? (
-            // Render Skeleton Loaders if products are fetching
-            <>
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-            </>
-          ) : filteredProducts.length === 0 ? (
+        <View style={styles.priceRow}>
+          <View>
+            <Text style={styles.priceLabel}>PRECIO</Text>
+            <Text style={styles.productPrice}>{formatCurrency(product.numericPrice)}</Text>
+          </View>
+          
+          {currentQuantity === 0 ? (
+            <TouchableOpacity 
+              style={styles.addButtonCircular} 
+              activeOpacity={0.7} 
+              onPress={() => addUnit(product.id)}
+            >
+              <Text style={styles.addButtonCircularText}>+</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.quantityContainerMini}>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
+                <Text style={styles.miniQtyBtnText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.miniQtyText}>{currentQuantity}</Text>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
+                <Text style={styles.miniQtyBtnText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.tabContent}>
+      {isLoading ? (
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <View style={styles.grid}>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+        </View>
+      ) : isError ? (
+        <View style={{ flex: 1 }}>
+          {renderHeader()}
+          <View style={styles.emptyContainer}>
+            <Text style={{ fontSize: 40, marginBottom: 12 }}>📡</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A' }}>Error al cargar productos</Text>
+            <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4, textAlign: 'center', paddingHorizontal: 20 }}>
+              {(error as any)?.message || 'No se pudo conectar con el servidor.'}
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+              <Text style={styles.retryButtonText}>Reintentar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <FlatList
+          data={displayProducts}
+          keyExtractor={(item) => String(item.id)}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>🔍</Text>
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A' }}>No hay resultados</Text>
               <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4 }}>Prueba con otra búsqueda o categoría</Text>
             </View>
-          ) : (
-            filteredProducts.map((product) => {
-              const currentQuantity = cartQuantities[product.id] || 0;
-              return (
-                <View key={product.id} style={styles.card}>
-                  <View style={styles.imageWrapper}>
-                    <Image source={{ uri: product.image }} style={styles.productImage} />
-                    <View style={styles.tagsContainer}>
-                      {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
-                      <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.cardInfo}>
-                    <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
-                    <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
-                    <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
-                  </View>
-
-                  <View style={styles.priceRow}>
-                    <View>
-                      <Text style={styles.priceLabel}>PRECIO</Text>
-                      <Text style={styles.productPrice}>{formatCurrency(product.numericPrice)}</Text>
-                    </View>
-                    
-                    {currentQuantity === 0 ? (
-                      <TouchableOpacity 
-                        style={styles.addButtonCircular} 
-                        activeOpacity={0.7} 
-                        onPress={() => addUnit(product.id)}
-                      >
-                        <Text style={styles.addButtonCircularText}>+</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <View style={styles.quantityContainerMini}>
-                        <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
-                          <Text style={styles.miniQtyBtnText}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.miniQtyText}>{currentQuantity}</Text>
-                        <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
-                          <Text style={styles.miniQtyBtnText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </ScrollView>
+          }
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.3}
+          windowSize={5}
+          maxToRenderPerBatch={6}
+          removeClippedSubviews={Platform.OS !== 'web'}
+          contentContainerStyle={styles.scrollPadding}
+        />
+      )}
     </View>
   );
 };
@@ -202,6 +285,7 @@ export const CatalogTab = ({
 const styles = StyleSheet.create({
   tabContent: { flex: 1, paddingBottom: 68 },
   scrollPadding: { paddingBottom: 20 },
+  row: { justifyContent: 'space-between', paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, marginBottom: 16 },
   profileSection: { flexDirection: 'row', alignItems: 'center' },
   logoImage: { width: 42, height: 42, borderRadius: 12 },
@@ -358,5 +442,38 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  retryButton: {
+    marginTop: 14,
+    backgroundColor: '#4F46E5',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  footerLoading: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  footerLoadingText: {
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  footerEnd: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  footerEndText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
 });

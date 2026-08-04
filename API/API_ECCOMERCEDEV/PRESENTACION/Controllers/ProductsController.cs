@@ -28,7 +28,15 @@ namespace PRESENTACION.Controllers
                 var (lista, output) = await _service.Listar_Products_async(pageNumber);
                 if (lista == null || !lista.Any())
                 {
-                    return NotFound(new { codigo = 404, msj = "No se encontraron productos." });
+                    return Ok(new
+                    {
+                        codigo = output.Code ?? 204,
+                        msj = output.Message ?? "No hay más productos disponibles.",
+                        pageNumber = output.PageNumber,
+                        pageSize = output.PageSize,
+                        totalRows = output.TotalRows ?? 0,
+                        data = new List<ProductsListarDTOs>()
+                    });
                 }
                 return Ok(new
                 {
@@ -54,7 +62,15 @@ namespace PRESENTACION.Controllers
                 var (lista, output) = await _service.Filtrar_Products_async(searchTerm, pageNumber);
                 if (lista == null || !lista.Any())
                 {
-                    return NotFound(new { codigo = 404, msj = "No se encontraron productos que coincidan con la búsqueda." });
+                    return Ok(new
+                    {
+                        codigo = output.Code ?? 204,
+                        msj = output.Message ?? "No se encontraron productos que coincidan con la búsqueda.",
+                        pageNumber = output.PageNumber,
+                        pageSize = output.PageSize,
+                        totalRows = output.TotalRows ?? 0,
+                        data = new List<ProductsFiltrarDTOs>()
+                    });
                 }
                 return Ok(new
                 {

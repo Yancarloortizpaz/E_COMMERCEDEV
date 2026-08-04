@@ -5,7 +5,8 @@ CREATE OR ALTER PROCEDURE dbo.SP_ProcesarMensajeChatbot
     @w_ConversacionID VARCHAR(50),
     @w_TextoUsuario VARCHAR(1000),
     @o_TextoRespuesta NVARCHAR(MAX) OUTPUT,
-    @o_ReglaActivadaID INT OUTPUT
+    @o_ReglaActivadaID INT OUTPUT,
+    @w_UsuarioID VARCHAR(50) = '1'
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -18,16 +19,25 @@ BEGIN
     IF @v_ConvIDInt IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.HistorialConversaciones WHERE ConversacionID = @v_ConvIDInt)
     BEGIN
         INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo)
-        VALUES ('1', GETDATE(), 1); -- Default UsuarioID = '1'
+        VALUES (ISNULL(@w_UsuarioID, '1'), GETDATE(), 1);
         
         SET @v_ConvIDInt = SCOPE_IDENTITY();
     END
     ELSE IF @v_ConvIDInt IS NULL
     BEGIN
         INSERT INTO dbo.HistorialConversaciones (UsuarioID, FechaInicio, Activo)
-        VALUES ('1', GETDATE(), 1);
+        VALUES (ISNULL(@w_UsuarioID, '1'), GETDATE(), 1);
         
         SET @v_ConvIDInt = SCOPE_IDENTITY();
+    END
+    ELSE
+    BEGIN
+        IF @w_UsuarioID IS NOT NULL AND @w_UsuarioID <> '1'
+        BEGIN
+            UPDATE dbo.HistorialConversaciones 
+            SET UsuarioID = @w_UsuarioID 
+            WHERE ConversacionID = @v_ConvIDInt AND (UsuarioID = '1' OR UsuarioID IS NULL);
+        END
     END
 
     -- Registrar el mensaje del usuario (ChatBot = 0 para usuario)
@@ -36,9 +46,15 @@ BEGIN
 
     -- Obtener UsuarioID numérico asociado a la conversación (default 1)
     DECLARE @v_UserId INT = 1;
-    SELECT @v_UserId = COALESCE(TRY_CAST(UsuarioID AS INT), 1)
+    SELECT @v_UserId = COALESCE(TRY_CAST(UsuarioID AS INT), TRY_CAST(@w_UsuarioID AS INT), 1)
     FROM dbo.HistorialConversaciones
     WHERE ConversacionID = @v_ConvIDInt;
+
+    IF @v_UserId IS NULL OR @v_UserId <= 0
+    BEGIN
+        SET @v_UserId = TRY_CAST(@w_UsuarioID AS INT);
+        IF @v_UserId IS NULL OR @v_UserId <= 0 SET @v_UserId = 1;
+    END
 
     DECLARE @v_ReglaID INT = NULL;
     DECLARE @v_PlantillaTexto NVARCHAR(MAX) = '';
@@ -222,20 +238,32 @@ BEGIN
         -- Caso C: Búsqueda por Nombre de Producto (con o sin Cantidad explícita)
         IF @v_ProdVarId IS NULL
         BEGIN
-            -- Si había un primer número especificado al inicio (ej: "20 del producto Sony Xperia"), se toma como cantidad
-            IF @v_FirstNum IS NOT NULL
+            -- Determinar si el primer número extraído es una CANTIDAD al inicio del texto (ej: "2 iphone 14" o "2 del producto...")
+            -- NOTA: Si el texto es "iphone 14", el 14 es parte del nombre del producto, NO la cantidad.
+            IF @v_FirstNum IS NOT NULL AND (
+                @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + ' %' 
+                OR @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + ' del %' 
+                OR @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + ' de %' 
+                OR @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + ' x %'
+                OR @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + ' unidades%'
+            )
             BEGIN
                 SET @v_Cantidad = @v_FirstNum;
+                -- Retirar el número inicial del nombre a buscar
+                SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, LEN(CAST(@v_FirstNum AS VARCHAR)) + 1, 500));
+            END
+            ELSE
+            BEGIN
+                SET @v_Cantidad = 1;
             END
 
-            -- Limpiar prefijos de cantidad y conectores del texto de búsqueda
-            IF @v_FirstNum IS NOT NULL AND @v_SearchProductStr LIKE CAST(@v_FirstNum AS VARCHAR) + '%'
-                SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, LEN(CAST(@v_FirstNum AS VARCHAR)) + 1, 500));
-
+            -- Limpiar prefijos y conectores del texto de búsqueda
             IF @v_SearchProductStr LIKE 'del producto %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 14, 500));
             IF @v_SearchProductStr LIKE 'producto %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 10, 500));
             IF @v_SearchProductStr LIKE 'de %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 4, 500));
             IF @v_SearchProductStr LIKE 'el %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 4, 500));
+            IF @v_SearchProductStr LIKE 'un %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 4, 500));
+            IF @v_SearchProductStr LIKE 'uno %' SET @v_SearchProductStr = TRIM(SUBSTRING(@v_SearchProductStr, 5, 500));
 
             IF LEN(@v_SearchProductStr) > 0
             BEGIN
@@ -256,6 +284,18 @@ BEGIN
                 WHERE StockAvilable > 0 
                 ORDER BY CoincidenceScore DESC;
             END
+        END
+
+        -- Resolver si @v_ProdVarId fue pasado como ProductID en lugar de ProductVariableID
+        IF @v_ProdVarId IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_ProductVariables] 
+            WHERE productVariableId = @v_ProdVarId AND productVariableStatusId = 1
+        )
+        BEGIN
+            SELECT TOP 1 @v_ProdVarId = productVariableId
+            FROM [DB_ECOMMERCE].[SQM_GENERAL].[Tbl_ProductVariables]
+            WHERE productVariableProductId = @v_ProdVarId AND productVariableStatusId = 1
+            ORDER BY productVariableId ASC;
         END
 
         IF @v_ProdVarId IS NULL

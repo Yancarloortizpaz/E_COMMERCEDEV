@@ -7,4 +7,7 @@ export interface Product {
   brand: string;
   category: string;
   image: string;
+  categoryId?: number;
+  stockAvailable?: number;
+  productVariableId?: number;
 }

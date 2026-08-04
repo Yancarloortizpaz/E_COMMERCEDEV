@@ -42,7 +42,8 @@ namespace APLICATION.Services
                 StockID = x.StockID,
                 StockAvilable = x.StockAvilable,
                 StockFactoryDate = x.StockFactoryDate,
-                StockExpirationDate = x.StockExpirationDate
+                StockExpirationDate = x.StockExpirationDate,
+                ProductImageURL = x.ProductImageURL
             });
             return (dtos, output);
         }
@@ -72,7 +73,8 @@ namespace APLICATION.Services
                 StockID = x.StockID,
                 StockAvilable = x.StockAvilable,
                 StockFactoryDate = x.StockFactoryDate,
-                StockExpirationDate = x.StockExpirationDate
+                StockExpirationDate = x.StockExpirationDate,
+                ProductImageURL = x.ProductImageURL
             });
             return (dtos, output);
         }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, StatusBar } from 'react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LoginScreen } from './src/Presentacion/screens/loginScreen';
 import { RegisterScreen } from './src/Presentacion/screens/RegisterScreen';
 import { HomeScreen } from './src/Presentacion/screens/HomeScreen';
@@ -7,6 +8,15 @@ import { AdminDashboardScreen } from './src/Presentacion/screens/AdminDashboardS
 import { User } from './src/Domain/entities/User';
 
 type ScreenName = 'login' | 'register' | 'home' | 'admin';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenName>('login');
@@ -31,31 +41,33 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
-      {currentScreen === 'login' && (
-        <LoginScreen
-          onLoginSuccess={handleLoginSuccess}
-          onNavigateToRegister={() => setCurrentScreen('register')}
-        />
-      )}
+        {currentScreen === 'login' && (
+          <LoginScreen
+            onLoginSuccess={handleLoginSuccess}
+            onNavigateToRegister={() => setCurrentScreen('register')}
+          />
+        )}
 
-      {currentScreen === 'register' && (
-        <RegisterScreen
-          onRegisterSuccess={handleRegisterSuccess}
-          onBackToLogin={() => setCurrentScreen('login')}
-        />
-      )}
+        {currentScreen === 'register' && (
+          <RegisterScreen
+            onRegisterSuccess={handleRegisterSuccess}
+            onBackToLogin={() => setCurrentScreen('login')}
+          />
+        )}
 
-      {currentScreen === 'home' && currentUser && (
-        <HomeScreen user={currentUser} onLogout={handleLogout} />
-      )}
+        {currentScreen === 'home' && currentUser && (
+          <HomeScreen user={currentUser} onLogout={handleLogout} />
+        )}
 
-      {currentScreen === 'admin' && (
-        <AdminDashboardScreen onLogout={handleLogout} />
-      )}
-    </SafeAreaView>
+        {currentScreen === 'admin' && (
+          <AdminDashboardScreen onLogout={handleLogout} />
+        )}
+      </SafeAreaView>
+    </QueryClientProvider>
   );
 }
 

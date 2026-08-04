@@ -74,6 +74,15 @@ BEGIN
     END;
 
     -- 4. Validar existencia de la Variante de Producto Activa y obtener precio/moneda
+    -- Si @productVariableId fue enviado como ProductID, resolver automáticamente su variante activa:
+    IF NOT EXISTS (SELECT 1 FROM [SQM_GENERAL].[Tbl_ProductVariables] WHERE productVariableId = @productVariableId AND productVariableStatusId = 1)
+    BEGIN
+        SELECT TOP 1 @productVariableId = productVariableId
+        FROM [SQM_GENERAL].[Tbl_ProductVariables]
+        WHERE productVariableProductId = @productVariableId AND productVariableStatusId = 1
+        ORDER BY productVariableId ASC;
+    END;
+
     DECLARE @Price DECIMAL(18,2);
     DECLARE @CurrencyId INT;
 
@@ -292,3 +301,5 @@ GO
 
 
 select * from [SQM_GENERAL].[Tbl_Carts]
+
+select * from [SQM_GENERAL].[Tbl_CartDetails]

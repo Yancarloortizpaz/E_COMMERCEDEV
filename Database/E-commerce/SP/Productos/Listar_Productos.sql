@@ -14,7 +14,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @PageSize INT = 5;
+    DECLARE @PageSize INT = 10;
 
     BEGIN TRY
         -- Obtener el conteo total de filas desde la  vista
@@ -46,7 +46,8 @@ BEGIN
             StockID,
             StockAvilable,
             StockFactoryDate,
-            StockExpirationDate
+            StockExpirationDate,
+            ProductImageURL
         FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK)
         ORDER BY ProductID ASC, ProviderID DESC
         OFFSET ((ISNULL(@i_pageNumber, 1) - 1) * @PageSize) ROWS
@@ -97,3 +98,7 @@ PRINT 'MENSAJE - ' + TRY_CAST(@Message AS VARCHAR)
 PRINT 'NUMERO PAGINA - ' + TRY_CAST(@PageNumber AS VARCHAR)
 PRINT 'TAMAÑO DE PAGINA - ' + TRY_CAST(@PageSize AS VARCHAR)
 PRINT 'TOTAL REGISTROS - ' + TRY_CAST(@TotalRows AS VARCHAR)
+
+
+
+select * from [SQM_GENERAL].[VW_GENERAL_PRODUCTS]
