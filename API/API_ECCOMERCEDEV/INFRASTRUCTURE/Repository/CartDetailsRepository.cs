@@ -186,7 +186,7 @@ namespace INFRASTRUCTURE.Repository
                 using var con = _connection.CreateConnection();
                 await con.OpenAsync();
 
-                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_GetClientCart]", con))
+                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_Carts_Filter]", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new SqlParameter("@UserId", userId));

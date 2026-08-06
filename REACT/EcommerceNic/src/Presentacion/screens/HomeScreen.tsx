@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -38,7 +38,6 @@ interface Props {
 export const HomeScreen = ({ onLogout, user }: Props) => {
   const [currentTab, setCurrentTab] = useState<'home' | 'cart' | 'chatbot' | 'nosotros'>('home');
   const [products, setProducts] = useState<Product[]>([]);
-  const [cartQuantities, setCartQuantities] = useState<{ [key: string]: number }>({});
   const [chatbotCartProducts, setChatbotCartProducts] = useState<Product[]>([]);
   const [dbCartItems, setDbCartItems] = useState<CartItem[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -63,7 +62,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     },
   ]);
 
-  // Cargar catálogo de productos
+  // Cargar catálogo de productos desde C# API
   const loadProducts = async () => {
     try {
       const result = await getProductsUseCase.execute();
@@ -81,17 +80,40 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const loadCartFromDb = async () => {
     try {
       const items = await getCartByUserUseCase.execute(numericUserId);
-      setDbCartItems(items);
+      const activeItems = (items || []).filter(item => {
+        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
+        const qty = item.Cantidad ?? item.cantidad;
+        const status = item.cartDetailStatusId;
+        if (!dId || dId <= 0) return false;
+        if (qty === undefined || qty <= 0) return false;
+        if (status !== undefined && (status === 0 || status === false)) return false;
+        return true;
+      });
 
-      const newQuantities: { [key: string]: number } = {};
+      // Consolidador/Deduplicador para evitar tarjetas repetidas en pantalla:
+      const uniqueItemsMap = new Map<number, CartItem>();
+      activeItems.forEach(item => {
+        const vId = item.varianteId || item.productoId || 0;
+        if (!uniqueItemsMap.has(vId)) {
+          uniqueItemsMap.set(vId, item);
+        } else {
+          const existing = uniqueItemsMap.get(vId)!;
+          const exId = existing.DetalleCarritoId ?? existing.detalleCarritoId ?? 0;
+          const curId = item.DetalleCarritoId ?? item.detalleCarritoId ?? 0;
+          if (curId > exId) {
+            uniqueItemsMap.set(vId, item);
+          }
+        }
+      });
+      const deduplicatedItems = Array.from(uniqueItemsMap.values());
+      setDbCartItems(deduplicatedItems);
+
       const extraProducts: Product[] = [];
-
-      items.forEach(item => {
+      deduplicatedItems.forEach(item => {
         const pId = String(item.varianteId || item.productoId);
-        newQuantities[pId] = item.cantidad;
-
         extraProducts.push({
           id: pId,
+          productVariableId: item.varianteId || item.productoId,
           title: item.productoNombre || 'Producto',
           subtitle: item.varianteEspecificacion || item.productoDescripcion || '',
           numericPrice: item.precioUnitario ?? 0,
@@ -102,10 +124,11 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         });
       });
 
-      setCartQuantities(newQuantities);
       setChatbotCartProducts(extraProducts);
     } catch (error) {
       console.log('Error al cargar carrito desde C# API:', error);
+      setDbCartItems([]);
+      setChatbotCartProducts([]);
     }
   };
 
@@ -114,6 +137,25 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
       loadCartFromDb();
     }
   }, [numericUserId, currentTab]);
+
+  // Derivación 100% reactiva de cartQuantities vinculada directamente a dbCartItems de SQL Server
+  const cartQuantities = useMemo<{ [key: string]: number }>(() => {
+    const map: { [key: string]: number } = {};
+    dbCartItems.forEach(item => {
+      const qty = item.Cantidad ?? item.cantidad ?? 0;
+      const status = item.cartDetailStatusId;
+      if (item && qty > 0 && status !== 0 && status !== false) {
+        const vId = item.varianteId ? String(item.varianteId) : null;
+        const pId = item.productoId ? String(item.productoId) : null;
+        const dId = (item.DetalleCarritoId || item.detalleCarritoId) ? String(item.DetalleCarritoId || item.detalleCarritoId) : null;
+
+        if (vId) map[vId] = qty;
+        if (pId) map[pId] = qty;
+        if (dId) map[dId] = qty;
+      }
+    });
+    return map;
+  }, [dbCartItems]);
 
   // Cargar conversaciones del usuario
   const loadConversations = async (userId?: string) => {
@@ -153,60 +195,273 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     }
   }, [numericUserId]);
 
-  // Lógica del Carrito conectada a C# API CartDetailsController
-  const addUnit = async (id: string) => {
-    const targetId = parseInt(id, 10);
-    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
+  const [pendingCartActions, setPendingCartActions] = useState<{ [key: string]: boolean }>({});
 
+  // Lógica del Carrito conectada directamente a la fuente de datos real
+  const addUnit = async (id: string, passedItem?: CartItem) => {
+    if (pendingCartActions[id]) return;
+    setPendingCartActions(prev => ({ ...prev, [id]: true }));
+
+    const targetId = parseInt(id, 10);
+    const existingItem = passedItem || dbCartItems.find(
+      item => (item.DetalleCarritoId === targetId || item.detalleCarritoId === targetId ||
+               item.varianteId === targetId || item.productoId === targetId ||
+               String(item.varianteId) === id || String(item.productoId) === id ||
+               String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id)
+    );
+
+    const detailId = existingItem?.DetalleCarritoId ?? existingItem?.detalleCarritoId ?? 0;
+    const currentQty = existingItem?.Cantidad ?? existingItem?.cantidad ?? 0;
+    const nextQty = currentQty + 1;
+
+    // Actualización optimista del estado local para reflejar el cambio inmediatamente en pantalla sin congelarse
     if (existingItem) {
-      await updateCartQuantityUseCase.execute(existingItem.detalleCarritoId, existingItem.cantidad + 1, numericUserId);
+      setDbCartItems(prev => prev.map(item => {
+        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
+        if ((dId > 0 && dId === detailId) || String(item.varianteId) === id || String(item.productoId) === id) {
+          const unitPrice = item.PrecioUnitario ?? item.precioUnitario ?? 0;
+          return {
+            ...item,
+            Cantidad: nextQty,
+            cantidad: nextQty,
+            SubTotalFila: unitPrice * nextQty,
+            subTotalFila: unitPrice * nextQty,
+          };
+        }
+        return item;
+      }));
     } else {
-      const matchedProduct = products.find(p => p.id === id);
+      // Si el producto no estaba aún en el carrito, crear un elemento temporal para actualización optimista instantánea
+      const matchedProduct = products.find(p => p.id === id) || chatbotCartProducts.find(p => p.id === id);
       const varId = matchedProduct?.productVariableId || targetId;
-      await addToCartUseCase.execute(numericUserId, varId, 1);
+      const tempItem: CartItem = {
+        DetalleCarritoId: 9999000 + Math.floor(Math.random() * 1000),
+        detalleCarritoId: 9999000 + Math.floor(Math.random() * 1000),
+        varianteId: varId,
+        productoId: varId,
+        ProductoNombre: matchedProduct?.title || 'Producto',
+        productoNombre: matchedProduct?.title || 'Producto',
+        ProductoImagenUrl: matchedProduct?.image,
+        productoImagenUrl: matchedProduct?.image,
+        PrecioUnitario: matchedProduct?.numericPrice || 0,
+        precioUnitario: matchedProduct?.numericPrice || 0,
+        Cantidad: 1,
+        cantidad: 1,
+        SubTotalFila: matchedProduct?.numericPrice || 0,
+        subTotalFila: matchedProduct?.numericPrice || 0,
+        cartDetailStatusId: 1,
+      };
+      setDbCartItems(prev => [...prev, tempItem]);
     }
-    await loadCartFromDb();
-  };
 
-  const addProductToCart = async (product: Partial<Product> & { id: string | number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
-    const normalizedId = product.id.toString();
-    await addUnit(normalizedId);
-    setCurrentTab('cart');
-  };
-
-  const removeUnit = async (id: string) => {
-    const targetId = parseInt(id, 10);
-    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
-
-    if (existingItem) {
-      if (existingItem.cantidad > 1) {
-        await updateCartQuantityUseCase.execute(existingItem.detalleCarritoId, existingItem.cantidad - 1, numericUserId);
+    console.log(`🛒 [addUnit INICIADO] id=${id}, detailId=${detailId}, currentQty=${currentQty}, nextQty=${nextQty}`);
+    try {
+      if (existingItem && detailId > 0 && detailId < 9000000) {
+        console.log(`📡 [addUnit ACTUALIZANDO] detailId=${detailId}, nextQty=${nextQty}`);
+        await updateCartQuantityUseCase.execute(detailId, nextQty, numericUserId);
       } else {
-        await deleteCartItemUseCase.execute(existingItem.detalleCarritoId, numericUserId);
+        const matchedProduct = products.find(p => p.id === id) || chatbotCartProducts.find(p => p.id === id);
+        const varId = matchedProduct?.productVariableId || targetId;
+        console.log(`📡 [addUnit INSERTANDO NUEVO] varId=${varId}`);
+        const res = await addToCartUseCase.execute(numericUserId, varId, 1);
+        console.log(`📥 [addUnit RESPUESTA INSERTAR] templateId=${res}`);
+        if (typeof res === 'number' && res > 0) {
+          setDbCartItems(prev => prev.map(item => {
+            if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
+              return {
+                ...item,
+                DetalleCarritoId: res,
+                detalleCarritoId: res,
+              };
+            }
+            return item;
+          }));
+          await loadCartFromDb();
+        }
       }
-      await loadCartFromDb();
+    } catch (error: any) {
+      console.log('Error en addUnit:', error);
+      if (error?.message && error.message.includes('no está activo')) {
+        console.log(`⚡ [AUTO-RECURSO] Detalle ${detailId} inactivo. Purgando y creando nuevo registro activo en BD...`);
+        setDbCartItems(prev => prev.filter(item => (item.DetalleCarritoId !== detailId && item.detalleCarritoId !== detailId)));
+        try {
+          const matchedProduct = products.find(p => p.id === id) || chatbotCartProducts.find(p => p.id === id);
+          const varId = matchedProduct?.productVariableId || targetId;
+          const res = await addToCartUseCase.execute(numericUserId, varId, 1);
+          if (typeof res === 'number' && res > 0) {
+            setDbCartItems(prev => prev.map(item => {
+              if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
+                return { ...item, DetalleCarritoId: res, detalleCarritoId: res };
+              }
+              return item;
+            }));
+          }
+        } catch (retryErr) {
+          console.log('Error en auto-recurso:', retryErr);
+        }
+      } else {
+        // Revertir el estado optimista a la cantidad anterior real ya que SQL Server rechazó el incremento por stock insuficiente
+        setDbCartItems(prev => prev.map(item => {
+          const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
+          if ((dId > 0 && dId === detailId) || String(item.varianteId) === id || String(item.productoId) === id) {
+            const unitPrice = item.PrecioUnitario ?? item.precioUnitario ?? 0;
+            return {
+              ...item,
+              Cantidad: currentQty,
+              cantidad: currentQty,
+              SubTotalFila: unitPrice * currentQty,
+              subTotalFila: unitPrice * currentQty,
+            };
+          }
+          return item;
+        }));
+
+        const errorMsg = error?.message || 'Stock insuficiente o error al actualizar el carrito.';
+        Alert.alert('⚠️ Stock / Carrito', errorMsg);
+      }
+    } finally {
+      setPendingCartActions(prev => ({ ...prev, [id]: false }));
     }
   };
 
-  const deleteFromCart = async (id: string) => {
-    const targetId = parseInt(id, 10);
-    const existingItem = dbCartItems.find(item => item.varianteId === targetId || item.productoId === targetId);
+  const addProductToCart = async (product: Partial<Product> & { id?: string | number; productVariableId?: number; name?: string; title?: string; subtitle?: string; price?: number; numericPrice?: number; brand?: string; image?: string }) => {
+    const rawId = product.productVariableId || product.id;
+    if (rawId) {
+      const normalizedId = rawId.toString();
+      await addUnit(normalizedId);
+    }
+  };
 
-    if (existingItem) {
-      await deleteCartItemUseCase.execute(existingItem.detalleCarritoId, numericUserId);
-      await loadCartFromDb();
+  const removeUnit = async (id: string, passedItem?: CartItem) => {
+    if (pendingCartActions[id]) return;
+    setPendingCartActions(prev => ({ ...prev, [id]: true }));
+
+    const targetId = parseInt(id, 10);
+    const existingItem = passedItem || dbCartItems.find(
+      item => (item.DetalleCarritoId === targetId || item.detalleCarritoId === targetId ||
+               item.varianteId === targetId || item.productoId === targetId ||
+               String(item.varianteId) === id || String(item.productoId) === id ||
+               String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id)
+    );
+
+    if (!existingItem) {
+      setPendingCartActions(prev => ({ ...prev, [id]: false }));
+      return;
+    }
+
+    const detailId = existingItem.DetalleCarritoId ?? existingItem.detalleCarritoId ?? 0;
+    const currentQty = existingItem.Cantidad ?? existingItem.cantidad ?? 0;
+    const nextQty = currentQty - 1;
+
+    if (detailId > 0 && currentQty > 1) {
+      // Actualización optimista del estado local para reflejar el cambio inmediatamente en pantalla sin congelarse
+      setDbCartItems(prev => prev.map(item => {
+        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
+        if (dId === detailId) {
+          const unitPrice = item.PrecioUnitario ?? item.precioUnitario ?? 0;
+          return {
+            ...item,
+            Cantidad: nextQty,
+            cantidad: nextQty,
+            SubTotalFila: unitPrice * nextQty,
+            subTotalFila: unitPrice * nextQty,
+          };
+        }
+        return item;
+      }));
+
+      try {
+        // Petición PUT al endpoint /api/CartDetails/actualizar enviando cartDetailId y newQuantity (Cantidad - 1)
+        await updateCartQuantityUseCase.execute(detailId, nextQty, numericUserId);
+      } catch (error: any) {
+        console.log('Info en removeUnit:', error);
+        if (error?.message && error.message.includes('no está activo')) {
+          console.log(`⚡ [AUTO-PURGA REMOVE] Detalle ${detailId} inactivo en BD. Purgando de la pantalla...`);
+          setDbCartItems(prev => prev.filter(item => (item.DetalleCarritoId !== detailId && item.detalleCarritoId !== detailId)));
+        }
+      } finally {
+        setPendingCartActions(prev => ({ ...prev, [id]: false }));
+      }
+    } else if (existingItem) {
+      // SI LA CANTIDAD ES 1 O MENOS (e.g., al presionar '-' en el Catálogo cuando la cantidad es 1):
+      // Purga optimista inmediata del estado local para que vuelva a 0 al instante
+      setDbCartItems(prev => prev.filter(item => {
+        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
+        return (dId !== detailId &&
+                item.varianteId !== targetId &&
+                item.productoId !== targetId &&
+                String(item.varianteId) !== id &&
+                String(item.productoId) !== id);
+      }));
+
+      try {
+        if (detailId > 0) {
+          await deleteCartItemUseCase.execute(detailId, numericUserId);
+        }
+      } catch (error: any) {
+        console.log('Info en removeUnit (delete):', error);
+        if (error?.message && error.message.includes('no está activo')) {
+          setDbCartItems(prev => prev.filter(item => (item.DetalleCarritoId !== detailId && item.detalleCarritoId !== detailId)));
+        }
+      } finally {
+        setPendingCartActions(prev => ({ ...prev, [id]: false }));
+      }
+    }
+  };
+
+  const deleteFromCart = async (id: string, passedItem?: CartItem) => {
+    if (pendingCartActions[id]) return;
+    setPendingCartActions(prev => ({ ...prev, [id]: true }));
+
+    const targetId = parseInt(id, 10);
+    const existingItem = passedItem || dbCartItems.find(
+      item => (item.DetalleCarritoId === targetId || item.detalleCarritoId === targetId ||
+               item.varianteId === targetId || item.productoId === targetId ||
+               String(item.varianteId) === id || String(item.productoId) === id ||
+               String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id)
+    );
+
+    const detailId = existingItem?.DetalleCarritoId ?? existingItem?.detalleCarritoId ?? targetId;
+
+    // Purga inmediata del estado local para evitar re-renders repetidos
+    setDbCartItems(prev => prev.filter(item => (
+      item.DetalleCarritoId !== detailId && item.detalleCarritoId !== detailId
+    )));
+
+    try {
+      if (detailId > 0) {
+        // Petición DELETE al endpoint {id}/{idModificador} enviando el DetalleCarritoId
+        await deleteCartItemUseCase.execute(detailId, numericUserId);
+      }
+    } catch (error: any) {
+      console.log('Info en deleteFromCart:', error);
+    } finally {
+      setPendingCartActions(prev => ({ ...prev, [id]: false }));
     }
   };
 
   const clearCart = async () => {
-    for (const item of dbCartItems) {
-      await deleteCartItemUseCase.execute(item.detalleCarritoId, numericUserId);
+    try {
+      for (const item of dbCartItems) {
+        await deleteCartItemUseCase.execute(item.detalleCarritoId, numericUserId);
+      }
+    } catch (error) {
+      console.log('Error al vaciar carrito:', error);
+    } finally {
+      await loadCartFromDb();
     }
-    await loadCartFromDb();
   };
 
   const totalItemsInCart = Object.values(cartQuantities).reduce((acc, qty) => acc + qty, 0);
-  const subtotal = [...products, ...chatbotCartProducts].reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
+  
+  const allProductsMap = new Map<string, Product>();
+  [...products, ...chatbotCartProducts].forEach(p => {
+    if (p && p.id && !allProductsMap.has(p.id)) {
+      allProductsMap.set(p.id, p);
+    }
+  });
+  const allCartProducts = Array.from(allProductsMap.values());
+  const subtotal = allCartProducts.reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
   const shippingCost = subtotal > 0 ? 350 : 0;
   const totalPayment = subtotal + shippingCost;
 
@@ -356,7 +611,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   // Cierre de sesión
   const handleLogout = () => {
     const ejecutarSalida = () => {
-      setCartQuantities({});
+      setDbCartItems([]);
+      setChatbotCartProducts([]);
       setCurrentTab('home');
       setActiveConversationId(null);
       setMessages([
@@ -413,9 +669,11 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
 
       {currentTab === 'cart' && (
         <CartTab
+          cartItems={dbCartItems}
           products={products}
           extraProducts={chatbotCartProducts}
           cartQuantities={cartQuantities}
+          pendingCartActions={pendingCartActions}
           addUnit={addUnit}
           removeUnit={removeUnit}
           deleteFromCart={deleteFromCart}

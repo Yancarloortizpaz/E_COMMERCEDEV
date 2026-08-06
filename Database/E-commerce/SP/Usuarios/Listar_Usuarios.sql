@@ -45,3 +45,6 @@ exec  [SQM_SECURITY].[sp_Users_List]
 select * from [SQM_CATALOGS].[Tbl_Status]
 select * from [SQM_SECURITY].[Tbl_Users]
 
+
+EXEC [SQM_GENERAL].[sp_GetClientCart] @UserId = 1;
+

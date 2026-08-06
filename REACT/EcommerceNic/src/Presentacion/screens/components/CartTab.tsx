@@ -3,30 +3,49 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Platform,
+  Alert,
 } from 'react-native';
 import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
+import { CartItem } from '../../../Domain/entities/CartItem';
+
+/**
+ * Interfaz de TypeScript que coincide exactamente con el JSON del backend SQL Server / C# API
+ */
+export interface DetalleCarrito {
+  DetalleCarritoId: number;
+  ProductoNombre: string;
+  ProductoImagenUrl?: string;
+  PrecioUnitario: number;
+  Cantidad: number;
+  SubTotalFila?: number;
+  [key: string]: any;
+}
 
 interface CartTabProps {
-  products: Product[];
+  cartItems?: CartItem[];
+  products?: Product[];
   extraProducts?: Product[];
-  cartQuantities: { [key: string]: number };
-  addUnit: (id: string) => void;
-  removeUnit: (id: string) => void;
-  deleteFromCart: (id: string) => void;
+  cartQuantities?: { [key: string]: number };
+  pendingCartActions?: { [key: string]: boolean };
+  addUnit: (id: string, item?: CartItem) => void;
+  removeUnit: (id: string, item?: CartItem) => void;
+  deleteFromCart: (id: string, item?: CartItem) => void;
   setCurrentTab: (tab: 'home' | 'cart' | 'chatbot' | 'nosotros') => void;
   openPaymentModal: () => void;
   totalItemsInCart: number;
 }
 
 export const CartTab = ({
-  products,
+  cartItems = [],
+  products = [],
   extraProducts = [],
-  cartQuantities,
+  cartQuantities = {},
+  pendingCartActions = {},
   addUnit,
   removeUnit,
   deleteFromCart,
@@ -34,10 +53,118 @@ export const CartTab = ({
   openPaymentModal,
   totalItemsInCart,
 }: CartTabProps) => {
-  const cartProducts = [...products, ...extraProducts];
-  const subtotal = cartProducts.reduce((acc, p) => acc + (p.numericPrice * (cartQuantities[p.id] || 0)), 0);
+  // Si cartItems contiene elementos de la API C#, usarlos directamente
+  let effectiveCartItems: CartItem[] = [];
+
+  if (cartItems && cartItems.length > 0) {
+    const activeItems = cartItems.filter(item => {
+      const qty = item.Cantidad ?? item.cantidad ?? 0;
+      const status = item.cartDetailStatusId;
+      return qty > 0 && status !== 0 && status !== false;
+    });
+
+    const uniqueMap = new Map<number, CartItem>();
+    activeItems.forEach(item => {
+      const vId = item.varianteId || item.productoId || (item.DetalleCarritoId ?? item.detalleCarritoId ?? 0);
+      if (!uniqueMap.has(vId)) {
+        uniqueMap.set(vId, item);
+      } else {
+        const existing = uniqueMap.get(vId)!;
+        const exId = existing.DetalleCarritoId ?? existing.detalleCarritoId ?? 0;
+        const curId = item.DetalleCarritoId ?? item.detalleCarritoId ?? 0;
+        if (curId > exId) {
+          uniqueMap.set(vId, item);
+        }
+      }
+    });
+    effectiveCartItems = Array.from(uniqueMap.values());
+  } else {
+    // Fallback: mapear desde productos + cartQuantities
+    const cartProductsMap = new Map<string, Product>();
+    [...products, ...extraProducts].forEach((p) => {
+      if (p && p.id && !cartProductsMap.has(p.id)) {
+        cartProductsMap.set(p.id, p);
+      }
+    });
+    const cartProducts = Array.from(cartProductsMap.values());
+    effectiveCartItems = cartProducts
+      .filter(p => (cartQuantities[p.id] || 0) > 0)
+      .map(p => {
+        const qty = cartQuantities[p.id] || 0;
+        const pId = parseInt(p.id, 10) || 0;
+        return {
+          DetalleCarritoId: pId,
+          detalleCarritoId: pId,
+          varianteId: pId,
+          productoId: pId,
+          ProductoNombre: p.title,
+          productoNombre: p.title,
+          ProductoImagenUrl: p.image,
+          productoImagenUrl: p.image,
+          PrecioUnitario: p.numericPrice,
+          precioUnitario: p.numericPrice,
+          Cantidad: qty,
+          cantidad: qty,
+          SubTotalFila: p.numericPrice * qty,
+          subTotalFila: p.numericPrice * qty,
+          productoDescripcion: p.subtitle,
+        };
+      });
+  }
+
+  // Cálculo de Subtotal y Envío basado en los datos reales del backend (SubTotalFila o PrecioUnitario * Cantidad)
+  const subtotal = effectiveCartItems.reduce((acc, item) => {
+    const itemSubtotal = item.SubTotalFila ?? item.subTotalFila ?? ((item.PrecioUnitario ?? item.precioUnitario ?? 0) * (item.Cantidad ?? item.cantidad ?? 0));
+    return acc + itemSubtotal;
+  }, 0);
+
   const shippingCost = subtotal > 0 ? 350 : 0;
   const totalPayment = subtotal + shippingCost;
+  const totalItemsCount = effectiveCartItems.reduce((acc, item) => acc + (item.Cantidad ?? item.cantidad ?? 0), 0) || totalItemsInCart;
+
+  const handleIncrement = (item: CartItem) => {
+    const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
+    const itemKey = (item.varianteId || item.productoId || detailId).toString();
+    addUnit(itemKey, item);
+  };
+
+  /**
+   * Manejo del botón "-" con la bifurcación requerida:
+   * - Si Cantidad > 1: Petición PUT al endpoint actualizar (removeUnit)
+   * - Si Cantidad === 1: Interceptar evento y mostrar Alert.alert nativo de React Native.
+   *   Solo si confirma, ejecuta la petición DELETE al endpoint {id}/{idModificador} (deleteFromCart)
+   */
+  const handleDecrement = (item: CartItem) => {
+    const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
+    const currentQuantity = item.Cantidad ?? item.cantidad ?? 0;
+    const itemKey = (item.varianteId || item.productoId || detailId).toString();
+
+    if (currentQuantity > 1) {
+      // Petición PUT al endpoint actualizar enviando cartDetailId y newQuantity (Cantidad - 1)
+      removeUnit(itemKey, item);
+    } else if (currentQuantity === 1) {
+      // Intercepta el evento y muestra Alert.alert nativo de React Native
+      Alert.alert(
+        '¿Deseas eliminar este producto del carrito?',
+        `El producto "${item.ProductoNombre ?? item.productoNombre}" será removido del carrito.`,
+        [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: () => {
+              // Solo si el usuario confirma, ejecuta la petición DELETE al endpoint {id}/{idModificador} enviando el DetalleCarritoId
+              deleteFromCart(itemKey, item);
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
 
   return (
     <View style={styles.tabContent}>
@@ -47,11 +174,11 @@ export const CartTab = ({
         </TouchableOpacity>
         <Text style={styles.cartHeaderTitle}>Tu Carrito</Text>
         <View style={styles.itemsCountBadge}>
-          <Text style={styles.itemsCountText}>{totalItemsInCart} items</Text>
+          <Text style={styles.itemsCountText}>{totalItemsCount} items</Text>
         </View>
       </View>
 
-      {totalItemsInCart === 0 ? (
+      {effectiveCartItems.length === 0 ? (
         <View style={styles.emptyCartContainer}>
           <View style={styles.emptyCartIconBackground}>
             <Text style={styles.emptyTextEmoji}>🛒</Text>
@@ -64,34 +191,77 @@ export const CartTab = ({
         </View>
       ) : (
         <>
-          <ScrollView showsVerticalScrollIndicator={false} style={styles.cartItemsList}>
-            {cartProducts.map((product) => {
-              const qty = cartQuantities[product.id] || 0;
-              if (qty === 0) return null;
+          <FlatList<CartItem>
+            data={effectiveCartItems}
+            keyExtractor={(item, index) => `${item.DetalleCarritoId ?? item.detalleCarritoId ?? item.varianteId ?? index}-${index}`}
+            renderItem={({ item }) => {
+              const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
+              const name = item.ProductoNombre ?? item.productoNombre ?? 'Producto';
+              const imageUri = item.ProductoImagenUrl ?? item.productoImagenUrl ?? 'https://placehold.co/300x300/png?text=Producto';
+              const unitPrice = item.PrecioUnitario ?? item.precioUnitario ?? 0;
+              const quantity = item.Cantidad ?? item.cantidad ?? 0;
+              const subtotalFila = item.SubTotalFila ?? item.subTotalFila ?? (unitPrice * quantity);
+              const itemKey = (item.varianteId || item.productoId || detailId).toString();
+              const isPending = !!pendingCartActions[itemKey] || !!pendingCartActions[String(detailId)];
+
               return (
-                <View key={product.id} style={styles.cartItemCard}>
-                  <Image source={{ uri: product.image }} style={styles.cartItemImage} />
+                <View style={styles.cartItemCard}>
+                  <Image 
+                    source={{ uri: imageUri }} 
+                    style={styles.cartItemImage} 
+                  />
                   <View style={styles.cartItemDetails}>
                     <View style={styles.cartItemRowHeader}>
-                      <Text style={styles.cartItemBrand}>{product.brand.toUpperCase()}</Text>
+                      <Text style={styles.cartItemBrand}>NIC STORE</Text>
                       <TouchableOpacity 
-                        style={styles.trashBtn} 
-                        onPress={() => deleteFromCart(product.id)} 
+                        style={[styles.trashBtn, isPending && { opacity: 0.5 }]} 
+                        onPress={() => {
+                          Alert.alert(
+                            '¿Deseas eliminar este producto del carrito?',
+                            `El producto "${name}" será removido del carrito.`,
+                            [
+                              { text: 'Cancelar', style: 'cancel' },
+                              { text: 'Eliminar', style: 'destructive', onPress: () => deleteFromCart(itemKey, item) },
+                            ],
+                            { cancelable: true }
+                          );
+                        }} 
+                        disabled={isPending}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <Text style={styles.deleteTrashIcon}>🗑️</Text>
                       </TouchableOpacity>
                     </View>
-                    <Text style={styles.cartItemTitle} numberOfLines={1}>{product.title}</Text>
-                    <Text style={styles.cartItemSubtitle} numberOfLines={1}>{product.subtitle}</Text>
+                    
+                    <Text style={styles.cartItemTitle} numberOfLines={1}>
+                      {name}
+                    </Text>
+                    
+                    <Text style={styles.cartItemSubtitle} numberOfLines={1}>
+                      {item.varianteEspecificacion || item.productoDescripcion || `Subtotal: ${formatCurrency(subtotalFila)}`}
+                    </Text>
+                    
                     <View style={styles.cartItemRowFooter}>
-                      <Text style={styles.cartItemPrice}>{formatCurrency(product.numericPrice)}</Text>
+                      <Text style={styles.cartItemPrice}>
+                        {formatCurrency(unitPrice)}
+                      </Text>
+                      
                       <View style={styles.cartQtyRow}>
-                        <TouchableOpacity style={styles.inlineQtyBtn} onPress={() => removeUnit(product.id)}>
+                        <TouchableOpacity 
+                          style={[styles.inlineQtyBtn, isPending && { opacity: 0.5 }]} 
+                          onPress={() => handleDecrement(item)}
+                          disabled={isPending}
+                        >
                           <Text style={styles.inlineQtyText}>-</Text>
                         </TouchableOpacity>
-                        <Text style={styles.inlineQtyNumber}>{qty}</Text>
-                        <TouchableOpacity style={styles.inlineQtyBtnPlus} onPress={() => addUnit(product.id)}>
+                        
+                        <Text style={styles.inlineQtyNumber}>{quantity}</Text>
+                        
+                        <TouchableOpacity 
+                          style={[styles.inlineQtyBtnPlus, isPending && { opacity: 0.5 }]} 
+                          onPress={() => handleIncrement(item)}
+                          disabled={isPending}
+                        >
                           <Text style={styles.inlineQtyTextPlus}>+</Text>
                         </TouchableOpacity>
                       </View>
@@ -99,10 +269,12 @@ export const CartTab = ({
                   </View>
                 </View>
               );
-            })}
-          </ScrollView>
+            }}
+            showsVerticalScrollIndicator={false}
+            style={styles.cartItemsList}
+          />
 
-          {/* Premium Resumen de Pago (Glassmorphism inspired) */}
+          {/* Premium Resumen de Pago */}
           <View style={styles.checkoutFooterCard}>
             <View style={styles.checkoutSummaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -206,7 +378,6 @@ const styles = StyleSheet.create({
   inlineQtyTextPlus: { fontSize: 12, color: '#FFFFFF', fontWeight: '800' },
   inlineQtyNumber: { fontSize: 12, fontWeight: '800', color: '#4F46E5', paddingHorizontal: 8 },
   
-  // Resumen de Pago estilo Glassmorphism
   checkoutFooterCard: { 
     backgroundColor: 'rgba(255, 255, 255, 0.9)', 
     borderTopLeftRadius: 28, 
