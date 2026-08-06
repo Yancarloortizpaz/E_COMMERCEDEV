@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -88,9 +88,19 @@ export const CatalogTab = ({
     refetch,
   } = useProducts(searchTermForApi);
 
-  const displayProducts: Product[] = data?.pages
+  const displayProductsRaw: Product[] = data?.pages
     ? data.pages.flatMap(page => page.mappedProducts || [])
     : (initialProducts || []);
+
+  const displayProducts = useMemo(() => {
+    const seen = new Set<string>();
+    return displayProductsRaw.filter(product => {
+      if (!product || !product.id) return false;
+      if (seen.has(product.id)) return false;
+      seen.add(product.id);
+      return true;
+    });
+  }, [displayProductsRaw]);
 
   const handleEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -183,6 +193,15 @@ export const CatalogTab = ({
 
   const renderItem = ({ item: product }: { item: Product }) => {
     const currentQuantity = cartQuantities[product.id] || 0;
+
+    const handleIncrement = (item: Product) => {
+      addUnit(item.id);
+    };
+
+    const handleDecrement = (item: Product) => {
+      removeUnit(item.id);
+    };
+
     return (
       <View style={styles.card}>
         <View style={styles.imageWrapper}>
@@ -208,17 +227,17 @@ export const CatalogTab = ({
             <TouchableOpacity 
               style={styles.addButtonCircular} 
               activeOpacity={0.7} 
-              onPress={() => addUnit(product.id)}
+              onPress={() => handleIncrement(product)}
             >
               <Text style={styles.addButtonCircularText}>+</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.quantityContainerMini}>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => handleDecrement(product)}>
                 <Text style={styles.miniQtyBtnText}>-</Text>
               </TouchableOpacity>
               <Text style={styles.miniQtyText}>{currentQuantity}</Text>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => handleIncrement(product)}>
                 <Text style={styles.miniQtyBtnText}>+</Text>
               </TouchableOpacity>
             </View>

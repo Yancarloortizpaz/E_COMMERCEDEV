@@ -231,9 +231,12 @@ export const ChatbotTab = ({
                               style={styles.productAddButton}
                               onPress={() =>
                                 onAddProductToCart?.({
-                                  id: producto.ProductID,
-                                  name: producto.ProductName,
-                                  price: producto.ProductVariablePrice,
+                                  id: (producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.id)?.toString(),
+                                  productVariableId: producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId,
+                                  title: producto.ProductName ?? producto.title ?? producto.name,
+                                  name: producto.ProductName ?? producto.title ?? producto.name,
+                                  numericPrice: producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price,
+                                  price: producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price,
                                 })
                               }
                             >
@@ -245,9 +248,10 @@ export const ChatbotTab = ({
                         {/* fallback: si productos vienen en metadata */}
                         {msg.metadata && typeof msg.metadata === 'object' && (msg.metadata as { productos?: any[] }).productos?.map((producto: any, idx: number) => (
                           <ProductCard
-                            key={producto.ProductID ?? idx}
+                            key={(producto.ProductVariableID ?? producto.ProductID ?? idx).toString()}
                             product={{
-                              id: producto.ProductID ?? producto.id,
+                              id: (producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.id)?.toString(),
+                              productVariableId: producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId,
                               title: producto.ProductName ?? producto.title,
                               subtitle: producto.ProductVariableName ?? producto.subtitle,
                               numericPrice: producto.ProductVariablePrice ?? producto.numericPrice,

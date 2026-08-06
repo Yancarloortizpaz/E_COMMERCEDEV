@@ -105,6 +105,11 @@ namespace PRESENTACION.Controllers
 
                 if (!resultado.IsSuccess)
                 {
+                    string msg = resultado.Message ?? string.Empty;
+                    if (msg.Contains("no existe") || msg.Contains("no se encuentra activo") || msg.Contains("inactivo"))
+                    {
+                        return Ok(new { codigo = 200, msj = "El producto ya no está activo en el carrito.", templateId = resultado.TemplateId });
+                    }
                     return BadRequest(new { codigo = resultado.Code, msj = resultado.Message });
                 }
 
@@ -130,6 +135,11 @@ namespace PRESENTACION.Controllers
 
                 if (!resultado.IsSuccess)
                 {
+                    string msg = resultado.Message ?? string.Empty;
+                    if (msg.Contains("no existe") || msg.Contains("no se encuentra activo") || msg.Contains("inactivo"))
+                    {
+                        return Ok(new { codigo = 200, msj = "El producto ya no está activo en el carrito.", templateId = resultado.TemplateId });
+                    }
                     return BadRequest(new { codigo = resultado.Code, msj = resultado.Message });
                 }
 

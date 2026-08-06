@@ -9,7 +9,7 @@ export class CartRepositoryImpl implements CartRepository {
     return await this.remoteDataSource.getCartByUser(userId);
   }
 
-  async addToCart(userId: number, productVariableId: number, quantity: number = 1): Promise<boolean> {
+  async addToCart(userId: number, productVariableId: number, quantity: number = 1): Promise<number | boolean> {
     return await this.remoteDataSource.addToCart(userId, productVariableId, quantity);
   }
 
