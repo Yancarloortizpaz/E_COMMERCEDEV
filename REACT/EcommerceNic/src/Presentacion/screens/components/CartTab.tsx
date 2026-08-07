@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Alert,
 } from 'react-native';
 import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
 import { CartItem } from '../../../Domain/entities/CartItem';
+import { CustomAlertModal } from '../../components/CustomAlertModal';
 
 /**
  * Interfaz de TypeScript que coincide exactamente con el JSON del backend SQL Server / C# API
@@ -53,6 +53,14 @@ export const CartTab = ({
   openPaymentModal,
   totalItemsInCart,
 }: CartTabProps) => {
+  // Estado para controlar el modal de alerta elegante reutilizable
+  const [alertaModal, setAlertaModal] = useState<{
+    visible: boolean;
+    itemKey?: string;
+    item?: CartItem;
+    nombreProducto?: string;
+  }>({ visible: false });
+
   // Si cartItems contiene elementos de la API C#, usarlos directamente
   let effectiveCartItems: CartItem[] = [];
 
@@ -107,7 +115,6 @@ export const CartTab = ({
           cantidad: qty,
           SubTotalFila: p.numericPrice * qty,
           subTotalFila: p.numericPrice * qty,
-          productoDescripcion: p.subtitle,
         };
       });
   }
@@ -129,40 +136,25 @@ export const CartTab = ({
   };
 
   /**
-   * Manejo del botón "-" con la bifurcación requerida:
+   * Manejo del botón "-" con bifurcación:
    * - Si Cantidad > 1: Petición PUT al endpoint actualizar (removeUnit)
-   * - Si Cantidad === 1: Interceptar evento y mostrar Alert.alert nativo de React Native.
-   *   Solo si confirma, ejecuta la petición DELETE al endpoint {id}/{idModificador} (deleteFromCart)
+   * - Si Cantidad === 1: Muestra CustomAlertModal elegante de eliminación
    */
   const handleDecrement = (item: CartItem) => {
     const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
     const currentQuantity = item.Cantidad ?? item.cantidad ?? 0;
     const itemKey = (item.varianteId || item.productoId || detailId).toString();
+    const name = item.ProductoNombre ?? item.productoNombre ?? 'Producto';
 
     if (currentQuantity > 1) {
-      // Petición PUT al endpoint actualizar enviando cartDetailId y newQuantity (Cantidad - 1)
       removeUnit(itemKey, item);
     } else if (currentQuantity === 1) {
-      // Intercepta el evento y muestra Alert.alert nativo de React Native
-      Alert.alert(
-        '¿Deseas eliminar este producto del carrito?',
-        `El producto "${item.ProductoNombre ?? item.productoNombre}" será removido del carrito.`,
-        [
-          {
-            text: 'Cancelar',
-            style: 'cancel',
-          },
-          {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: () => {
-              // Solo si el usuario confirma, ejecuta la petición DELETE al endpoint {id}/{idModificador} enviando el DetalleCarritoId
-              deleteFromCart(itemKey, item);
-            },
-          },
-        ],
-        { cancelable: true }
-      );
+      setAlertaModal({
+        visible: true,
+        itemKey,
+        item,
+        nombreProducto: name,
+      });
     }
   };
 
@@ -177,6 +169,22 @@ export const CartTab = ({
           <Text style={styles.itemsCountText}>{totalItemsCount} items</Text>
         </View>
       </View>
+
+      <CustomAlertModal
+        visible={alertaModal.visible}
+        tipo="eliminacion"
+        titulo="¿Eliminar producto del carrito?"
+        mensaje={`El producto "${alertaModal.nombreProducto || ''}" será removido completamente de tu lista.`}
+        textoConfirmar="Sí, Eliminar"
+        textoCancelar="Cancelar"
+        alConfirmar={() => {
+          if (alertaModal.itemKey) {
+            deleteFromCart(alertaModal.itemKey, alertaModal.item);
+          }
+        }}
+        alCancelar={() => setAlertaModal({ visible: false })}
+        alCerrar={() => setAlertaModal({ visible: false })}
+      />
 
       {effectiveCartItems.length === 0 ? (
         <View style={styles.emptyCartContainer}>
@@ -216,15 +224,12 @@ export const CartTab = ({
                       <TouchableOpacity 
                         style={[styles.trashBtn, isPending && { opacity: 0.5 }]} 
                         onPress={() => {
-                          Alert.alert(
-                            '¿Deseas eliminar este producto del carrito?',
-                            `El producto "${name}" será removido del carrito.`,
-                            [
-                              { text: 'Cancelar', style: 'cancel' },
-                              { text: 'Eliminar', style: 'destructive', onPress: () => deleteFromCart(itemKey, item) },
-                            ],
-                            { cancelable: true }
-                          );
+                          setAlertaModal({
+                            visible: true,
+                            itemKey,
+                            item,
+                            nombreProducto: name,
+                          });
                         }} 
                         disabled={isPending}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -300,14 +305,14 @@ export const CartTab = ({
 };
 
 const styles = StyleSheet.create({
-  tabContent: { flex: 1, paddingBottom: 68 },
-  cartHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, marginBottom: 12 },
+  tabContent: { flex: 1, paddingBottom: 0 },
+  cartHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, marginBottom: 8 },
   backButton: { width: 38, height: 38, backgroundColor: '#FFFFFF', borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#F1F5F9' },
   backButtonText: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
   cartHeaderTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#0F172A', marginLeft: 16, marginRight: 16 },
   itemsCountBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   itemsCountText: { color: '#4F46E5', fontSize: 12, fontWeight: '800' },
-  cartItemsList: { paddingHorizontal: 20, flex: 1, marginBottom: 10 },
+  cartItemsList: { paddingHorizontal: 20, flex: 1, marginBottom: 4 },
   cartItemCard: { 
     flexDirection: 'row', 
     backgroundColor: '#FFFFFF', 
@@ -379,43 +384,44 @@ const styles = StyleSheet.create({
   inlineQtyNumber: { fontSize: 12, fontWeight: '800', color: '#4F46E5', paddingHorizontal: 8 },
   
   checkoutFooterCard: { 
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-    borderTopLeftRadius: 28, 
-    borderTopRightRadius: 28, 
-    padding: 24, 
+    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+    borderTopLeftRadius: 24, 
+    borderTopRightRadius: 24, 
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderTopWidth: 1.5, 
     borderColor: '#EEF2FF', 
     ...Platform.select({
       ios: {
         shadowColor: '#4F46E5',
-        shadowOffset: { width: 0, height: -8 },
+        shadowOffset: { width: 0, height: -6 },
         shadowOpacity: 0.04,
-        shadowRadius: 20,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 8,
+        elevation: 6,
       },
       default: {
         shadowColor: '#4F46E5',
-        shadowOffset: { width: 0, height: -8 },
+        shadowOffset: { width: 0, height: -6 },
         shadowOpacity: 0.04,
-        shadowRadius: 20,
+        shadowRadius: 16,
       }
     }),
   },
-  checkoutSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  checkoutSummaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   summaryLabel: { fontSize: 13, color: '#64748B', fontWeight: '600' },
   summaryValue: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
-  dividerLine: { height: 1.5, backgroundColor: '#EEF2FF', marginVertical: 10 },
-  totalLabel: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
-  totalValue: { fontSize: 22, fontWeight: '900', color: '#4F46E5' },
+  dividerLine: { height: 1.5, backgroundColor: '#EEF2FF', marginVertical: 6 },
+  totalLabel: { fontSize: 15, fontWeight: '900', color: '#0F172A' },
+  totalValue: { fontSize: 20, fontWeight: '900', color: '#4F46E5' },
   payButton: { 
     backgroundColor: '#4F46E5', 
-    height: 52, 
-    borderRadius: 24, 
+    height: 46, 
+    borderRadius: 20, 
     justifyContent: 'center', 
     alignItems: 'center', 
-    marginTop: 18,
+    marginTop: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#4F46E5',

@@ -17,4 +17,7 @@ login(email: string, password: string): Promise<LoginResponse>;
   ): Promise<any>;
 
   getUsers(): Promise<User[]>;
+  guardarSesion(usuario: User, token: string): Promise<void>;
+  obtenerSesionGuardada(): Promise<{ usuario: User; token: string } | null>;
+  eliminarSesion(): Promise<void>;
 }

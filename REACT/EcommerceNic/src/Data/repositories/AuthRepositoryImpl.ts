@@ -39,4 +39,17 @@ async register(
   async getUsers(): Promise<User[]> {
     return localDataSource.getUsers();
   }
+
+  async guardarSesion(usuario: User, token: string): Promise<void> {
+    return localDataSource.guardarSesionLocal(usuario, token);
+  }
+
+  async obtenerSesionGuardada(): Promise<{ usuario: User; token: string } | null> {
+    return localDataSource.obtenerSesionLocal();
+  }
+
+  async eliminarSesion(): Promise<void> {
+    return localDataSource.eliminarSesionLocal();
+  }
 }
+

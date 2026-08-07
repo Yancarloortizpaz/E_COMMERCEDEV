@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { QUICK_REPLIES } from '../constants';
 import { Conversation, Message } from '../../../Domain/entities/Chat';
-import {ProductCard } from '../components/ProductCard';
+import { ProductCard } from '../components/ProductCard';
+import { ContenedorGestoZoom } from '../../components/ContenedorGestoZoom';
 
 interface ChatbotTabProps {
   messages: Message[];
@@ -156,151 +157,150 @@ export const ChatbotTab = ({
         </TouchableOpacity>
       </View>
         */}
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.chatScrollPadding}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-      >
-        {/* Tarjeta de Bienvenida */}
-        <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeBadge}>⚡ Soporte Inteligente</Text>
-          <Text style={styles.welcomeTitle}>Asistente de Compras</Text>
-          <Text style={styles.welcomeSubtitle}>
-            ¡Hola, chele! Estoy listo para ayudarte a encontrar celulares, consolas, hardware de PC, audio y monitores. ¡Pregúntame lo que quieras!
-          </Text>
-          <View style={styles.welcomeFeatures}>
-            <Text style={styles.welcomeFeatureItem}>🔍 Búsqueda rápida por marca o tipo</Text>
-            <Text style={styles.welcomeFeatureItem}>🛒 Agrega productos directamente al carrito</Text>
-            <Text style={styles.welcomeFeatureItem}>💬 Respuestas instantáneas con IA</Text>
+      <ContenedorGestoZoom>
+        <ScrollView
+          ref={scrollViewRef}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.chatScrollPadding}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
+          {/* Tarjeta de Bienvenida */}
+          <View style={styles.welcomeCard}>
+            <Text style={styles.welcomeBadge}>⚡ Soporte Inteligente</Text>
+            <Text style={styles.welcomeTitle}>Asistente de Compras</Text>
+            <Text style={styles.welcomeSubtitle}>
+              ¡Hola, chele! Estoy listo para ayudarte a encontrar celulares, consolas, hardware de PC, audio y monitores. ¡Pregúntame lo que quieras!
+            </Text>
+            <View style={styles.welcomeFeatures}>
+              <Text style={styles.welcomeFeatureItem}>🔍 Búsqueda rápida por marca o tipo</Text>
+              <Text style={styles.welcomeFeatureItem}>🛒 Agrega productos directamente al carrito</Text>
+              <Text style={styles.welcomeFeatureItem}>💬 Respuestas instantáneas con IA</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Mensajes */}
-        {messages.map((msg) => {
-          const isUser = msg.role === 'user';
+          {/* Mensajes */}
+          {messages.map((msg) => {
+            const isUser = msg.role === 'user';
 
-          return (
-            <AnimatedMessageBubble key={msg.id}>
-              <View
-                style={[
-                  styles.messageRow,
-                  isUser ? styles.messageRowRight : styles.messageRowLeft,
-                ]}
-              >
-                {!isUser && (
-                  <View style={styles.messageBotAvatar}>
-                    <Text style={styles.botAvatarText}>🤖</Text>
-                  </View>
-                )}
+            return (
+              <AnimatedMessageBubble key={msg.id}>
+                <View
+                  style={[
+                    styles.messageRow,
+                    isUser ? styles.messageRowRight : styles.messageRowLeft,
+                  ]}
+                >
+                  {!isUser && (
+                    <View style={styles.messageBotAvatar}>
+                      <Text style={styles.botAvatarText}>🤖</Text>
+                    </View>
+                  )}
 
-                <View style={styles.bubbleContainer}>
-                  <View
-                    style={[
-                      styles.messageBubble,
-                      isUser
-                        ? styles.messageBubbleUser
-                        : styles.messageBubbleBot,
-                    ]}
-                  >
-                    {/* Mostrar texto únicamente cuando NO sea una respuesta de productos */}
-                    {msg.tipo !== 'productos' && (
-                      <Text
-                        style={[
-                          styles.messageText,
-                          isUser
-                            ? styles.messageTextUser
-                            : styles.messageTextBot,
-                        ]}
-                      >
-                        {msg.content}
-                      </Text>
-                    )}
+                  <View style={styles.bubbleContainer}>
+                    {(() => {
+                      const listaProductos = (!isUser && (Array.isArray(msg.productos) && msg.productos.length > 0))
+                        ? msg.productos
+                        : (!isUser && msg.metadata && typeof msg.metadata === 'object' && Array.isArray((msg.metadata as any).productos))
+                        ? (msg.metadata as any).productos
+                        : [];
 
-                    {/* Tarjetas de productos */}
-                    {!isUser && (
-                      <>
-                        {msg.tipo === 'productos' && msg.productos?.map((producto: any) => (
-                          <View key={producto.ProductID} style={styles.productCard}>
-                            <Text style={styles.productName}>{producto.ProductName}</Text>
-                            <Text style={styles.productDescription}>{producto.ProductVariableName}</Text>
-                            <Text style={styles.productPrice}>
-                              {producto.CurrencyISO} {producto.ProductVariablePrice}
-                            </Text>
-                            <TouchableOpacity
-                              style={styles.productAddButton}
-                              onPress={() =>
-                                onAddProductToCart?.({
-                                  id: (producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.id)?.toString(),
-                                  productVariableId: producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId,
-                                  title: producto.ProductName ?? producto.title ?? producto.name,
-                                  name: producto.ProductName ?? producto.title ?? producto.name,
-                                  numericPrice: producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price,
-                                  price: producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price,
-                                })
-                              }
+                      const tieneProductos = listaProductos.length > 0;
+
+                      return (
+                        <View
+                          style={[
+                            styles.messageBubble,
+                            isUser ? styles.messageBubbleUser : styles.messageBubbleBot,
+                            tieneProductos && styles.messageBubbleConProductos,
+                          ]}
+                        >
+                          {/* Mostrar texto si no contiene productos */}
+                          {msg.tipo !== 'productos' && !tieneProductos && (
+                            <Text
+                              style={[
+                                styles.messageText,
+                                isUser ? styles.messageTextUser : styles.messageTextBot,
+                              ]}
                             >
-                              <Text style={styles.productAddButtonText}>🛒 Agregar al carrito</Text>
-                            </TouchableOpacity>
-                          </View>
-                        ))}
+                              {msg.content}
+                            </Text>
+                          )}
 
-                        {/* fallback: si productos vienen en metadata */}
-                        {msg.metadata && typeof msg.metadata === 'object' && (msg.metadata as { productos?: any[] }).productos?.map((producto: any, idx: number) => (
-                          <ProductCard
-                            key={(producto.ProductVariableID ?? producto.ProductID ?? idx).toString()}
-                            product={{
-                              id: (producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.id)?.toString(),
-                              productVariableId: producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId,
-                              title: producto.ProductName ?? producto.title,
-                              subtitle: producto.ProductVariableName ?? producto.subtitle,
-                              numericPrice: producto.ProductVariablePrice ?? producto.numericPrice,
-                              image: producto.image,
-                            }}
-                            onAddToCart={onAddProductToCart!}
-                          />
-                        ))}
+                          {/* Tarjetas de productos compactas e idénticas para conversaciones nuevas e historial */}
+                          {!isUser && tieneProductos && listaProductos.map((producto: any, idx: number) => {
+                            const idVar = producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.productVariableId ?? producto.id ?? idx;
+                            const nombre = producto.ProductName ?? producto.title ?? producto.name ?? 'Producto';
+                            const subtitulo = producto.ProductVariableName ?? producto.subtitle ?? producto.productoDescripcion ?? '';
+                            const moneda = producto.CurrencyISO ?? 'C$';
+                            const precio = producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price ?? 0;
 
-                      </>
-                    )}
+                            return (
+                              <View key={`${idVar}-${idx}`} style={styles.productCard}>
+                                <Text style={styles.productName}>{nombre}</Text>
+                                {!!subtitulo && <Text style={styles.productDescription}>{subtitulo}</Text>}
+                                <Text style={styles.productPrice}>
+                                  {moneda} {precio}
+                                </Text>
+                                <TouchableOpacity
+                                  style={styles.productAddButton}
+                                  onPress={() =>
+                                    onAddProductToCart?.({
+                                      id: idVar.toString(),
+                                      productVariableId: Number(idVar),
+                                      title: nombre,
+                                      name: nombre,
+                                      numericPrice: Number(precio),
+                                      price: Number(precio),
+                                    })
+                                  }
+                                  activeOpacity={0.8}
+                                >
+                                  <Text style={styles.productAddButtonText}>🛒 Agregar al carrito</Text>
+                                </TouchableOpacity>
+                              </View>
+                            );
+                          })}
 
-                    {/* Hora */}
-                    {msg.timestamp && (
-                      <Text
-                        style={[
-                          styles.messageTime,
-                          isUser
-                            ? styles.messageTimeUser
-                            : styles.messageTimeBot,
-                        ]}
-                      >
-                        {new Date(msg.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Text>
-                    )}
+                          {/* Hora */}
+                          {msg.timestamp && (
+                            <Text
+                              style={[
+                                styles.messageTime,
+                                isUser
+                                  ? styles.messageTimeUser
+                                  : styles.messageTimeBot,
+                              ]}
+                            >
+                              {new Date(msg.timestamp).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    })()}
                   </View>
                 </View>
-              </View>
-            </AnimatedMessageBubble>
-          );
-        })}
+              </AnimatedMessageBubble>
+            );
+          })}
 
-        {/* Indicador de escritura animado */}
-        {isTyping && (
-          <View style={[styles.messageRow, styles.messageRowLeft]}>
-            <View style={styles.messageBotAvatar}>
-              <Text style={styles.botAvatarText}>🤖</Text>
+          {/* Indicador de escritura animado */}
+          {isTyping && (
+            <View style={[styles.messageRow, styles.messageRowLeft]}>
+              <View style={styles.messageBotAvatar}>
+                <Text style={styles.botAvatarText}>🤖</Text>
+              </View>
+              <View style={[styles.messageBubble, styles.messageBubbleBot, styles.typingBubble]}>
+                <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot1.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
+                <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot2.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
+                <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot3.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
+              </View>
             </View>
-            <View style={[styles.messageBubble, styles.messageBubbleBot, styles.typingBubble]}>
-              <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot1.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
-              <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot2.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
-              <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot3.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
-            </View>
-          </View>
-        )}
-      </ScrollView>
+          )}
+        </ScrollView>
+      </ContenedorGestoZoom>
 
       {/* Input de Chat y Respuestas Rápidas */}
       <View style={styles.chatInputContainer}>
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   tabContent: { 
     flex: 1, 
     backgroundColor: '#F8FAFC',
-    paddingBottom: 68 
+    paddingBottom: 0,
   },
   chatHeader: { 
     flexDirection: 'row', 
@@ -558,6 +558,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+  },
+  messageBubbleConProductos: {
+    maxWidth: 340,
+    width: '100%',
   },
   messageBubbleUser: { 
     backgroundColor: '#4F46E5', 

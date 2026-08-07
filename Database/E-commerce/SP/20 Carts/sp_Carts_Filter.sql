@@ -21,7 +21,7 @@ BEGIN
         p.productID                  AS ProductoId,
         p.productName                AS ProductoNombre,
         p.productDescription         AS ProductoDescripcion,
-        pv.productVariableName       AS VarianteEspecificacion,
+        pv.productVariableValue       AS VarianteEspecificacion,
         pi.productImageURL           AS ProductoImagenUrl,
         d.cartDetailPrice            AS PrecioUnitario,
         d.cartDetailQuantity         AS Cantidad,
@@ -36,9 +36,11 @@ BEGIN
     INNER JOIN [SQM_GENERAL].[Tbl_ProductVariables] pv WITH (NOLOCK) ON d.cartDetailProductVariableId = pv.productVariableId
     INNER JOIN [SQM_GENERAL].[Tbl_Products] p WITH (NOLOCK) ON pv.productVariableProductId = p.productID
     LEFT JOIN [SQM_GENERAL].[Tbl_ProductImages] pi WITH (NOLOCK) ON p.productID = pi.productImageProductId AND pi.productImageIsPrincipal = 1
-    LEFT JOIN [SQM_GENERAL].[Tbl_Currencies] co WITH (NOLOCK) ON d.cartDetailCurrencyId = co.currencyId
+    LEFT JOIN [SQM_CATALOGS].[Tbl_Currencies] co WITH (NOLOCK) ON d.cartDetailCurrencyId = co.currencyId
     WHERE c.cartUserId = @UserId 
       AND c.cartStatusId = 1 
-      AND d.cartDetailStatusId = 1; -- 👈 Excluye los detalles inactivados (cartDetailStatusId = 0)
+      AND d.cartDetailStatusId = 1; --  Excluye los detalles inactivados (cartDetailStatusId = 0)
 END
 GO
+
+EXEC [SQM_GENERAL].[sp_Carts_Filter] @UserId = 1;
