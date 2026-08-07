@@ -90,6 +90,46 @@ class LocalDataSource {
     this.products = this.products.filter(p => p.id !== id);
     return true;
   }
+
+  // Operaciones de Persistencia Local de Sesión
+  private readonly CLAVE_SESION_LOCAL = '@EcommerceNic:sesion_usuario';
+
+  async guardarSesionLocal(usuario: User, token: string): Promise<void> {
+    try {
+      const datosSesion = JSON.stringify({ usuario, token });
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(this.CLAVE_SESION_LOCAL, datosSesion);
+      }
+    } catch (error) {
+      console.error('Error al guardar la sesión en el almacenamiento local:', error);
+    }
+  }
+
+  async obtenerSesionLocal(): Promise<{ usuario: User; token: string } | null> {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const datos = window.localStorage.getItem(this.CLAVE_SESION_LOCAL);
+        if (datos) {
+          return JSON.parse(datos);
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error al obtener la sesión guardada del almacenamiento local:', error);
+      return null;
+    }
+  }
+
+  async eliminarSesionLocal(): Promise<void> {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(this.CLAVE_SESION_LOCAL);
+      }
+    } catch (error) {
+      console.error('Error al eliminar la sesión del almacenamiento local:', error);
+    }
+  }
 }
 
 export const localDataSource = new LocalDataSource();
+

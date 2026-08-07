@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
-import { loginUseCase } from '../../di/DI';
+import { loginUseCase, guardarSesionUseCase } from '../../di/DI';
 import { User } from '../../Domain/entities/User';
 
 interface Props {
@@ -60,12 +60,17 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
     setIsLoading(true);
     try {
       const loggedUser = await loginUseCase.execute(trimmedEmail, trimmedPassword);
+      const token = loggedUser.data?.token ?? '';
       const normalizedUser: User = {
         id: String(loggedUser.data?.userId ?? Date.now()),
         email: loggedUser.data?.userEmail ?? trimmedEmail,
         name: loggedUser.data?.userFullName ?? trimmedEmail,
         role: 'user',
       };
+      
+      // Persistir la sesión del usuario localmente
+      await guardarSesionUseCase.execute(normalizedUser, token);
+
       console.log("✅ Login Exitoso para:", normalizedUser.name, "Rol:", normalizedUser.role);
       onLoginSuccess(normalizedUser);
     } catch (err: any) {

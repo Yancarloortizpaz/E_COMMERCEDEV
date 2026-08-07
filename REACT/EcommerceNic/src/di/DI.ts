@@ -19,6 +19,9 @@ import { SendChatMessageUseCase } from "../Domain/useCases/SendChatMessageUseCas
 import { CatalogosRepositoryImpl } from "../Data/repositories/CatalogosRepositoryImpl";
 import { GetPaisesUseCase } from "../Domain/useCases/GetPaisesUseCase";
 import { GetGenerosUseCase } from "../Domain/useCases/GetGenerosUseCase";
+import { GuardarSesionUseCase } from "../Domain/useCases/GuardarSesionUseCase";
+import { ObtenerSesionGuardadaUseCase } from "../Domain/useCases/ObtenerSesionGuardadaUseCase";
+import { CerrarSesionUseCase } from "../Domain/useCases/CerrarSesionUseCase";
 
 // Instantiate single instances of the Repository implementations
 const authRepository = new AuthRepositoryImpl();
@@ -29,6 +32,10 @@ const cartRepository = new CartRepositoryImpl();
 // Instantiate Use Cases
 export const loginUseCase = new LoginUseCase(authRepository);
 export const registerUseCase = new RegisterUseCase(authRepository);
+export const guardarSesionUseCase = new GuardarSesionUseCase(authRepository);
+export const obtenerSesionGuardadaUseCase = new ObtenerSesionGuardadaUseCase(authRepository);
+export const cerrarSesionUseCase = new CerrarSesionUseCase(authRepository);
+
 export const getProductsUseCase = new GetProductsUseCase(productRepository);
 export const getProductsPagedUseCase = new GetProductsPagedUseCase(productRepository);
 export const createProductUseCase = new CreateProductUseCase(productRepository);
