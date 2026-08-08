@@ -4,14 +4,13 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
   Image,
-  ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
+import { ContenedorFormularioTeclado } from '../components/ContenedorFormularioTeclado';
 import { loginUseCase, guardarSesionUseCase } from '../../di/DI';
 import { User } from '../../Domain/entities/User';
 
@@ -81,65 +80,63 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+    <ContenedorFormularioTeclado
+      estiloContenedor={styles.container}
+      estiloScroll={styles.scrollContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.cardContainer}>
-          
-          <View style={styles.logoWrapper}>
-            <View style={styles.logoBackground}>
-              <Image
-                source={require('../../../assets/logo.png')}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
-          </View>
-
-          <Text style={styles.welcomeText}>Bienvenido de vuelta</Text>
-          <Text style={styles.brandTitle}>Nic Store</Text>
-          <Text style={styles.subtitle}>La mejor tecnología al alcance de tus manos en Nicaragua</Text>
-
-          <View style={styles.formContainer}>
-            <Text style={styles.inputLabel}>Correo Electrónico</Text>
-            <CustomInput
-              placeholder="tucorreo@email.com"
-              value={email}
-              onChangeText={text => { setError(''); setEmail(text); }}
-              keyboardType="email-address"
-              autoCapitalize="none"
+      <View style={styles.cardContainer}>
+        
+        <View style={styles.logoWrapper}>
+          <View style={styles.logoBackground}>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
-
-            <Text style={styles.inputLabel}>Contraseña</Text>
-            <CustomInput
-              placeholder="Contraseña"
-              value={password}
-              onChangeText={text => { setError(''); setPassword(text); }}
-              secureTextEntry
-            />
-
-            {error ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
-
-            <View style={styles.buttonContainer}>
-              <CustomButton title="Iniciar Sesión" onPress={handleLoginSubmit} loading={isLoading} />
-            </View>
           </View>
-
-          <TouchableOpacity onPress={onNavigateToRegister} style={styles.registerContainer} activeOpacity={0.7}>
-            <Text style={styles.registerText}>
-              ¿No tienes cuenta todavía? <Text style={styles.registerLink}>Regístrate ahora</Text>
-            </Text>
-          </TouchableOpacity>
-
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <Text style={styles.welcomeText}>Bienvenido de vuelta</Text>
+        <Text style={styles.brandTitle}>Nic Store</Text>
+        <Text style={styles.subtitle}>La mejor tecnología al alcance de tus manos en Nicaragua</Text>
+
+        <View style={styles.formContainer}>
+          <Text style={styles.inputLabel}>Correo Electrónico</Text>
+          <CustomInput
+            placeholder="tucorreo@email.com"
+            value={email}
+            onChangeText={text => { setError(''); setEmail(text); }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.inputLabel}>Contraseña</Text>
+          <CustomInput
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={text => { setError(''); setPassword(text); }}
+            secureTextEntry
+          />
+
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.buttonContainer}>
+            <CustomButton title="Iniciar Sesión" onPress={handleLoginSubmit} loading={isLoading} />
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={onNavigateToRegister} style={styles.registerContainer} activeOpacity={0.7}>
+          <Text style={styles.registerText}>
+            ¿No tienes cuenta todavía? <Text style={styles.registerLink}>Regístrate ahora</Text>
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+    </ContenedorFormularioTeclado>
   );
 };
 

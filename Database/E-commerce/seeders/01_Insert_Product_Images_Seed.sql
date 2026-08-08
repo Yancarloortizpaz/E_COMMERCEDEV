@@ -8,19 +8,6 @@ GO
 
 DECLARE @code INT, @message VARCHAR(255), @templateId INT;
 
--- 1. Producto ID 2: AIR MAX 90 CASUAL
-EXEC [SQM_GENERAL].[sp_ProductImages_Create]
-    @productImageProductId = 2,
-    @productImageURL = '/uploads/products/prod_2_airmax90.jpg',
-    @productImageDescription = 'Vista principal de Zapatos Nike Air Max 90 Casual',
-    @productImageIsPrincipal = 1,
-    @productImageCreatorId = 1,
-    @productImageStatusId = 1,
-    @o_code = @code OUTPUT,
-    @o_message = @message OUTPUT,
-    @o_templateId = @templateId OUTPUT;
-
-PRINT 'Producto 2 -> Código: ' + CAST(@code AS VARCHAR) + ' | Mensaje: ' + @message + ' | ImageID: ' + ISNULL(CAST(@templateId AS VARCHAR), 'N/A');
 
 -- 2. Producto ID 6: Zapatillas Nike Air Max 2026
 EXEC [SQM_GENERAL].[sp_ProductImages_Create]
@@ -78,3 +65,11 @@ EXEC [SQM_GENERAL].[sp_ProductImages_Create]
 
 PRINT 'Producto 54 -> Código: ' + CAST(@code AS VARCHAR) + ' | Mensaje: ' + @message + ' | ImageID: ' + ISNULL(CAST(@templateId AS VARCHAR), 'N/A');
 GO
+
+
+-------------------
+--actualizar las que tan malas 
+
+UPDATE [SQM_GENERAL].[Tbl_ProductImages]
+SET productImageURL = '/uploads/products/Zapatillas_Nike_DefyAllDay_Casual_negra.png'
+WHERE productImageProductId = 10;
