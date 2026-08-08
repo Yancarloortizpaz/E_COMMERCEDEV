@@ -112,7 +112,7 @@ export const ChatbotTab = ({
   return (
     <KeyboardAvoidingView
       style={styles.tabContent}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header */}

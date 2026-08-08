@@ -11,8 +11,8 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
-  KeyboardAvoidingView,
 } from 'react-native';
+import { ContenedorFormularioTeclado } from '../components/ContenedorFormularioTeclado';
 import { Product } from '../../Domain/entities/Product';
 import {
   getProductsUseCase,
@@ -256,75 +256,76 @@ export const InventoryScreen = () => {
       {/* CREATE / EDIT MODAL */}
       <Modal visible={isModalOpen} animationType="slide" transparent={true} onRequestClose={() => setIsModalOpen(false)}>
         <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
-            <ScrollView style={styles.modalContent} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>
-                {editingProduct ? '✏️ Editar Producto' : '📦 Nuevo Producto'}
-              </Text>
-              <Text style={styles.modalSubtitle}>Llena los datos para actualizar el catálogo local.</Text>
+          <ContenedorFormularioTeclado
+            estiloContenedor={{ width: '100%' }}
+            estiloScroll={[styles.modalContent, { paddingBottom: 40 }]}
+          >
+            <Text style={styles.modalTitle}>
+              {editingProduct ? '✏️ Editar Producto' : '📦 Nuevo Producto'}
+            </Text>
+            <Text style={styles.modalSubtitle}>Llena los datos para actualizar el catálogo local.</Text>
 
-              {/* Form Input fields */}
-              <Text style={styles.formLabel}>Título del Producto *</Text>
-              <TextInput style={styles.formInput} placeholder="Ej: PlayStation 5 Pro" placeholderTextColor="#94A3B8" value={title} onChangeText={setTitle} />
+            {/* Form Input fields */}
+            <Text style={styles.formLabel}>Título del Producto *</Text>
+            <TextInput style={styles.formInput} placeholder="Ej: PlayStation 5 Pro" placeholderTextColor="#94A3B8" value={title} onChangeText={setTitle} />
 
-              <Text style={styles.formLabel}>Subtítulo / Descripción Corta *</Text>
-              <TextInput style={styles.formInput} placeholder="Ej: 2TB SSD · Edición Especial" placeholderTextColor="#94A3B8" value={subtitle} onChangeText={setSubtitle} />
+            <Text style={styles.formLabel}>Subtítulo / Descripción Corta *</Text>
+            <TextInput style={styles.formInput} placeholder="Ej: 2TB SSD · Edición Especial" placeholderTextColor="#94A3B8" value={subtitle} onChangeText={setSubtitle} />
 
-              <View style={styles.formInputRow}>
-                <View style={{ flex: 1, marginRight: 8 }}>
-                  <Text style={styles.formLabel}>Precio (C$) *</Text>
-                  <TextInput style={styles.formInput} placeholder="Ej: 21500" placeholderTextColor="#94A3B8" keyboardType="numeric" value={price} onChangeText={setPrice} />
-                </View>
-                <View style={{ flex: 1, marginLeft: 8 }}>
-                  <Text style={styles.formLabel}>Marca *</Text>
-                  <TextInput style={styles.formInput} placeholder="Ej: Sony" placeholderTextColor="#94A3B8" value={brand} onChangeText={setBrand} />
-                </View>
+            <View style={styles.formInputRow}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={styles.formLabel}>Precio (C$) *</Text>
+                <TextInput style={styles.formInput} placeholder="Ej: 21500" placeholderTextColor="#94A3B8" keyboardType="numeric" value={price} onChangeText={setPrice} />
               </View>
-
-              <Text style={styles.formLabel}>Categoría *</Text>
-              <View style={styles.categoriesDropdown}>
-                {CATEGORIES.filter(c => c.id !== 'all').map(c => (
-                  <TouchableOpacity
-                    key={c.id}
-                    style={[styles.dropdownPill, category === c.id && styles.dropdownPillActive]}
-                    onPress={() => setCategory(c.id)}
-                  >
-                    <Text style={[styles.dropdownPillText, category === c.id && styles.dropdownPillTextActive]}>
-                      {c.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Text style={styles.formLabel}>Marca *</Text>
+                <TextInput style={styles.formInput} placeholder="Ej: Sony" placeholderTextColor="#94A3B8" value={brand} onChangeText={setBrand} />
               </View>
+            </View>
 
-              <Text style={styles.formLabel}>Etiqueta *</Text>
-              <View style={styles.categoriesDropdown}>
-                {['Nuevo', '🔥 Top', 'Popular', 'Oferta'].map(t => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[styles.dropdownPill, tag === t && styles.dropdownPillActive]}
-                    onPress={() => setTag(t)}
-                  >
-                    <Text style={[styles.dropdownPillText, tag === t && styles.dropdownPillTextActive]}>
-                      {t}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={styles.formLabel}>URL de Imagen *</Text>
-              <TextInput style={styles.formInput} placeholder="Ej: https://..." placeholderTextColor="#94A3B8" value={image} onChangeText={setImage} />
-
-              {/* Action Buttons inside modal */}
-              <View style={styles.modalActionsRow}>
-                <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={() => setIsModalOpen(false)}>
-                  <Text style={styles.modalCancelText}>Cancelar</Text>
+            <Text style={styles.formLabel}>Categoría *</Text>
+            <View style={styles.categoriesDropdown}>
+              {CATEGORIES.filter(c => c.id !== 'all').map(c => (
+                <TouchableOpacity
+                  key={c.id}
+                  style={[styles.dropdownPill, category === c.id && styles.dropdownPillActive]}
+                  onPress={() => setCategory(c.id)}
+                >
+                  <Text style={[styles.dropdownPillText, category === c.id && styles.dropdownPillTextActive]}>
+                    {c.name}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.modalBtn, styles.modalSave]} onPress={handleSaveProduct}>
-                  <Text style={styles.modalSaveText}>Guardar</Text>
+              ))}
+            </View>
+
+            <Text style={styles.formLabel}>Etiqueta *</Text>
+            <View style={styles.categoriesDropdown}>
+              {['Nuevo', '🔥 Top', 'Popular', 'Oferta'].map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.dropdownPill, tag === t && styles.dropdownPillActive]}
+                  onPress={() => setTag(t)}
+                >
+                  <Text style={[styles.dropdownPillText, tag === t && styles.dropdownPillTextActive]}>
+                    {t}
+                  </Text>
                 </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
+              ))}
+            </View>
+
+            <Text style={styles.formLabel}>URL de Imagen *</Text>
+            <TextInput style={styles.formInput} placeholder="Ej: https://..." placeholderTextColor="#94A3B8" value={image} onChangeText={setImage} />
+
+            {/* Action Buttons inside modal */}
+            <View style={styles.modalActionsRow}>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalCancel]} onPress={() => setIsModalOpen(false)}>
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalSave]} onPress={handleSaveProduct}>
+                <Text style={styles.modalSaveText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </ContenedorFormularioTeclado>
         </View>
       </Modal>
     </View>

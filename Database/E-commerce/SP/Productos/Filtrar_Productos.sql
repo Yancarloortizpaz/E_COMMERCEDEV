@@ -45,7 +45,8 @@ BEGIN
             StockID,
             StockAvilable,
             StockFactoryDate,
-            StockExpirationDate
+            StockExpirationDate,
+			ProductImageURL
         INTO #FilteredProducts
         FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK)
         WHERE (

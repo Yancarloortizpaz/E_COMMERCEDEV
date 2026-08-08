@@ -3,15 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
   Platform,
   Image,
-  ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { CustomInput } from '../components/CustomInput';
 import { CustomButton } from '../components/CustomButton';
+import { ContenedorFormularioTeclado } from '../components/ContenedorFormularioTeclado';
 import { Pais } from '../../Domain/entities/Pais';
 import { Genero } from '../../Domain/entities/Genero';
 import {
@@ -167,152 +166,150 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
+    <ContenedorFormularioTeclado
+      estiloContenedor={styles.container}
+      estiloScroll={styles.scrollContainer}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.cardContainer}>
+      <View style={styles.cardContainer}>
 
-          <View style={styles.logoWrapper}>
-            <View style={styles.logoBackground}>
-              <Image
-                source={require('../../../assets/logo.png')}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
+        <View style={styles.logoWrapper}>
+          <View style={styles.logoBackground}>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
-
-          <Text style={styles.welcomeText}>Regístrate en</Text>
-          <Text style={styles.brandTitle}>Nic Store</Text>
-          <Text style={styles.subtitle}>Crea tu cuenta y accede al mejor catálogo de tecnología en el país</Text>
-
-          <View style={styles.formContainer}>
-            <Text style={styles.inputLabel}>Nombre Completo</Text>
-            <CustomInput
-              placeholder="Tu nombre completo"
-              value={name}
-              onChangeText={text => { setErrorMessage(''); setName(text); }}
-            />
-
-            <Text style={styles.inputLabel}>Nombre de Usuario</Text>
-            <CustomInput
-              placeholder="Tu nombre de usuario"
-              value={username}
-              onChangeText={text => { setErrorMessage(''); setUsername(text); }}
-              autoCapitalize="none"
-            />
-
-            <Text style={styles.inputLabel}>Correo Electrónico</Text>
-            <CustomInput
-              placeholder="tucorreo@email.com"
-              value={email}
-              onChangeText={text => { setErrorMessage(''); setEmail(text); }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-
-            <Text style={styles.inputLabel}>Teléfono</Text>
-            <CustomInput
-              placeholder="Número de teléfono"
-              value={phone}
-              onChangeText={text => { setErrorMessage(''); setPhone(text); }}
-              keyboardType="phone-pad"
-            />
-
-            <Text style={styles.inputLabel}>País</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={countryId ?? ''}
-                onValueChange={value => {
-                  setErrorMessage('');
-                  setCountryId(Number(value));
-                }}
-                style={styles.picker}
-                dropdownIconColor="#4F46E5"
-              >
-                <Picker.Item label="Selecciona un país" value="" />
-                {countries.map(country => (
-                  <Picker.Item key={country.id} label={country.nombre} value={country.id} />
-                ))}
-              </Picker>
-            </View>
-
-            <Text style={styles.inputLabel}>Género</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={genderId ?? ''}
-                onValueChange={value => {
-                  setErrorMessage('');
-                  setGenderId(Number(value));
-                }}
-                style={styles.picker}
-                dropdownIconColor="#4F46E5"
-              >
-                <Picker.Item label="Selecciona un género" value="" />
-                {genders.map(gender => (
-                  <Picker.Item key={gender.id} label={gender.nombre} value={gender.id} />
-                ))}
-              </Picker>
-            </View>
-
-            <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-            <CustomInput
-              placeholder="dd/mm/yyyy"
-              value={birthday}
-              onChangeText={text => { setErrorMessage(''); setBirthday(text); }}
-              keyboardType="numbers-and-punctuation"
-            />
-
-            <Text style={styles.inputLabel}>Contraseña</Text>
-            <CustomInput
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChangeText={text => { setErrorMessage(''); setPassword(text); }}
-              secureTextEntry
-            />
-
-            <Text style={styles.inputLabel}>Confirmar Contraseña</Text>
-            <CustomInput
-              placeholder="Repite tu contraseña"
-              value={confirmPassword}
-              onChangeText={text => { setErrorMessage(''); setConfirmPassword(text); }}
-              secureTextEntry
-            />
-
-            {errorMessage ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
-            ) : null}
-            
-            {successMessage ? (
-              <View style={styles.successContainer}>
-                <Text style={styles.successText}>{successMessage}</Text>
-              </View>
-            ) : null}
-
-            <View style={styles.buttonContainer}>
-              <CustomButton title="Crear Cuenta" onPress={handleRegister} loading={isLoading} />
-            </View>
-          </View>
-
-          <Text style={styles.termsText}>
-            Al registrarte aceptas nuestros{' '}
-            <Text style={styles.termsLink}>Términos de Servicio</Text> y{' '}
-            <Text style={styles.termsLink}>Política de Privacidad</Text>.
-          </Text>
-
-          <TouchableOpacity onPress={onBackToLogin} style={styles.loginContainer} activeOpacity={0.7}>
-            <Text style={styles.loginText}>
-              ¿Ya tienes una cuenta? <Text style={styles.loginLink}>Inicia sesión</Text>
-            </Text>
-          </TouchableOpacity>
-
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <Text style={styles.welcomeText}>Regístrate en</Text>
+        <Text style={styles.brandTitle}>Nic Store</Text>
+        <Text style={styles.subtitle}>Crea tu cuenta y accede al mejor catálogo de tecnología en el país</Text>
+
+        <View style={styles.formContainer}>
+          <Text style={styles.inputLabel}>Nombre Completo</Text>
+          <CustomInput
+            placeholder="Tu nombre completo"
+            value={name}
+            onChangeText={text => { setErrorMessage(''); setName(text); }}
+          />
+
+          <Text style={styles.inputLabel}>Nombre de Usuario</Text>
+          <CustomInput
+            placeholder="Tu nombre de usuario"
+            value={username}
+            onChangeText={text => { setErrorMessage(''); setUsername(text); }}
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.inputLabel}>Correo Electrónico</Text>
+          <CustomInput
+            placeholder="tucorreo@email.com"
+            value={email}
+            onChangeText={text => { setErrorMessage(''); setEmail(text); }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.inputLabel}>Teléfono</Text>
+          <CustomInput
+            placeholder="Número de teléfono"
+            value={phone}
+            onChangeText={text => { setErrorMessage(''); setPhone(text); }}
+            keyboardType="phone-pad"
+          />
+
+          <Text style={styles.inputLabel}>País</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={countryId ?? ''}
+              onValueChange={value => {
+                setErrorMessage('');
+                setCountryId(Number(value));
+              }}
+              style={styles.picker}
+              dropdownIconColor="#4F46E5"
+            >
+              <Picker.Item label="Selecciona un país" value="" />
+              {countries.map(country => (
+                <Picker.Item key={country.id} label={country.nombre} value={country.id} />
+              ))}
+            </Picker>
+          </View>
+
+          <Text style={styles.inputLabel}>Género</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={genderId ?? ''}
+              onValueChange={value => {
+                setErrorMessage('');
+                setGenderId(Number(value));
+              }}
+              style={styles.picker}
+              dropdownIconColor="#4F46E5"
+            >
+              <Picker.Item label="Selecciona un género" value="" />
+              {genders.map(gender => (
+                <Picker.Item key={gender.id} label={gender.nombre} value={gender.id} />
+              ))}
+            </Picker>
+          </View>
+
+          <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
+          <CustomInput
+            placeholder="dd/mm/yyyy"
+            value={birthday}
+            onChangeText={text => { setErrorMessage(''); setBirthday(text); }}
+            keyboardType="numbers-and-punctuation"
+          />
+
+          <Text style={styles.inputLabel}>Contraseña</Text>
+          <CustomInput
+            placeholder="Mínimo 6 caracteres"
+            value={password}
+            onChangeText={text => { setErrorMessage(''); setPassword(text); }}
+            secureTextEntry
+          />
+
+          <Text style={styles.inputLabel}>Confirmar Contraseña</Text>
+          <CustomInput
+            placeholder="Repite tu contraseña"
+            value={confirmPassword}
+            onChangeText={text => { setErrorMessage(''); setConfirmPassword(text); }}
+            secureTextEntry
+          />
+
+          {errorMessage ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          ) : null}
+          
+          {successMessage ? (
+            <View style={styles.successContainer}>
+              <Text style={styles.successText}>{successMessage}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.buttonContainer}>
+            <CustomButton title="Crear Cuenta" onPress={handleRegister} loading={isLoading} />
+          </View>
+        </View>
+
+        <Text style={styles.termsText}>
+          Al registrarte aceptas nuestros{' '}
+          <Text style={styles.termsLink}>Términos de Servicio</Text> y{' '}
+          <Text style={styles.termsLink}>Política de Privacidad</Text>.
+        </Text>
+
+        <TouchableOpacity onPress={onBackToLogin} style={styles.loginContainer} activeOpacity={0.7}>
+          <Text style={styles.loginText}>
+            ¿Ya tienes una cuenta? <Text style={styles.loginLink}>Inicia sesión</Text>
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+    </ContenedorFormularioTeclado>
   );
 };
 

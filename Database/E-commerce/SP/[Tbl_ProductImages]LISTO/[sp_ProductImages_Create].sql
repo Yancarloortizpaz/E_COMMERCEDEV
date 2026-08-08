@@ -48,6 +48,14 @@ BEGIN
             RETURN;
         END
 
+        -- Desmarcar la imagen principal anterior si la nueva se marca como principal (1)
+        IF @productImageIsPrincipal = 1
+        BEGIN
+            UPDATE [SQM_GENERAL].[Tbl_ProductImages]
+            SET productImageIsPrincipal = 0
+            WHERE productImageProductId = @productImageProductId AND productImageStatusId = 1;
+        END
+
         INSERT INTO [SQM_GENERAL].[Tbl_ProductImages]
         (
             productImageProductId,
@@ -85,3 +93,22 @@ BEGIN
     END CATCH
 END;
 GO
+
+
+
+--------------------------------------
+
+DECLARE @code INT, @message VARCHAR(255), @templateId INT;
+
+EXEC [SQM_GENERAL].[sp_ProductImages_Create]
+    @productImageProductId = 11,
+    @productImageURL = '/uploads/products/Zapatillas_Nike_Air_Max_SYSTM.png',
+    @productImageDescription = 'Vista principal Zapatillas Nike DefyAllDay Casual',
+    @productImageIsPrincipal = 1,
+    @productImageCreatorId = 1,
+    @productImageStatusId = 1,
+    @o_code = @code OUTPUT,
+    @o_message = @message OUTPUT,
+    @o_templateId = @templateId OUTPUT;
+
+PRINT @message;
