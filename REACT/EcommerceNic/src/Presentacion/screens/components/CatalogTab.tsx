@@ -191,17 +191,17 @@ export const CatalogTab = ({
     return null;
   };
 
-  const renderItem = ({ item: product }: { item: Product }) => {
-    const currentQuantity = cartQuantities[product.id] || 0;
-
-    const handleIncrement = (item: Product) => {
-      addUnit(item.id);
-    };
-
-    const handleDecrement = (item: Product) => {
-      removeUnit(item.id);
-    };
-
+  const ProductCardItem = React.memo(({
+    product,
+    currentQuantity,
+    addUnit,
+    removeUnit,
+  }: {
+    product: Product;
+    currentQuantity: number;
+    addUnit: (id: string) => void;
+    removeUnit: (id: string) => void;
+  }) => {
     return (
       <View style={styles.card}>
         <View style={styles.imageWrapper}>
@@ -227,17 +227,17 @@ export const CatalogTab = ({
             <TouchableOpacity 
               style={styles.addButtonCircular} 
               activeOpacity={0.7} 
-              onPress={() => handleIncrement(product)}
+              onPress={() => addUnit(product.id)}
             >
               <Text style={styles.addButtonCircularText}>+</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.quantityContainerMini}>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => handleDecrement(product)}>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
                 <Text style={styles.miniQtyBtnText}>-</Text>
               </TouchableOpacity>
               <Text style={styles.miniQtyText}>{currentQuantity}</Text>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => handleIncrement(product)}>
+              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
                 <Text style={styles.miniQtyBtnText}>+</Text>
               </TouchableOpacity>
             </View>
@@ -245,7 +245,19 @@ export const CatalogTab = ({
         </View>
       </View>
     );
-  };
+  });
+
+  const renderItem = React.useCallback(
+    ({ item: product }: { item: Product }) => (
+      <ProductCardItem
+        product={product}
+        currentQuantity={cartQuantities[product.id] || 0}
+        addUnit={addUnit}
+        removeUnit={removeUnit}
+      />
+    ),
+    [cartQuantities, addUnit, removeUnit]
+  );
 
   return (
     <View style={styles.tabContent}>
@@ -291,8 +303,10 @@ export const CatalogTab = ({
           }
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}
-          windowSize={5}
-          maxToRenderPerBatch={6}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={7}
+          updateCellsBatchingPeriod={50}
           removeClippedSubviews={Platform.OS !== 'web'}
           contentContainerStyle={styles.scrollPadding}
         />

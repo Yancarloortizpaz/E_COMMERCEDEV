@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, View, ActivityIndicator, StyleSheet, ImageStyle, ViewStyle } from 'react-native';
 
-const FALLBACK_PLACEHOLDER = require('../../../assets/logo.png');
+const FALLBACK_LOGO = require('../../../assets/logo.png');
 
 interface Props {
   url: string | undefined | null;
@@ -9,43 +9,68 @@ interface Props {
   containerStyle?: ViewStyle;
 }
 
-export const ProductImage = ({ url, style, containerStyle }: Props) => {
+export const ProductImage = React.memo(({ url, style, containerStyle }: Props) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(!!url);
 
   const isValidUrl = url && url.trim().length > 0 && !hasError;
-  const source = isValidUrl ? { uri: url } : FALLBACK_PLACEHOLDER;
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, style, containerStyle]}>
       {isLoading && isValidUrl && (
         <View style={[StyleSheet.absoluteFill, styles.skeleton]}>
           <ActivityIndicator size="small" color="#94A3B8" />
         </View>
       )}
-      <Image
-        source={source}
-        style={style}
-        resizeMode="cover"
-        onLoad={() => setIsLoading(false)}
-        onError={() => {
-          setHasError(true);
-          setIsLoading(false);
-        }}
-      />
+
+      {isValidUrl ? (
+        <Image
+          source={{ uri: url }}
+          style={[StyleSheet.absoluteFill, style]}
+          resizeMode="cover"
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setHasError(true);
+            setIsLoading(false);
+          }}
+        />
+      ) : (
+        <View style={styles.placeholderContainer}>
+          <Image
+            source={FALLBACK_LOGO}
+            style={styles.placeholderLogo}
+            resizeMode="contain"
+          />
+        </View>
+      )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
+    height: '100%',
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#F8FAFC',
   },
   skeleton: {
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
+  },
+  placeholderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+  },
+  placeholderLogo: {
+    width: '50%',
+    height: '50%',
+    opacity: 0.85,
   },
 });
