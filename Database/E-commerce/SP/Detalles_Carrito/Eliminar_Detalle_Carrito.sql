@@ -94,7 +94,7 @@ DECLARE @v_message VARCHAR(255);
 DECLARE @v_templateId INT;
 
 EXEC [SQM_GENERAL].[sp_CartDetails_Delete]
-    @cartDetailId = 1, 
+    @cartDetailId = 68, 
     @cartDetailModificatorId = 1,
     @o_code = @v_code OUTPUT,
     @o_message = @v_message OUTPUT,

@@ -34,4 +34,4 @@ BEGIN
 END
 GO
 
-exec  [SQM_GENERAL].[sp_GetClientCart] @UserId=2
+exec  [SQM_GENERAL].[sp_GetClientCart] @UserId=1
