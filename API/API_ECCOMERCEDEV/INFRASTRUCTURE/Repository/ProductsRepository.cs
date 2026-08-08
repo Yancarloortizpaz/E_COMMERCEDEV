@@ -273,7 +273,8 @@ namespace INFRASTRUCTURE.Repository
                 StockID = dr["StockID"] != DBNull.Value ? (int?)dr["StockID"] : null,
                 StockAvilable = dr["StockAvilable"] != DBNull.Value ? (int?)dr["StockAvilable"] : null,
                 StockFactoryDate = dr["StockFactoryDate"] != DBNull.Value ? (DateTime?)dr["StockFactoryDate"] : null,
-                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null
+                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null,
+                ProductImageURL = dr["ProductImageURL"] != DBNull.Value ? dr["ProductImageURL"].ToString() : null
             };
         }
 
@@ -301,7 +302,8 @@ namespace INFRASTRUCTURE.Repository
                 StockID = dr["StockID"] != DBNull.Value ? (int?)dr["StockID"] : null,
                 StockAvilable = dr["StockAvilable"] != DBNull.Value ? (int?)dr["StockAvilable"] : null,
                 StockFactoryDate = dr["StockFactoryDate"] != DBNull.Value ? (DateTime?)dr["StockFactoryDate"] : null,
-                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null
+                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null,
+                ProductImageURL = dr["ProductImageURL"] != DBNull.Value ? dr["ProductImageURL"].ToString() : null
             };
         }
     }

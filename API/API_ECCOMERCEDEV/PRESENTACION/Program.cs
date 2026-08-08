@@ -95,6 +95,8 @@ var app = builder.Build();
 
 app.UseCors("AllowAll"); // Primero CORS
 
+app.UseStaticFiles(); // Habilitar servidor de archivos estáticos (imágenes en wwwroot)
+
 app.UseSwagger();
 app.UseSwaggerUI(s =>
 {

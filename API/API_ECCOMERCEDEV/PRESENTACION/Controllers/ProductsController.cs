@@ -24,7 +24,7 @@ namespace PRESENTACION.Controllers
         public async Task<IActionResult> Listar_Products([FromQuery] int? pageNumber)
         {
             try
-            {
+             {
                 var (lista, output) = await _service.Listar_Products_async(pageNumber);
                 if (lista == null || !lista.Any())
                 {

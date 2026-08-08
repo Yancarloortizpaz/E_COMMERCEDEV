@@ -18,12 +18,11 @@ BEGIN
 
     BEGIN TRY
         -- Obtener el conteo total de filas desde la  vista
-        SELECT 
-            @o_pageNumber = @i_pageNumber,
-            @o_pageSize = @PageSize,
-            @o_totalRows = COUNT(1)
-        FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK);
+       SET @o_pageNumber = ISNULL(@i_pageNumber, 1);
+        SET @o_pageSize = @PageSize;
 
+        SELECT @o_totalRows = COUNT(1)
+        FROM [SQM_GENERAL].[VW_GENERAL_PRODUCTS] (NOLOCK);
         -- Consultar los datos con la estructura de la nueva vista
         SELECT
             ProductID,

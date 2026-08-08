@@ -12,6 +12,7 @@ import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
 import { CartItem } from '../../../Domain/entities/CartItem';
 import { CustomAlertModal } from '../../components/CustomAlertModal';
+import { API_CONFIG } from '../../../Data/dataSources/apiConfig';
 
 /**
  * Interfaz de TypeScript que coincide exactamente con el JSON del backend SQL Server / C# API
@@ -205,7 +206,10 @@ export const CartTab = ({
             renderItem={({ item }) => {
               const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
               const name = item.ProductoNombre ?? item.productoNombre ?? 'Producto';
-              const imageUri = item.ProductoImagenUrl ?? item.productoImagenUrl ?? 'https://placehold.co/300x300/png?text=Producto';
+              const rawImg = item.ProductoImagenUrl ?? item.productoImagenUrl ?? (item as any).image;
+              const imageUri = rawImg && typeof rawImg === 'string' && !rawImg.startsWith('http')
+                ? `${API_CONFIG.BASE_URL}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`
+                : (rawImg || 'https://placehold.co/300x300/png?text=Producto');
               const unitPrice = item.PrecioUnitario ?? item.precioUnitario ?? 0;
               const quantity = item.Cantidad ?? item.cantidad ?? 0;
               const subtotalFila = item.SubTotalFila ?? item.subTotalFila ?? (unitPrice * quantity);

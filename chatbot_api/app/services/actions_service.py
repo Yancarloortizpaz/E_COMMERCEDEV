@@ -14,6 +14,7 @@ def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1, user
         try:
             cursor.execute(
                 """
+                SET NOCOUNT ON;
                 DECLARE @o_TextoRespuesta NVARCHAR(MAX);
                 DECLARE @o_ReglaActivadaID INT;
                 EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT, ?;
@@ -27,6 +28,7 @@ def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1, user
             if "8144" in str(ex_sp) or "too many arguments" in str(ex_sp).lower():
                 cursor.execute(
                     """
+                    SET NOCOUNT ON;
                     DECLARE @o_TextoRespuesta NVARCHAR(MAX);
                     DECLARE @o_ReglaActivadaID INT;
                     EXEC dbo.SP_ProcesarMensajeChatbot ?, ?, @o_TextoRespuesta OUTPUT, @o_ReglaActivadaID OUTPUT;
@@ -37,6 +39,10 @@ def procesar_mensaje_db(mensaje: str, conversacion_id: Union[int, str] = 1, user
                 )
             else:
                 raise ex_sp
+
+        while cursor.description is None:
+            if not cursor.nextset():
+                break
 
         resultado = cursor.fetchone()
 
