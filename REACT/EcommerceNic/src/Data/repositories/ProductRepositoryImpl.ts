@@ -27,6 +27,15 @@ export class ProductRepositoryImpl implements ProductRepository {
     }
   }
 
+  async getProductById(productId: number | string): Promise<any> {
+    try {
+      return await this.remoteDataSource.getProductById(productId);
+    } catch (error) {
+      console.log('Error fetching product by ID from API:', error);
+      throw error;
+    }
+  }
+
   async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
     return localDataSource.createProduct(product);
   }

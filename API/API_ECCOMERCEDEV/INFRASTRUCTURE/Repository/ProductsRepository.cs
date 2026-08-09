@@ -249,6 +249,45 @@ namespace INFRASTRUCTURE.Repository
             }
         }
 
+        public async Task<(IEnumerable<DM_Products_filtrar_id> Data, OUTPUT Output)> Filtrar_Products_Por_IdAsync(int? productId)
+        {
+            var list = new List<DM_Products_filtrar_id>();
+            var output = new OUTPUT();
+            try
+            {
+                using var con = _connection.CreateConnection();
+                await con.OpenAsync();
+
+                using (SqlCommand cmd = new SqlCommand("[SQM_GENERAL].[sp_Products_Filter_Id]", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@ProductId", productId ?? (object)DBNull.Value));
+
+                    SqlParameter pCode = new SqlParameter("@o_code", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                    SqlParameter pMessage = new SqlParameter("@o_message", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+
+                    cmd.Parameters.Add(pCode);
+                    cmd.Parameters.Add(pMessage);
+
+                    using (SqlDataReader dr = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            list.Add(MapearDataReaderAFiltrarId(dr));
+                        }
+                    }
+
+                    output.Code = pCode.Value != DBNull.Value ? (int?)pCode.Value : null;
+                    output.Message = pMessage.Value != DBNull.Value ? pMessage.Value.ToString() : null;
+                }
+                return (list, output);
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Error al consultar el producto por ID en la base de datos.", ex);
+            }
+        }
+
         private DM_Products_listar MapearDataReaderAListar(SqlDataReader dr)
         {
             return new DM_Products_listar
@@ -281,6 +320,35 @@ namespace INFRASTRUCTURE.Repository
         private DM_Products_filtrar MapearDataReaderAFiltrar(SqlDataReader dr)
         {
             return new DM_Products_filtrar
+            {
+                ProductID = dr["ProductID"] != DBNull.Value ? (int?)dr["ProductID"] : null,
+                ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString() : null,
+                ProductVariableID = dr["ProductVariableID"] != DBNull.Value ? (int?)dr["ProductVariableID"] : null,
+                ProductVariableName = dr["ProductVariableName"] != DBNull.Value ? dr["ProductVariableName"].ToString() : null,
+                ProductVariablePrice = dr["ProductVariablePrice"] != DBNull.Value ? (decimal?)dr["ProductVariablePrice"] : null,
+                CurrencyID = dr["CurrencyID"] != DBNull.Value ? (int?)dr["CurrencyID"] : null,
+                CurrencyISO = dr["CurrencyISO"] != DBNull.Value ? dr["CurrencyISO"].ToString() : null,
+                CategoryID = dr["CategoryID"] != DBNull.Value ? (int?)dr["CategoryID"] : null,
+                CategoryName = dr["CategoryName"] != DBNull.Value ? dr["CategoryName"].ToString() : null,
+                SubcategoryID = dr["SubcategoryID"] != DBNull.Value ? (int?)dr["SubcategoryID"] : null,
+                SubcategoryName = dr["SubcategoryName"] != DBNull.Value ? dr["SubcategoryName"].ToString() : null,
+                SegmentID = dr["SegmentID"] != DBNull.Value ? (int?)dr["SegmentID"] : null,
+                SegmentName = dr["SegmentName"] != DBNull.Value ? dr["SegmentName"].ToString() : null,
+                MarkID = dr["MarkID"] != DBNull.Value ? (int?)dr["MarkID"] : null,
+                MarkName = dr["MarkName"] != DBNull.Value ? dr["MarkName"].ToString() : null,
+                ProviderID = dr["ProviderID"] != DBNull.Value ? (int?)dr["ProviderID"] : null,
+                ProviderName = dr["ProviderName"] != DBNull.Value ? dr["ProviderName"].ToString() : null,
+                StockID = dr["StockID"] != DBNull.Value ? (int?)dr["StockID"] : null,
+                StockAvilable = dr["StockAvilable"] != DBNull.Value ? (int?)dr["StockAvilable"] : null,
+                StockFactoryDate = dr["StockFactoryDate"] != DBNull.Value ? (DateTime?)dr["StockFactoryDate"] : null,
+                StockExpirationDate = dr["StockExpirationDate"] != DBNull.Value ? (DateTime?)dr["StockExpirationDate"] : null,
+                ProductImageURL = dr["ProductImageURL"] != DBNull.Value ? dr["ProductImageURL"].ToString() : null
+            };
+        }
+
+        private DM_Products_filtrar_id MapearDataReaderAFiltrarId(SqlDataReader dr)
+        {
+            return new DM_Products_filtrar_id
             {
                 ProductID = dr["ProductID"] != DBNull.Value ? (int?)dr["ProductID"] : null,
                 ProductName = dr["ProductName"] != DBNull.Value ? dr["ProductName"].ToString() : null,

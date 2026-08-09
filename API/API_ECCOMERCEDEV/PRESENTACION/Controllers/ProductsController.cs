@@ -88,6 +88,35 @@ namespace PRESENTACION.Controllers
             }
         }
 
+        [HttpGet("filtrar_por_id/{productId}")]
+        public async Task<IActionResult> Filtrar_Products_Por_Id([FromRoute] int productId)
+        {
+            try
+            {
+                var (lista, output) = await _service.Filtrar_Products_Por_Id_async(productId);
+                if (lista == null || !lista.Any())
+                {
+                    return Ok(new
+                    {
+                        codigo = output.Code ?? 204,
+                        msj = output.Message ?? "No se encontró el producto especificado.",
+                        data = new List<ProductsFiltrarIdDTOs>()
+                    });
+                }
+                return Ok(new
+                {
+                    codigo = output.Code ?? 200,
+                    msj = output.Message ?? "Búsqueda de producto satisfactoria",
+                    data = lista
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { codigo = 500, msj = ex.Message });
+            }
+        }
+
+       
         [HttpPost("insertar")]
         public async Task<IActionResult> Ingresar_Products([FromBody] ProductsinsertarDTOs model)
         {

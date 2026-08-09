@@ -27,6 +27,7 @@ export function mapApiToProduct(apiProduct: ApiProduct): Product {
 
   return {
     id: String(apiProduct.productVariableID || apiProduct.productID),
+    productId: apiProduct.productID || (apiProduct as any).ProductID,
     title: apiProduct.productName || 'Producto sin nombre',
     subtitle: apiProduct.productVariableName || apiProduct.subcategoryName || '',
     numericPrice: apiProduct.productVariablePrice ?? 0,

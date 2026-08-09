@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   placeholderContainer: {
-    ...StyleSheet.absoluteFill,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',

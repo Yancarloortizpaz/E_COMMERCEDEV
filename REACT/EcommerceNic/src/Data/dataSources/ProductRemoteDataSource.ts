@@ -13,6 +13,11 @@ export class ProductRemoteDataSource {
       return await safeFetch<ProductsPageResponse>(url);
     }
   }
+
+  async getProductById(productId: number | string): Promise<any> {
+    const url = `${API_CONFIG.BASE_URL}/api/Products/filtrar_por_id/${productId}`;
+    return await safeFetch<any>(url);
+  }
 }
 
 export const productRemoteDataSource = new ProductRemoteDataSource();

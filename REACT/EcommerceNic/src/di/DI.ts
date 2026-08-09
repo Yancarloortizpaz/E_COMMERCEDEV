@@ -23,6 +23,8 @@ import { GuardarSesionUseCase } from "../Domain/useCases/GuardarSesionUseCase";
 import { ObtenerSesionGuardadaUseCase } from "../Domain/useCases/ObtenerSesionGuardadaUseCase";
 import { CerrarSesionUseCase } from "../Domain/useCases/CerrarSesionUseCase";
 
+import { GetProductByIdUseCase } from '../Domain/useCases/GetProductByIdUseCase';
+
 // Instantiate single instances of the Repository implementations
 const authRepository = new AuthRepositoryImpl();
 const productRepository = new ProductRepositoryImpl();
@@ -38,6 +40,7 @@ export const cerrarSesionUseCase = new CerrarSesionUseCase(authRepository);
 
 export const getProductsUseCase = new GetProductsUseCase(productRepository);
 export const getProductsPagedUseCase = new GetProductsPagedUseCase(productRepository);
+export const getProductByIdUseCase = new GetProductByIdUseCase(productRepository);
 export const createProductUseCase = new CreateProductUseCase(productRepository);
 export const updateProductUseCase = new UpdateProductUseCase(productRepository);
 export const deleteProductUseCase = new DeleteProductUseCase(productRepository);

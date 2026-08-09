@@ -8,6 +8,7 @@ import { ChatbotTab } from './components/ChatbotTab';
 import { OrdersTab } from './components/OrdersTab';
 import { NosotrosTab } from './components/NosotrosTab';
 import { PaymentModal } from './components/PaymentModal';
+import { ProductDetailModal } from './components/ProductDetailModal';
 import { SidebarHistorial } from '../components/SidebarHistorial';
 import { BottomTabBar, TabNombre } from '../components/BottomTabBar';
 import { useCatalog } from '../hooks/useCatalog';
@@ -26,6 +27,8 @@ interface Props {
 export const HomeScreen = ({ onLogout, user }: Props) => {
   const [currentTab, setCurrentTab] = useState<TabNombre>('home');
   const [isPaymentModalVisible, setPaymentModalVisible] = useState<boolean>(false);
+  const [selectedProductId, setSelectedProductId] = useState<number | string | null>(null);
+  const [isDetailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [alertaAgregarProducto, setAlertaAgregarProducto] = useState<{
     visible: boolean;
     producto?: any;
@@ -184,6 +187,10 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
           removeUnit={cart.removerUnidad}
           setCurrentTab={setCurrentTab}
           totalItemsInCart={cart.totalElementosCarrito}
+          onSelectProduct={(productId) => {
+            setSelectedProductId(productId);
+            setDetailModalVisible(true);
+          }}
         />
       )}
 
@@ -224,6 +231,10 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
                 producto,
               });
             }}
+            onSelectProduct={(productId) => {
+              setSelectedProductId(productId);
+              setDetailModalVisible(true);
+            }}
           />
         </SidebarHistorial>
       )}
@@ -252,6 +263,22 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         onClose={() => setPaymentModalVisible(false)}
         totalPayment={cart.totalPago}
         onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* Modal de Detalle de Producto por ID */}
+      <ProductDetailModal
+        visible={isDetailModalVisible}
+        productId={selectedProductId}
+        onClose={() => {
+          setDetailModalVisible(false);
+          setSelectedProductId(null);
+        }}
+        onAddToCart={(prod) => {
+          setAlertaAgregarProducto({
+            visible: true,
+            producto: prod,
+          });
+        }}
       />
 
       {/* Componente Modular de Navegación Inferior */}
