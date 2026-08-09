@@ -19,7 +19,8 @@ export const useCart = (
   const [productosCarritoChatbot, setProductosCarritoChatbot] = useState<Product[]>([]);
   const [accionesPendientesCarrito, setAccionesPendientesCarrito] = useState<{ [key: string]: boolean }>({});
 
-  const idUsuarioNumerico = parseInt(usuario?.id || '1', 10) || 1;
+  const idBruto = parseInt(usuario?.id || '1', 10);
+  const idUsuarioNumerico = (isNaN(idBruto) || idBruto <= 0 || idBruto > 2147483647) ? 1 : idBruto;
 
   // Cargar carrito activo desde C# API (CartDetailsController)
   const cargarCarritoDesdeBd = async () => {

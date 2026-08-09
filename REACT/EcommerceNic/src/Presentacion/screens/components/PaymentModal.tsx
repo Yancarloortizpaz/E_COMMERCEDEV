@@ -17,7 +17,7 @@ interface PaymentModalProps {
   isVisible: boolean;
   onClose: () => void;
   totalPayment: number;
-  onPaymentSuccess: (method: string) => void;
+  onPaymentSuccess: (method: string, totalAmount?: number, deliveryAddress?: string) => void;
 }
 
 export const PaymentModal = ({
@@ -69,8 +69,10 @@ export const PaymentModal = ({
       return;
     }
 
-    // Callback to parent screen with the payment method
-    onPaymentSuccess(method);
+    const finalAddress = deliveryAddress.trim() || 'Managua - Dirección de Entrega Principal';
+
+    // Callback to parent screen with the payment method, exact total payment and delivery address
+    onPaymentSuccess(method, totalPayment, finalAddress);
     resetForm();
   };
 

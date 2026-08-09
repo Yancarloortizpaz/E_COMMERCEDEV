@@ -15,7 +15,8 @@ export const useChatbot = (
   const [haCargadoHistorial, setHaCargadoHistorial] = useState<boolean>(false);
 
   const correoUsuario = usuario?.email ?? 'demo-user';
-  const idUsuarioNumerico = parseInt(usuario?.id || '1', 10) || 1;
+  const idBruto = parseInt(usuario?.id || '1', 10);
+  const idUsuarioNumerico = (isNaN(idBruto) || idBruto <= 0 || idBruto > 2147483647) ? 1 : idBruto;
 
   const [mensajes, setMensajes] = useState<Message[]>([
     {

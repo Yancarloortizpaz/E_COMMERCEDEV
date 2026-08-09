@@ -105,17 +105,19 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
           <CustomInput
             placeholder="tucorreo@email.com"
             value={email}
-            onChangeText={text => { setError(''); setEmail(text); }}
+            onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoComplete="email"
           />
 
           <Text style={styles.inputLabel}>Contraseña</Text>
           <CustomInput
             placeholder="Contraseña"
             value={password}
-            onChangeText={text => { setError(''); setPassword(text); }}
+            onChangeText={setPassword}
             secureTextEntry
+            autoComplete="current-password"
           />
 
           {error ? (

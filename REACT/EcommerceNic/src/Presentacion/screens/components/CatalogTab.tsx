@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
   TextInput,
   TouchableOpacity,
   Image,
@@ -11,11 +12,15 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-import { CATEGORIES, formatCurrency } from '../constants';
+import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
+import { SubCategory } from '../../../Domain/entities/SubCategory';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useProducts } from '../../hooks/useProducts';
+import { useMarks } from '../../hooks/useMarks';
+import { useSubCategories } from '../../hooks/useSubCategories';
 import { ProductImage } from '../../components/ProductImage';
+import { BrandCarousel } from './BrandCarousel';
 
 interface CatalogTabProps {
   products?: Product[];
@@ -25,6 +30,72 @@ interface CatalogTabProps {
   setCurrentTab: (tab: 'home' | 'cart' | 'chatbot' | 'nosotros') => void;
   totalItemsInCart: number;
 }
+
+const SUBCATEGORY_ICONS: { [key: string]: string } = {
+  masculino: '👕',
+  femenino: '👗',
+  niños: '👦',
+  niñas: '👧',
+  celulares: '📱',
+  computadoras: '💻',
+  componentes: '🖥️',
+  hardware: '🖥️',
+  calzado: '👟',
+  consolas: '🎮',
+};
+
+const SUBCATEGORY_KEYWORDS: { [key: string]: string[] } = {
+  celulares: ['celular', 'celulares', 'phone', 'smartphone', 'mobile', 'iphone', 'galaxy', 'xperia', 'redmi', 'infinix', 'pixel', 'pro max', 'ultra'],
+  computadoras: ['computadora', 'computadoras', 'laptop', 'laptops', 'pc ', 'desktop', 'macbook', 'dell xps'],
+  'componentes de laptop': ['disco duro', 'memoria ram', 'pantalla laptop', 'teclado laptop'],
+  'hardware y periféricos': ['mouse', 'teclado gamer', 'audífono', 'headset', 'camara', 'webcam', 'monitor'],
+  'consolas de videojuegos': ['consola', 'consolas', 'playstation', 'ps5', 'ps4', 'xbox', 'nintendo', 'switch'],
+  'calzado deportivo': ['zapatillas', 'calzado', 'tenis', 'zapato', 'zapatos', 'air max', 'pegasus', 'revolution', 'flyease'],
+  masculino: ['masculino', 'ropa hombre', 'camisa hombre', 'pantalon hombre'],
+  femenino: ['femenino', 'ropa mujer', 'vestido', 'blusa'],
+  niños: ['ropa niños', 'camisa niños'],
+  niñas: ['ropa niñas', 'vestido niñas'],
+};
+
+const getSubCategoryIcon = (name: string): string => {
+  const clean = (name || '').toLowerCase();
+  for (const key in SUBCATEGORY_ICONS) {
+    if (clean.includes(key)) {
+      return SUBCATEGORY_ICONS[key];
+    }
+  }
+  return '📦';
+};
+
+const matchesSubCategory = (product: Product, subCategoryName: string): boolean => {
+  const rawP = product as any;
+  const title = (product.title || rawP.name || '').toLowerCase();
+  const subtitle = (product.subtitle || '').toLowerCase();
+  const desc = (rawP.description || '').toLowerCase();
+  const text = `${title} ${subtitle} ${product.brand || ''} ${product.category || ''} ${desc}`.toLowerCase();
+  const subNameClean = (subCategoryName || '').toLowerCase().trim();
+
+  // Exclusión estricta: Si el producto es Zapatilla / Calzado, jamás es una Computadora ni Consola
+  const isShoes = title.includes('zapatilla') || title.includes('calzado') || title.includes('tenis') || title.includes('zapato') || title.includes('air max') || title.includes('pegasus');
+  if (isShoes && (subNameClean.includes('computadora') || subNameClean.includes('laptop') || subNameClean.includes('consola') || subNameClean.includes('componente'))) {
+    return false;
+  }
+
+  // Coincidencia directa de nombre
+  if (text.includes(subNameClean)) return true;
+
+  // Coincidencia por palabras clave
+  for (const key in SUBCATEGORY_KEYWORDS) {
+    if (subNameClean.includes(key) || key.includes(subNameClean)) {
+      const keywords = SUBCATEGORY_KEYWORDS[key];
+      if (keywords.some(kw => text.includes(kw))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
 
 const SkeletonCard = () => {
   const shimmerAnim = useRef(new Animated.Value(0.3)).current;
@@ -60,56 +131,91 @@ const SkeletonCard = () => {
   );
 };
 
-export const CatalogTab = ({
-  products: initialProducts,
-  cartQuantities,
+// Componente de Tarjeta de Producto Memoizado a Nivel Superior (Sin parpadeos)
+const ProductCardItem = React.memo(({
+  product,
+  currentQuantity,
   addUnit,
   removeUnit,
-  setCurrentTab,
+}: {
+  product: Product;
+  currentQuantity: number;
+  addUnit: (id: string) => void;
+  removeUnit: (id: string) => void;
+}) => {
+  return (
+    <View style={styles.card}>
+      <View style={styles.imageWrapper}>
+        <ProductImage url={product.image} style={styles.productImage} />
+        <View style={styles.tagsContainer}>
+          {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
+          <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
+        </View>
+      </View>
+      <View style={styles.cardInfo}>
+        <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
+        <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
+        <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
+      </View>
+
+      <View style={styles.priceRow}>
+        <View>
+          <Text style={styles.priceLabel}>PRECIO</Text>
+          <Text style={styles.productPrice}>{formatCurrency(product.numericPrice)}</Text>
+        </View>
+        
+        {currentQuantity === 0 ? (
+          <TouchableOpacity 
+            style={styles.addButtonCircular} 
+            activeOpacity={0.7} 
+            onPress={() => addUnit(product.id)}
+          >
+            <Text style={styles.addButtonCircularText}>+</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.quantityContainerMini}>
+            <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
+              <Text style={styles.miniQtyBtnText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.miniQtyText}>{currentQuantity}</Text>
+            <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
+              <Text style={styles.miniQtyBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+});
+
+// Componente de Cabecera Memoizado a Nivel Superior (Con Subcategorías de SQL Server)
+const CatalogHeader = React.memo(({
+  search,
+  setSearch,
+  subCategorias,
+  subCategoriaSeleccionadaId,
+  onSeleccionarSubCategoria,
   totalItemsInCart,
-}: CatalogTabProps) => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 400);
-
-  // Determinar término de búsqueda para la API
-  const selectedCategoryObj = CATEGORIES.find(c => c.id === selectedCategory);
-  const categorySearchTerm = (selectedCategory !== 'all' && selectedCategoryObj) ? selectedCategoryObj.name : '';
-  const searchTermForApi = debouncedSearch.trim().length > 0 ? debouncedSearch : categorySearchTerm;
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useProducts(searchTermForApi);
-
-  const displayProductsRaw: Product[] = data?.pages
-    ? data.pages.flatMap(page => page.mappedProducts || [])
-    : (initialProducts || []);
-
-  const displayProducts = useMemo(() => {
-    const seen = new Set<string>();
-    return displayProductsRaw.filter(product => {
-      if (!product || !product.id) return false;
-      if (seen.has(product.id)) return false;
-      seen.add(product.id);
-      return true;
-    });
-  }, [displayProductsRaw]);
-
-  const handleEndReached = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-
-  const renderHeader = () => (
-    <View>
+  setCurrentTab,
+  marcas,
+  marcaSeleccionadaId,
+  seleccionarMarca,
+  onLimpiarTodo,
+}: {
+  search: string;
+  setSearch: (text: string) => void;
+  subCategorias: SubCategory[];
+  subCategoriaSeleccionadaId: number | null;
+  onSeleccionarSubCategoria: (id: number | null) => void;
+  totalItemsInCart: number;
+  setCurrentTab: (tab: any) => void;
+  marcas: any[];
+  marcaSeleccionadaId: number | null;
+  seleccionarMarca: (id: number | null) => void;
+  onLimpiarTodo: () => void;
+}) => {
+  return (
+    <View style={styles.headerWrapper}>
       <View style={styles.header}>
         <View style={styles.profileSection}>
           <Image source={require('../../../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
@@ -133,6 +239,7 @@ export const CatalogTab = ({
         </View>
       </View>
 
+      {/* Buscador Inmutable */}
       <View style={styles.searchContainer}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
@@ -144,33 +251,136 @@ export const CatalogTab = ({
         />
       </View>
 
+      {/* Carrusel Horizontal de Subcategorías Reales de SQL Server */}
       <View style={styles.categoriesContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={CATEGORIES}
-          keyExtractor={(cat) => cat.id}
-          renderItem={({ item: cat }) => (
-            <TouchableOpacity
-              onPress={() => setSelectedCategory(cat.id)}
-              style={[styles.categoryPill, selectedCategory === cat.id && styles.categoryPillActive]}
-            >
-              <Text style={[styles.categoryText, selectedCategory === cat.id && styles.categoryTextActive]}>
-                {cat.name}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}>
+          <TouchableOpacity
+            onPress={() => onSeleccionarSubCategoria(null)}
+            style={[styles.categoryPill, subCategoriaSeleccionadaId === null && styles.categoryPillActive]}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.categoryText, subCategoriaSeleccionadaId === null && styles.categoryTextActive]}>
+              ⚡ Todo
+            </Text>
+          </TouchableOpacity>
+
+          {subCategorias.map((sub) => {
+            const isSelected = subCategoriaSeleccionadaId === sub.subCategoryId;
+            const icon = getSubCategoryIcon(sub.subCategoryName);
+
+            return (
+              <TouchableOpacity
+                key={sub.subCategoryId}
+                onPress={() => onSeleccionarSubCategoria(sub.subCategoryId)}
+                style={[styles.categoryPill, isSelected && styles.categoryPillActive]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>
+                  {icon} {sub.subCategoryName}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
+
+      {/* Carrusel Horizontal de Marcas Populares */}
+      <BrandCarousel
+        marcas={marcas}
+        marcaSeleccionadaId={marcaSeleccionadaId}
+        onSeleccionarMarca={seleccionarMarca}
+      />
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Catálogo de Productos</Text>
-        <TouchableOpacity onPress={() => { setSelectedCategory('all'); setSearch(''); }}>
+        <TouchableOpacity onPress={onLimpiarTodo}>
           <Text style={styles.seeAllLink}>Ver todo</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
+});
+
+export const CatalogTab = ({
+  products: initialProducts,
+  cartQuantities,
+  addUnit,
+  removeUnit,
+  setCurrentTab,
+  totalItemsInCart,
+}: CatalogTabProps) => {
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+
+  const { marcas, marcaSeleccionadaId, seleccionarMarca } = useMarks();
+  const { subCategorias, subCategoriaSeleccionadaId, seleccionarSubCategoria } = useSubCategories();
+
+  // Consultar API pasando solo la búsqueda por texto del usuario para no limitar la consulta
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useProducts(debouncedSearch);
+
+  const displayProductsRaw: Product[] = data?.pages
+    ? data.pages.flatMap(page => page.mappedProducts || [])
+    : (initialProducts || []);
+
+  const displayProducts = useMemo(() => {
+    const seen = new Set<string>();
+    let filtered = displayProductsRaw.filter(product => {
+      if (!product || !product.id) return false;
+      if (seen.has(product.id)) return false;
+      seen.add(product.id);
+      return true;
+    });
+
+    // Filtrar por Marca seleccionada
+    if (marcaSeleccionadaId !== null) {
+      const marcaObj = marcas.find(m => m.markId === marcaSeleccionadaId);
+      if (marcaObj) {
+        const nombreMarca = marcaObj.markName.toLowerCase();
+        filtered = filtered.filter(p => {
+          const rawP = p as any;
+          const title = (p.title || rawP.name || '').toLowerCase();
+          const subtitle = (p.subtitle || '').toLowerCase();
+          const desc = (rawP.description || '').toLowerCase();
+          return title.includes(nombreMarca) || subtitle.includes(nombreMarca) || desc.includes(nombreMarca);
+        });
+      }
+    }
+
+    // Filtrar por Subcategoría seleccionada con sistema inteligente de palabras clave
+    if (subCategoriaSeleccionadaId !== null) {
+      const subObj = subCategorias.find(s => s.subCategoryId === subCategoriaSeleccionadaId);
+      if (subObj) {
+        filtered = filtered.filter(p => matchesSubCategory(p, subObj.subCategoryName));
+      }
+    }
+
+    return filtered;
+  }, [displayProductsRaw, marcaSeleccionadaId, marcas, subCategoriaSeleccionadaId, subCategorias]);
+
+  const handleEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  const handleLimpiarTodo = () => {
+    setSearch('');
+    seleccionarSubCategoria(null);
+    seleccionarMarca(null);
+  };
+
+  const subObjActivo = useMemo(() => {
+    return subCategorias.find(s => s.subCategoryId === subCategoriaSeleccionadaId);
+  }, [subCategorias, subCategoriaSeleccionadaId]);
 
   const renderFooter = () => {
     if (isFetchingNextPage) {
@@ -191,63 +401,7 @@ export const CatalogTab = ({
     return null;
   };
 
-  const ProductCardItem = React.memo(({
-    product,
-    currentQuantity,
-    addUnit,
-    removeUnit,
-  }: {
-    product: Product;
-    currentQuantity: number;
-    addUnit: (id: string) => void;
-    removeUnit: (id: string) => void;
-  }) => {
-    return (
-      <View style={styles.card}>
-        <View style={styles.imageWrapper}>
-          <ProductImage url={product.image} style={styles.productImage} />
-          <View style={styles.tagsContainer}>
-            {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
-            <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
-          </View>
-        </View>
-        <View style={styles.cardInfo}>
-          <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
-          <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
-          <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
-        </View>
-
-        <View style={styles.priceRow}>
-          <View>
-            <Text style={styles.priceLabel}>PRECIO</Text>
-            <Text style={styles.productPrice}>{formatCurrency(product.numericPrice)}</Text>
-          </View>
-          
-          {currentQuantity === 0 ? (
-            <TouchableOpacity 
-              style={styles.addButtonCircular} 
-              activeOpacity={0.7} 
-              onPress={() => addUnit(product.id)}
-            >
-              <Text style={styles.addButtonCircularText}>+</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.quantityContainerMini}>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
-                <Text style={styles.miniQtyBtnText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.miniQtyText}>{currentQuantity}</Text>
-              <TouchableOpacity style={styles.miniQtyBtn} onPress={() => addUnit(product.id)}>
-                <Text style={styles.miniQtyBtnText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  });
-
-  const renderItem = React.useCallback(
+  const renderItem = useCallback(
     ({ item: product }: { item: Product }) => (
       <ProductCardItem
         product={product}
@@ -259,11 +413,37 @@ export const CatalogTab = ({
     [cartQuantities, addUnit, removeUnit]
   );
 
+  const headerComponent = useMemo(() => (
+    <CatalogHeader
+      search={search}
+      setSearch={setSearch}
+      subCategorias={subCategorias}
+      subCategoriaSeleccionadaId={subCategoriaSeleccionadaId}
+      onSeleccionarSubCategoria={seleccionarSubCategoria}
+      totalItemsInCart={totalItemsInCart}
+      setCurrentTab={setCurrentTab}
+      marcas={marcas}
+      marcaSeleccionadaId={marcaSeleccionadaId}
+      seleccionarMarca={seleccionarMarca}
+      onLimpiarTodo={handleLimpiarTodo}
+    />
+  ), [
+    search,
+    subCategorias,
+    subCategoriaSeleccionadaId,
+    totalItemsInCart,
+    setCurrentTab,
+    marcas,
+    marcaSeleccionadaId,
+    seleccionarMarca,
+    seleccionarSubCategoria,
+  ]);
+
   return (
     <View style={styles.tabContent}>
       {isLoading ? (
         <View style={{ flex: 1 }}>
-          {renderHeader()}
+          {headerComponent}
           <View style={styles.grid}>
             <SkeletonCard />
             <SkeletonCard />
@@ -273,7 +453,7 @@ export const CatalogTab = ({
         </View>
       ) : isError ? (
         <View style={{ flex: 1 }}>
-          {renderHeader()}
+          {headerComponent}
           <View style={styles.emptyContainer}>
             <Text style={{ fontSize: 40, marginBottom: 12 }}>📡</Text>
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A' }}>Error al cargar productos</Text>
@@ -292,13 +472,29 @@ export const CatalogTab = ({
           numColumns={2}
           columnWrapperStyle={styles.row}
           renderItem={renderItem}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={headerComponent}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={{ fontSize: 40, marginBottom: 12 }}>🔍</Text>
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A' }}>No hay resultados</Text>
-              <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4 }}>Prueba con otra búsqueda o categoría</Text>
+              <Text style={{ fontSize: 40, marginBottom: 12 }}>
+                {subCategoriaSeleccionadaId !== null ? '📱' : '🔍'}
+              </Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>
+                {subCategoriaSeleccionadaId !== null && subObjActivo
+                  ? `Sin resultados para "${subObjActivo.subCategoryName}"`
+                  : 'No hay productos que coincidan'}
+              </Text>
+              <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4, textAlign: 'center', paddingHorizontal: 20 }}>
+                {subCategoriaSeleccionadaId !== null
+                  ? 'Intenta seleccionar otra subcategoría o ver la lista completa de productos.'
+                  : 'Prueba seleccionando otra subcategoría, marca o limpiando los filtros.'}
+              </Text>
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={handleLimpiarTodo}
+              >
+                <Text style={styles.retryButtonText}>✨ Ver todos los productos</Text>
+              </TouchableOpacity>
             </View>
           }
           onEndReached={handleEndReached}
@@ -318,6 +514,7 @@ export const CatalogTab = ({
 const styles = StyleSheet.create({
   tabContent: { flex: 1, paddingBottom: 68 },
   scrollPadding: { paddingBottom: 20 },
+  headerWrapper: { backgroundColor: '#FFFFFF', paddingBottom: 4 },
   row: { justifyContent: 'space-between', paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, marginBottom: 16 },
   profileSection: { flexDirection: 'row', alignItems: 'center' },
@@ -366,8 +563,8 @@ const styles = StyleSheet.create({
       } as any,
     }),
   },  
-  categoriesContainer: { paddingLeft: 20, marginBottom: 20, flexDirection: 'row' },
-  categoryPill: { paddingHorizontal: 18, height: 38, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  categoriesContainer: { marginBottom: 20 },
+  categoryPill: { paddingHorizontal: 18, height: 38, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 10, flexDirection: 'row' },
   categoryPillActive: { backgroundColor: '#4F46E5' },
   categoryText: { fontSize: 13, color: '#64748B', fontWeight: '700' },
   categoryTextActive: { color: '#FFFFFF' },

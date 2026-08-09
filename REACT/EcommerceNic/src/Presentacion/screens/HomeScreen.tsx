@@ -5,6 +5,7 @@ import { formatCurrency } from './constants';
 import { CatalogTab } from './components/CatalogTab';
 import { CartTab } from './components/CartTab';
 import { ChatbotTab } from './components/ChatbotTab';
+import { OrdersTab } from './components/OrdersTab';
 import { NosotrosTab } from './components/NosotrosTab';
 import { PaymentModal } from './components/PaymentModal';
 import { SidebarHistorial } from '../components/SidebarHistorial';
@@ -12,6 +13,7 @@ import { BottomTabBar, TabNombre } from '../components/BottomTabBar';
 import { useCatalog } from '../hooks/useCatalog';
 import { useCart } from '../hooks/useCart';
 import { useChatbot } from '../hooks/useChatbot';
+import { useOrders } from '../hooks/useOrders';
 import { COLORES } from '../theme/theme';
 
 import { CustomAlertModal } from '../components/CustomAlertModal';
@@ -45,16 +47,53 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const { productos } = useCatalog();
   const cart = useCart(user, productos, currentTab);
   const chatbot = useChatbot(user, cart.agregarProductoAlCarrito);
+  const orders = useOrders(user, currentTab);
 
-  // Manejo de Confirmación de Pago
-  const handlePaymentSuccess = async (method: string) => {
+  // Manejo de Confirmación de Pago con Registro e Inserción Real en la BD/API
+  const handlePaymentSuccess = async (method: string, totalAmountFromModal?: number, addressFromModal?: string) => {
+    // 1. Capturar la suma exacta mostrada en el checkout (ej. C$ 3,830)
+    const montoTotalPagado = (totalAmountFromModal && totalAmountFromModal > 0)
+      ? totalAmountFromModal
+      : (cart.totalPago > 0 ? cart.totalPago : 0);
+
+    const direccionFinal = addressFromModal || 'Managua - Dirección de Entrega Principal';
+
+    // 2. Capturar los ítems exactos comprados del carrito con resolución inteligente de fotos
+    const itemsComprados = (cart.elementosCarritoBd || []).map(item => {
+      const pId = item.varianteId || item.productoId || 0;
+      const qty = cart.cantidadesCarrito[pId] || item.cantidad || 1;
+      const price = item.precioUnitario || 0;
+
+      const prodEncontrado = productos.find(p => String(p.id) === String(item.productoId) || String(p.productVariableId) === String(pId));
+      const rawItem = item as any;
+      const img = item.productoImagenUrl || item.ProductoImagenUrl || rawItem.imagenUrl || rawItem.imagen || rawItem.image || prodEncontrado?.image;
+
+      return {
+        paymentOrderDetailId: Math.floor(Math.random() * 10000),
+        productVariableId: pId,
+        productName: item.productoNombre || item.ProductoNombre || prodEncontrado?.title || 'Producto',
+        productDescription: item.varianteEspecificacion || item.productoDescripcion || '',
+        productImageURL: img,
+        productoImagenUrl: img,
+        price: price,
+        quantity: qty,
+        total: price * qty,
+        currencyISO: 'NIO',
+      };
+    });
+
     setPaymentModalVisible(false);
+
+    // 3. Registrar la compra con dirección, fecha/hora e ítems detallados
+    await orders.registrarOrdenDePago(montoTotalPagado, method, direccionFinal, itemsComprados);
+
+    // 4. Vaciar el carrito DESPUÉS de haber guardado la orden
     await cart.vaciarCarrito();
 
     Alert.alert(
       '📦 ¡Pedido Procesado con Éxito!',
-      `Monto: ${formatCurrency(cart.totalPago)}\nMétodo: ${method}\n\nPronto nos pondremos en contacto para coordinar la entrega. ¡Gracias por comprar en Nic Store!`,
-      [{ text: '¡Excelente!', onPress: () => setCurrentTab('home') }]
+      `Monto: ${formatCurrency(montoTotalPagado)}\nMétodo: ${method}\n\nPronto nos pondremos en contacto para coordinar la entrega. ¡Gracias por comprar en Nic Store!`,
+      [{ text: 'Ver Mis Pedidos', onPress: () => setCurrentTab('pedidos') }]
     );
   };
 
@@ -187,6 +226,20 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
             }}
           />
         </SidebarHistorial>
+      )}
+
+      {currentTab === 'pedidos' && (
+        <OrdersTab
+          ordenes={orders.ordenes}
+          cargandoOrdenes={orders.cargandoOrdenes}
+          ordenSeleccionada={orders.ordenSeleccionada}
+          detallesOrdenSeleccionada={orders.detallesOrdenSeleccionada}
+          cargandoDetalles={orders.cargandoDetalles}
+          cargarDetallesOrden={orders.cargarDetallesOrden}
+          cerrarModalDetalle={orders.cerrarModalDetalle}
+          refetch={orders.refetch}
+          setCurrentTab={setCurrentTab}
+        />
       )}
 
       {currentTab === 'nosotros' && (

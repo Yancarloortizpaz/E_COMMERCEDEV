@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORES, ESTILOS_SOMBRA } from '../theme/theme';
 
-export type TabNombre = 'home' | 'cart' | 'chatbot' | 'nosotros';
+export type TabNombre = 'home' | 'cart' | 'chatbot' | 'pedidos' | 'nosotros';
 
 interface Props {
   pestañaActual: TabNombre;
@@ -63,6 +63,17 @@ export const BottomTabBar: React.FC<Props> = ({
         </View>
         <Text style={[styles.textoTab, pestañaActual === 'cart' && styles.textoTabActivo]}>
           Carrito
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.itemTab}
+        onPress={() => alSeleccionarPestaña('pedidos')}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.iconoBase, pestañaActual === 'pedidos' && styles.iconoActivo]}>📦</Text>
+        <Text style={[styles.textoTab, pestañaActual === 'pedidos' && styles.textoTabActivo]}>
+          Pedidos
         </Text>
       </TouchableOpacity>
 

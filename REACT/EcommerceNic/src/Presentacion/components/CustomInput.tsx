@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TextInput, StyleSheet, TextInputProps, TouchableOpacity, Image, Platform } from 'react-native';
 
 interface Props extends TextInputProps {
@@ -6,76 +6,69 @@ interface Props extends TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
+  isPassword?: boolean;
 }
 
-export const CustomInput = ({ placeholder, value, onChangeText, secureTextEntry, onFocus, onBlur, ...rest }: Props) => {
+export const CustomInput = ({
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+  isPassword,
+  onFocus,
+  onBlur,
+  ...rest
+}: Props) => {
   const [isSecure, setIsSecure] = useState(secureTextEntry);
-  const [isFocused, setIsFocused] = useState(false);
-  
-  const textLower = placeholder.toLowerCase();
-  const isPassword = secureTextEntry || textLower.includes('contraseña') || textLower.includes('mínimo');
+  const inputRef = useRef<TextInput>(null);
 
-  const handleFocus = (e: any) => {
-    setIsFocused(true);
-    if (onFocus) onFocus(e);
-  };
-
-  const handleBlur = (e: any) => {
-    setIsFocused(false);
-    if (onBlur) onBlur(e);
-  };
+  const esCampoPassword = isPassword !== undefined ? isPassword : Boolean(secureTextEntry);
 
   return (
-    <View style={[
-      styles.inputContainer,
-      isFocused ? styles.inputContainerFocused : styles.inputContainerUnfocused
-    ]}>
-      
-      {/* 1. ICONO IZQUIERDO */}
+    <View style={styles.inputContainer}>
+      {/* 1. ICONO IZQUIERDO ESTABLE (Sin mutación ni evaluaciones de string) */}
       <Image 
         source={
-          isPassword 
+          esCampoPassword 
             ? require('../../../assets/Candado.png') 
             : require('../../../assets/loginGmail.png')
         } 
-        style={[
-          styles.iconImageLeft,
-          isFocused ? styles.iconFocused : styles.iconUnfocused
-        ]} 
+        style={styles.iconImageLeft} 
         resizeMode="contain" 
       />
 
-      {/* 2. CAMPO DE TEXTO */}
+      {/* 2. CAMPO DE TEXTO CON REFERENCIA PERSISTENTE */}
       <TextInput
+        ref={inputRef}
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={isSecure}
         placeholderTextColor="#94A3B8"
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        onFocus={onFocus}
+        onBlur={onBlur}
         style={styles.input}
         {...rest}
       />
 
       {/* 3. ICONO DERECHO: Ver/ocultar contraseña */}
-      {isPassword && (
-        <TouchableOpacity onPress={() => setIsSecure(!isSecure)} activeOpacity={0.7}>
+      {esCampoPassword && (
+        <TouchableOpacity
+          onPress={() => setIsSecure(!isSecure)}
+          activeOpacity={0.7}
+          style={styles.rightIconWrapper}
+        >
           <Image 
             source={
               isSecure 
                 ? require('../../../assets/invisible.png') 
                 : require('../../../assets/visible.png')
             }
-            style={[
-              styles.iconImageRight,
-              isFocused ? styles.iconFocused : styles.iconUnfocused
-            ]}
+            style={styles.iconImageRight}
             resizeMode="contain"
           />
         </TouchableOpacity>
       )}
-
     </View>
   );
 };
@@ -86,6 +79,8 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 14,          
     borderWidth: 1.5,
+    borderColor: '#CBD5E1', // Slate-300 permanente y estable sin mutaciones de estado
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',       
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -103,27 +98,11 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
-  inputContainerFocused: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#4F46E5', // Indigo-600
-    shadowColor: '#4F46E5',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-  },
-  inputContainerUnfocused: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0', // Slate-200
-  },
   iconImageLeft: {
     width: 20,
     height: 20,
     marginRight: 12,
-  },
-  iconFocused: {
-    tintColor: '#4F46E5',
-  } as any,
-  iconUnfocused: {
-    tintColor: '#94A3B8',
+    tintColor: '#64748B',
   } as any,
   input: {
     flex: 1,
@@ -138,9 +117,13 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
+  rightIconWrapper: {
+    padding: 4,
+  },
   iconImageRight: {
     width: 22,
     height: 22,
-    marginLeft: 10,
-  }
+    marginLeft: 6,
+    tintColor: '#64748B',
+  } as any,
 });

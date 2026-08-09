@@ -61,7 +61,9 @@ export const ContenedorFormularioTeclado: React.FC<PropiedadesContenedorTeclado>
     </KeyboardAvoidingView>
   );
 
-  if (cerrarTecladoAlTocarFuera) {
+  // En entorno Web, TouchableWithoutFeedback intercepta los clics en la emergente de contraseñas guardadas de Chrome/Edge
+  // y ejecuta Keyboard.dismiss(), desenfocando el input y expulsando el cursor. Se restringe únicamente a móvil (iOS/Android).
+  if (cerrarTecladoAlTocarFuera && Platform.OS !== 'web') {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={estilosBase.contenedorPrincipal}>
