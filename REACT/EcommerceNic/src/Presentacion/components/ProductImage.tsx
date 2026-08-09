@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Image, View, ActivityIndicator, StyleSheet, ImageStyle, ViewStyle } from 'react-native';
+import { API_CONFIG } from '../../Data/dataSources/apiConfig';
 
 const FALLBACK_LOGO = require('../../../assets/logo.png');
 
@@ -13,7 +14,12 @@ export const ProductImage = React.memo(({ url, style, containerStyle }: Props) =
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(!!url);
 
-  const isValidUrl = url && url.trim().length > 0 && !hasError;
+  let finalUrl: string | undefined = url || undefined;
+  if (finalUrl && finalUrl.startsWith('/')) {
+    finalUrl = `${API_CONFIG.BASE_URL}${finalUrl}`;
+  }
+
+  const isValidUrl = Boolean(finalUrl && finalUrl.trim().length > 0 && !hasError);
 
   return (
     <View style={[styles.container, style, containerStyle]}>
@@ -23,9 +29,9 @@ export const ProductImage = React.memo(({ url, style, containerStyle }: Props) =
         </View>
       )}
 
-      {isValidUrl ? (
+      {isValidUrl && finalUrl ? (
         <Image
-          source={{ uri: url }}
+          source={{ uri: finalUrl }}
           style={[StyleSheet.absoluteFill, style]}
           resizeMode="cover"
           onLoad={() => setIsLoading(false)}
@@ -62,7 +68,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   placeholderContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',

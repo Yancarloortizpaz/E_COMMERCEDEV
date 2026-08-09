@@ -50,10 +50,10 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
         };
       case 'exito':
         return {
-          icono: '✅',
-          fondoIcono: '#D1FAE5',
-          colorIcono: '#10B981',
-          colorBotonConfirmar: '#10B981',
+          icono: '🛒',
+          fondoIcono: '#DBEAFE',
+          colorIcono: '#3B82F6',
+          colorBotonConfirmar: '#3B82F6',
           textoBotonPorDefecto: 'Aceptar',
         };
       case 'advertencia':
@@ -115,7 +115,7 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
 
             {/* Botones de Acción */}
             <View style={styles.filaBotones}>
-              {tipo === 'eliminacion' && (
+              {esModoConfirmacion && (
                 <TouchableOpacity
                   style={styles.botonCancelar}
                   onPress={handleCancelar}
@@ -129,7 +129,7 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
                 style={[
                   styles.botonConfirmar,
                   { backgroundColor: config.colorBotonConfirmar },
-                  tipo !== 'eliminacion' && { flex: 1 },
+                  !esModoConfirmacion && { flex: 1 },
                 ]}
                 onPress={handleConfirmar}
                 activeOpacity={0.8}

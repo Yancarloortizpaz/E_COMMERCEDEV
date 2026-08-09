@@ -191,14 +191,14 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="Tu nombre completo"
             value={name}
-            onChangeText={text => { setErrorMessage(''); setName(text); }}
+            onChangeText={setName}
           />
 
           <Text style={styles.inputLabel}>Nombre de Usuario</Text>
           <CustomInput
             placeholder="Tu nombre de usuario"
             value={username}
-            onChangeText={text => { setErrorMessage(''); setUsername(text); }}
+            onChangeText={setUsername}
             autoCapitalize="none"
           />
 
@@ -206,7 +206,7 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="tucorreo@email.com"
             value={email}
-            onChangeText={text => { setErrorMessage(''); setEmail(text); }}
+            onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -215,7 +215,7 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="Número de teléfono"
             value={phone}
-            onChangeText={text => { setErrorMessage(''); setPhone(text); }}
+            onChangeText={setPhone}
             keyboardType="phone-pad"
           />
 
@@ -224,7 +224,6 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
             <Picker
               selectedValue={countryId ?? ''}
               onValueChange={value => {
-                setErrorMessage('');
                 setCountryId(Number(value));
               }}
               style={styles.picker}
@@ -242,7 +241,6 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
             <Picker
               selectedValue={genderId ?? ''}
               onValueChange={value => {
-                setErrorMessage('');
                 setGenderId(Number(value));
               }}
               style={styles.picker}
@@ -259,7 +257,7 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="dd/mm/yyyy"
             value={birthday}
-            onChangeText={text => { setErrorMessage(''); setBirthday(text); }}
+            onChangeText={setBirthday}
             keyboardType="numbers-and-punctuation"
           />
 
@@ -267,7 +265,7 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="Mínimo 6 caracteres"
             value={password}
-            onChangeText={text => { setErrorMessage(''); setPassword(text); }}
+            onChangeText={setPassword}
             secureTextEntry
           />
 
@@ -275,7 +273,7 @@ export const RegisterScreen = ({ onRegisterSuccess, onBackToLogin }: Props) => {
           <CustomInput
             placeholder="Repite tu contraseña"
             value={confirmPassword}
-            onChangeText={text => { setErrorMessage(''); setConfirmPassword(text); }}
+            onChangeText={setConfirmPassword}
             secureTextEntry
           />
 

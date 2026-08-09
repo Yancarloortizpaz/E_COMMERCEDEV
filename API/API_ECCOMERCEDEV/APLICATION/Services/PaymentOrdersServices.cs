@@ -32,6 +32,7 @@ namespace APLICATION.Services
             {
                 orderUserId = dto.orderUserId,
                 orderDeliveryAddress = dto.orderDeliveryAddress,
+                orderPaymentMethodId = dto.orderPaymentMethodId,
                 orderCreatorId = dto.orderCreatorId,
                 orderStatusId = dto.orderStatusId
             };
