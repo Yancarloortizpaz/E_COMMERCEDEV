@@ -64,6 +64,7 @@ BEGIN
         P.StockAvilable, 
         P.StockFactoryDate, 
         P.StockExpirationDate,
+		p.ProductImageURL,
         -- LOGICA CORE: Suma base de prioridades multiplicado por la cantidad de tokens únicos acertados
         SUM(
             CASE 
@@ -92,7 +93,7 @@ BEGIN
         P.ProductID, P.ProductName, P.ProductVariableID, P.ProductVariableName, P.ProductVariablePrice,
         P.CurrencyID, P.CurrencyISO, P.CategoryID, P.CategoryName, P.SubcategoryID, P.SubcategoryName,
         P.SegmentID, P.SegmentName, P.MarkID, P.MarkName, P.ProviderID, P.ProviderName, P.StockID,
-        P.StockAvilable, P.StockFactoryDate, P.StockExpirationDate
+        P.StockAvilable, P.StockFactoryDate, P.StockExpirationDate, p.ProductImageURL
     HAVING 
         -- FILTRO EXIGENTE: Si el usuario escribe múltiples palabras, exigimos que el producto 
         -- contenga al menos más de un token coincidente para evitar cruces basura (como laptops en calzado)
@@ -105,3 +106,5 @@ GO
 
 
 select *   FROM DB_ECOMMERCE.SQM_GENERAL.VW_GENERAL_PRODUCTS
+
+EXEC dbo.SP_ListarGeneralProducts_Filtro 'dell';

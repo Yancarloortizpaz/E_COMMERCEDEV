@@ -112,7 +112,7 @@ export const useCart = (
   }, [elementosCarritoBd]);
 
   // Incremento optimista de unidades
-  const agregarUnidad = async (id: string, itemPasado?: CartItem) => {
+  const agregarUnidad = async (id: string, itemPasado?: CartItem, cantidadAIncrementar: number = 1) => {
     if (accionesPendientesCarrito[id]) return;
     setAccionesPendientesCarrito(prev => ({ ...prev, [id]: true }));
 
@@ -128,7 +128,7 @@ export const useCart = (
 
     const idDetalle = itemExistente?.DetalleCarritoId ?? itemExistente?.detalleCarritoId ?? 0;
     const cantidadActual = itemExistente?.Cantidad ?? itemExistente?.cantidad ?? 0;
-    const cantidadSiguiente = cantidadActual + 1;
+    const cantidadSiguiente = cantidadActual + cantidadAIncrementar;
 
     // Actualización optimista del estado local
     if (itemExistente) {
@@ -150,6 +150,7 @@ export const useCart = (
       const productoCoincidente = productosCatalogo.find(p => p.id === id) ||
         productosCarritoChatbot.find(p => p.id === id);
       const varId = productoCoincidente?.productVariableId || idObjetivo;
+      const precioUnit = productoCoincidente?.numericPrice || 0;
       const itemTemporal: CartItem = {
         DetalleCarritoId: 9999000 + Math.floor(Math.random() * 1000),
         detalleCarritoId: 9999000 + Math.floor(Math.random() * 1000),
@@ -159,12 +160,12 @@ export const useCart = (
         productoNombre: productoCoincidente?.title || 'Producto',
         ProductoImagenUrl: productoCoincidente?.image,
         productoImagenUrl: productoCoincidente?.image,
-        PrecioUnitario: productoCoincidente?.numericPrice || 0,
-        precioUnitario: productoCoincidente?.numericPrice || 0,
-        Cantidad: 1,
-        cantidad: 1,
-        SubTotalFila: productoCoincidente?.numericPrice || 0,
-        subTotalFila: productoCoincidente?.numericPrice || 0,
+        PrecioUnitario: precioUnit,
+        precioUnitario: precioUnit,
+        Cantidad: cantidadSiguiente,
+        cantidad: cantidadSiguiente,
+        SubTotalFila: precioUnit * cantidadSiguiente,
+        subTotalFila: precioUnit * cantidadSiguiente,
         cartDetailStatusId: 1,
       };
       setElementosCarritoBd(prev => [...prev, itemTemporal]);
@@ -177,7 +178,7 @@ export const useCart = (
         const productoCoincidente = productosCatalogo.find(p => p.id === id) ||
           productosCarritoChatbot.find(p => p.id === id);
         const varId = productoCoincidente?.productVariableId || idObjetivo;
-        const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, 1);
+        const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, cantidadSiguiente);
         if (typeof res === 'number' && res > 0) {
           setElementosCarritoBd(prev => prev.map(item => {
             if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
@@ -195,7 +196,7 @@ export const useCart = (
           const productoCoincidente = productosCatalogo.find(p => p.id === id) ||
             productosCarritoChatbot.find(p => p.id === id);
           const varId = productoCoincidente?.productVariableId || idObjetivo;
-          const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, 1);
+          const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, cantidadSiguiente);
           if (typeof res === 'number' && res > 0) {
             setElementosCarritoBd(prev => prev.map(item => {
               if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
@@ -232,7 +233,7 @@ export const useCart = (
     }
   };
 
-  const agregarProductoAlCarrito = async (producto: any) => {
+  const agregarProductoAlCarrito = async (producto: any, cantidadManual?: number) => {
     const rawId = producto?.productVariableId ?? producto?.ProductVariableID ?? producto?.ProductVariableId ?? producto?.ProductID ?? producto?.ProductId ?? producto?.id;
     const varIdNumerico = Number(rawId || 0);
 
@@ -241,8 +242,9 @@ export const useCart = (
       throw new Error('El producto no contiene un ID de variante válido para registrarse en el carrito.');
     }
 
-    console.log(`🛒 [agregarProductoAlCarrito] Insertando en C# API con productVariableId: ${varIdNumerico}, userId: ${idUsuarioNumerico}`);
-    await agregarUnidad(varIdNumerico.toString());
+    const cantidadFinal = cantidadManual || producto?.quantity || producto?.Cantidad || 1;
+    console.log(`🛒 [agregarProductoAlCarrito] Insertando en C# API con productVariableId: ${varIdNumerico}, cantidad: ${cantidadFinal}, userId: ${idUsuarioNumerico}`);
+    await agregarUnidad(varIdNumerico.toString(), undefined, cantidadFinal);
   };
 
   // Decremento optimista de unidades
@@ -379,8 +381,15 @@ export const useCart = (
     }
   };
 
-  // Cálculos de totales
-  const totalElementosCarrito = Object.values(cantidadesCarrito).reduce((acc, qty) => acc + qty, 0);
+  // Cálculos de totales exactos
+  const totalElementosCarrito = elementosCarritoBd.reduce((acc, item) => {
+    const qty = item.Cantidad ?? item.cantidad ?? 0;
+    const status = item.cartDetailStatusId;
+    if (item && qty > 0 && status !== 0 && status !== false) {
+      return acc + qty;
+    }
+    return acc;
+  }, 0);
 
   const mapaTodosProductos = new Map<string, Product>();
   [...productosCatalogo, ...productosCarritoChatbot].forEach(p => {

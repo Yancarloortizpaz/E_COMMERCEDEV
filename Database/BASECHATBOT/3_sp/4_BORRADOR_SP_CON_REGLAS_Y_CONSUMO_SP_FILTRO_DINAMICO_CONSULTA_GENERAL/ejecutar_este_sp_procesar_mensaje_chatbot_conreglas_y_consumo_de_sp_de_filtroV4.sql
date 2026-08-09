@@ -139,6 +139,7 @@ BEGIN
             CategoryName VARCHAR(50), SubcategoryID INT, SubcategoryName VARCHAR(50), SegmentID INT,
             SegmentName VARCHAR(50), MarkID INT, MarkName VARCHAR(50), ProviderID INT,
             ProviderName VARCHAR(50), StockID INT, StockAvilable INT, StockFactoryDate DATE, StockExpirationDate DATE,
+            ProductImageURL VARCHAR(MAX),
             CoincidenceScore INT
         );
 
@@ -273,6 +274,7 @@ BEGIN
                     CategoryName VARCHAR(50), SubcategoryID INT, SubcategoryName VARCHAR(50), SegmentID INT,
                     SegmentName VARCHAR(50), MarkID INT, MarkName VARCHAR(50), ProviderID INT,
                     ProviderName VARCHAR(50), StockID INT, StockAvilable INT, StockFactoryDate DATE, StockExpirationDate DATE,
+                    ProductImageURL VARCHAR(MAX),
                     CoincidenceScore INT
                 );
 

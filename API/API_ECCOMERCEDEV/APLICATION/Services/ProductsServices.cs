@@ -79,6 +79,37 @@ namespace APLICATION.Services
             return (dtos, output);
         }
 
+        public async Task<(IEnumerable<ProductsFiltrarIdDTOs> Data, OUTPUT Output)> Filtrar_Products_Por_Id_async(int? productId)
+        {
+            var (data, output) = await _repository.Filtrar_Products_Por_IdAsync(productId);
+            var dtos = data.Select(x => new ProductsFiltrarIdDTOs
+            {
+                ProductID = x.ProductID,
+                ProductName = x.ProductName,
+                ProductVariableID = x.ProductVariableID,
+                ProductVariableName = x.ProductVariableName,
+                ProductVariablePrice = x.ProductVariablePrice,
+                CurrencyID = x.CurrencyID,
+                CurrencyISO = x.CurrencyISO,
+                CategoryID = x.CategoryID,
+                CategoryName = x.CategoryName,
+                SubcategoryID = x.SubcategoryID,
+                SubcategoryName = x.SubcategoryName,
+                SegmentID = x.SegmentID,
+                SegmentName = x.SegmentName,
+                MarkID = x.MarkID,
+                MarkName = x.MarkName,
+                ProviderID = x.ProviderID,
+                ProviderName = x.ProviderName,
+                StockID = x.StockID,
+                StockAvilable = x.StockAvilable,
+                StockFactoryDate = x.StockFactoryDate,
+                StockExpirationDate = x.StockExpirationDate,
+                ProductImageURL = x.ProductImageURL
+            });
+            return (dtos, output);
+        }
+
         public async Task<OUTPUT> Insertar_Products_async(ProductsinsertarDTOs dto)
         {
             var modelo = new DM_Products_insertar

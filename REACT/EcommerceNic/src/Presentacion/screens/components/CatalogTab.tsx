@@ -29,6 +29,7 @@ interface CatalogTabProps {
   removeUnit: (id: string) => void;
   setCurrentTab: (tab: 'home' | 'cart' | 'chatbot' | 'nosotros') => void;
   totalItemsInCart: number;
+  onSelectProduct?: (productId: string | number) => void;
 }
 
 const SUBCATEGORY_ICONS: { [key: string]: string } = {
@@ -137,26 +138,35 @@ const ProductCardItem = React.memo(({
   currentQuantity,
   addUnit,
   removeUnit,
+  onSelectProduct,
 }: {
   product: Product;
   currentQuantity: number;
   addUnit: (id: string) => void;
   removeUnit: (id: string) => void;
+  onSelectProduct?: (productId: string | number) => void;
 }) => {
+  const targetId = product.productId ?? (product as any).productID ?? (product as any).ProductID ?? product.id ?? product.productVariableId;
+
   return (
     <View style={styles.card}>
-      <View style={styles.imageWrapper}>
-        <ProductImage url={product.image} style={styles.productImage} />
-        <View style={styles.tagsContainer}>
-          {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
-          <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
+      <TouchableOpacity 
+        activeOpacity={0.8} 
+        onPress={() => targetId && onSelectProduct?.(targetId)}
+      >
+        <View style={styles.imageWrapper}>
+          <ProductImage url={product.image} style={styles.productImage} />
+          <View style={styles.tagsContainer}>
+            {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
+            <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
+          </View>
         </View>
-      </View>
-      <View style={styles.cardInfo}>
-        <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
-        <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
-        <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
-      </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.productBrand} numberOfLines={1}>{product.brand.toUpperCase()}</Text>
+          <Text style={styles.productTitle} numberOfLines={1}>{product.title}</Text>
+          <Text style={styles.productSubtitle} numberOfLines={1}>{product.subtitle}</Text>
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.priceRow}>
         <View>
@@ -308,6 +318,7 @@ export const CatalogTab = ({
   removeUnit,
   setCurrentTab,
   totalItemsInCart,
+  onSelectProduct,
 }: CatalogTabProps) => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
@@ -408,9 +419,10 @@ export const CatalogTab = ({
         currentQuantity={cartQuantities[product.id] || 0}
         addUnit={addUnit}
         removeUnit={removeUnit}
+        onSelectProduct={onSelectProduct}
       />
     ),
-    [cartQuantities, addUnit, removeUnit]
+    [cartQuantities, addUnit, removeUnit, onSelectProduct]
   );
 
   const headerComponent = useMemo(() => (

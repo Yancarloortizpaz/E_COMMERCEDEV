@@ -14,6 +14,7 @@ import {
 import { QUICK_REPLIES } from '../constants';
 import { Conversation, Message } from '../../../Domain/entities/Chat';
 import { ProductCard } from '../components/ProductCard';
+import { ProductImage } from '../../components/ProductImage';
 import { ContenedorGestoZoom } from '../../components/ContenedorGestoZoom';
 
 interface ChatbotTabProps {
@@ -25,6 +26,7 @@ interface ChatbotTabProps {
   sendMessage: (text: string) => void;
   isTyping?: boolean; // Para simular o recibir el estado de "escribiendo..." de la IA
   onAddProductToCart?: (product: any) => void; // Integración con el carrito
+  onSelectProduct?: (productId: string | number) => void; // Ver detalle del producto por ID
 }
 
 const AnimatedMessageBubble = ({ children }: { children: React.ReactNode }) => {
@@ -61,7 +63,8 @@ export const ChatbotTab = ({
   onNewConversation,
   sendMessage, 
   isTyping = false,
-  onAddProductToCart 
+  onAddProductToCart,
+  onSelectProduct,
 }: ChatbotTabProps) => {
   const [chatMessage, setChatMessage] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -229,34 +232,60 @@ export const ChatbotTab = ({
                           {/* Tarjetas de productos compactas e idénticas para conversaciones nuevas e historial */}
                           {!isUser && tieneProductos && listaProductos.map((producto: any, idx: number) => {
                             const idVar = producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.productVariableId ?? producto.id ?? idx;
+                            const realProductId = producto.ProductID ?? producto.ProductId ?? producto.productID ?? producto.productId ?? producto.ProductVariableID ?? producto.ProductVariableId ?? producto.id;
                             const nombre = producto.ProductName ?? producto.title ?? producto.name ?? 'Producto';
                             const subtitulo = producto.ProductVariableName ?? producto.subtitle ?? producto.productoDescripcion ?? '';
                             const moneda = producto.CurrencyISO ?? 'C$';
                             const precio = producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price ?? 0;
+                            const imagenUrl = producto.ProductImageURL ?? producto.ProductImageUrl ?? producto.productImageURL ?? producto.productImageUrl ?? producto.ProductoImagenUrl ?? producto.productoImagenUrl ?? producto.image ?? producto.imageUrl;
 
                             return (
                               <View key={`${idVar}-${idx}`} style={styles.productCard}>
-                                <Text style={styles.productName}>{nombre}</Text>
-                                {!!subtitulo && <Text style={styles.productDescription}>{subtitulo}</Text>}
-                                <Text style={styles.productPrice}>
-                                  {moneda} {precio}
-                                </Text>
-                                <TouchableOpacity
-                                  style={styles.productAddButton}
-                                  onPress={() =>
-                                    onAddProductToCart?.({
-                                      id: idVar.toString(),
-                                      productVariableId: Number(idVar),
-                                      title: nombre,
-                                      name: nombre,
-                                      numericPrice: Number(precio),
-                                      price: Number(precio),
-                                    })
-                                  }
+                                <TouchableOpacity 
                                   activeOpacity={0.8}
+                                  onPress={() => realProductId && onSelectProduct?.(realProductId)}
                                 >
-                                  <Text style={styles.productAddButtonText}>🛒 Agregar al carrito</Text>
+                                  <ProductImage
+                                    url={imagenUrl}
+                                    style={styles.productCardImage}
+                                    containerStyle={styles.productCardImageContainer}
+                                  />
+                                  <Text style={styles.productName}>{nombre}</Text>
+                                  {!!subtitulo && <Text style={styles.productDescription}>{subtitulo}</Text>}
+                                  <Text style={styles.productPrice}>
+                                    {moneda} {precio}
+                                  </Text>
                                 </TouchableOpacity>
+
+                                <View style={styles.productCardButtonsRow}>
+                                  <TouchableOpacity
+                                    style={styles.productDetailButton}
+                                    onPress={() => realProductId && onSelectProduct?.(realProductId)}
+                                    activeOpacity={0.8}
+                                  >
+                                    <Text style={styles.productDetailButtonText}>🔍 Ver detalle</Text>
+                                  </TouchableOpacity>
+
+                                  <TouchableOpacity
+                                    style={styles.productAddButton}
+                                    onPress={() =>
+                                      onAddProductToCart?.({
+                                        id: idVar.toString(),
+                                        productVariableId: Number(idVar),
+                                        title: nombre,
+                                        name: nombre,
+                                        numericPrice: Number(precio),
+                                        price: Number(precio),
+                                        image: imagenUrl,
+                                        ProductoImagenUrl: imagenUrl,
+                                        productoImagenUrl: imagenUrl,
+                                      })
+                                    }
+                                    activeOpacity={0.8}
+                                  >
+                                    <Text style={styles.productAddButtonText}>🛒 Agregar</Text>
+                                  </TouchableOpacity>
+                                </View>
                               </View>
                             );
                           })}
@@ -625,6 +654,18 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  productCardImageContainer: {
+    width: '100%',
+    height: 140,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 8,
+    backgroundColor: '#F8FAFC',
+  },
+  productCardImage: {
+    width: '100%',
+    height: '100%',
+  },
   productName: {
     fontSize: 14,
     fontWeight: '700',
@@ -643,12 +684,32 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     marginTop: 4,
   },
+  productCardButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    gap: 8,
+  },
+  productDetailButton: {
+    flex: 1,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  productDetailButtonText: {
+    color: '#4F46E5',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   productAddButton: {
+    flex: 1,
     backgroundColor: '#4F46E5',
     paddingVertical: 8,
-    paddingHorizontal: 12,
     borderRadius: 8,
-    marginTop: 8,
     alignItems: 'center',
   },
   productAddButtonText: {

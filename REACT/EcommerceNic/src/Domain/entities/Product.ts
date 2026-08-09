@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  productId?: number;
   title: string;
   subtitle: string;
   numericPrice: number;
