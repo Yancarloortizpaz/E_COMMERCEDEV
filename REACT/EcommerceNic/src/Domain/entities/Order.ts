@@ -1,6 +1,8 @@
 export interface OrderDetail {
+  orderDetailId?: number;
   paymentOrderDetailId?: number;
   detalleOrdenPagoId?: number;
+  orderId?: number;
   paymentOrderId?: number;
   ordenPagoId?: number;
   productVariableId?: number;
@@ -11,6 +13,10 @@ export interface OrderDetail {
   productoDescripcion?: string;
   productImageURL?: string;
   productoImagenUrl?: string;
+  categoryName?: string;
+  subCategoryName?: string;
+  markName?: string;
+  providerName?: string;
   price?: number;
   precioUnitario?: number;
   quantity?: number;
@@ -23,11 +29,13 @@ export interface OrderDetail {
   totalFila?: number;
   currencyISO?: string;
   monedaISO?: string;
+  statusId?: number;
 }
 
 export interface Order {
   paymentOrderId?: number;
   ordenPagoId?: number;
+  orderId?: number;
   userId?: number;
   usuarioId?: number;
   orderDate?: string;

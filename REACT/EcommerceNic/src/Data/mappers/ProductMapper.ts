@@ -25,10 +25,22 @@ export function mapApiToProduct(apiProduct: ApiProduct): Product {
     }
   }
 
+  const realProductId = Number(apiProduct.productID ?? (apiProduct as any).productId ?? (apiProduct as any).ProductID ?? 0);
+  const realVariableId = Number(apiProduct.productVariableID ?? (apiProduct as any).productVariableId ?? (apiProduct as any).ProductVariableID ?? realProductId);
+
+  const rawStock = Number(
+    apiProduct.stockAvilable ??
+    (apiProduct as any).StockAvilable ??
+    (apiProduct as any).stockAvailable ??
+    (apiProduct as any).StockAvailable ??
+    (apiProduct as any).stock ??
+    0
+  );
+
   return {
-    id: String(apiProduct.productVariableID || apiProduct.productID),
-    productId: apiProduct.productID || (apiProduct as any).ProductID,
-    title: apiProduct.productName || 'Producto sin nombre',
+    id: String(realVariableId || realProductId),
+    productId: realProductId,
+    title: apiProduct.productName || (apiProduct as any).ProductName || 'Producto sin nombre',
     subtitle: apiProduct.productVariableName || apiProduct.subcategoryName || '',
     numericPrice: apiProduct.productVariablePrice ?? 0,
     tag: apiProduct.segmentName || '',
@@ -36,7 +48,7 @@ export function mapApiToProduct(apiProduct: ApiProduct): Product {
     category: apiProduct.categoryName || 'General',
     image: imageUrl,
     categoryId: apiProduct.categoryID,
-    stockAvailable: apiProduct.stockAvilable ?? 0,
-    productVariableId: apiProduct.productVariableID || apiProduct.productID,
+    stockAvailable: isNaN(rawStock) ? 0 : rawStock,
+    productVariableId: realVariableId,
   };
 }

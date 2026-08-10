@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { Product } from '../../Domain/entities/Product';
 import { CartItem } from '../../Domain/entities/CartItem';
 import { User } from '../../Domain/entities/User';
@@ -18,6 +18,7 @@ export const useCart = (
   const [elementosCarritoBd, setElementosCarritoBd] = useState<CartItem[]>([]);
   const [productosCarritoChatbot, setProductosCarritoChatbot] = useState<Product[]>([]);
   const [accionesPendientesCarrito, setAccionesPendientesCarrito] = useState<{ [key: string]: boolean }>({});
+  const [variantesAgotadas, setVariantesAgotadas] = useState<{ [key: string]: boolean }>({});
 
   const idBruto = parseInt(usuario?.id || '1', 10);
   const idUsuarioNumerico = (isNaN(idBruto) || idBruto <= 0 || idBruto > 2147483647) ? 1 : idBruto;
@@ -40,10 +41,10 @@ export const useCart = (
         return true;
       });
 
-      // Consolidador / Deduplicador robusto para evitar colisiones si varianteId es 0
+      // Consolidador / Deduplicador robusto para evitar colisiones
       const mapaItemsUnicos = new Map<number, CartItem>();
       elementosActivos.forEach(item => {
-        const vId = item.varianteId || item.productoId || item.DetalleCarritoId || item.detalleCarritoId || 0;
+        const vId = item.varianteId || item.productoId || 0;
         if (vId <= 0) return;
         if (!mapaItemsUnicos.has(vId)) {
           mapaItemsUnicos.set(vId, item);
@@ -63,7 +64,8 @@ export const useCart = (
 
       const productosAdicionales: Product[] = [];
       itemsDeduplicados.forEach(item => {
-        const vIdVal = item.varianteId || item.productoId || item.DetalleCarritoId || item.detalleCarritoId || 0;
+        const vIdVal = item.varianteId || item.productoId || 0;
+        if (vIdVal <= 0) return;
         const pId = String(vIdVal);
         productosAdicionales.push({
           id: pId,
@@ -90,26 +92,33 @@ export const useCart = (
     cargarCarritoDesdeBd();
   }, [idUsuarioNumerico, pestañaActual]);
 
-  // Derivación reactiva de cantidades por ID de variante/producto
+  // Derivación reactiva de cantidades estrictamente por ID de variante
   const cantidadesCarrito = useMemo<{ [key: string]: number }>(() => {
     const mapa: { [key: string]: number } = {};
     elementosCarritoBd.forEach(item => {
       const qty = item.Cantidad ?? item.cantidad ?? 0;
       const status = item.cartDetailStatusId;
       if (item && qty > 0 && status !== 0 && status !== false) {
-        const vId = item.varianteId ? String(item.varianteId) : null;
-        const pId = item.productoId ? String(item.productoId) : null;
-        const dId = (item.DetalleCarritoId || item.detalleCarritoId)
-          ? String(item.DetalleCarritoId || item.detalleCarritoId)
-          : null;
-
-        if (vId) mapa[vId] = qty;
-        if (pId) mapa[pId] = qty;
-        if (dId) mapa[dId] = qty;
+        const vIdKey = String(item.varianteId || item.productoId || 0);
+        if (vIdKey && vIdKey !== '0') {
+          mapa[vIdKey] = (mapa[vIdKey] || 0) + qty;
+        }
       }
     });
     return mapa;
   }, [elementosCarritoBd]);
+
+  // Helper estricto de coincidencia por variante para evitar colisión de IDs con DetalleCarritoId
+  const buscarItemPorVariante = (idStr: string, itemPasado?: CartItem): CartItem | undefined => {
+    if (itemPasado) return itemPasado;
+    const targetVarId = parseInt(idStr, 10);
+    if (isNaN(targetVarId) || targetVarId <= 0) return undefined;
+
+    return elementosCarritoBd.find(item => {
+      const curVarId = item.varianteId || item.productoId || 0;
+      return curVarId === targetVarId || String(curVarId) === idStr;
+    });
+  };
 
   // Incremento optimista de unidades
   const agregarUnidad = async (id: string, itemPasado?: CartItem, cantidadAIncrementar: number = 1) => {
@@ -117,14 +126,7 @@ export const useCart = (
     setAccionesPendientesCarrito(prev => ({ ...prev, [id]: true }));
 
     const idObjetivo = parseInt(id, 10);
-    const itemExistente = itemPasado || elementosCarritoBd.find(
-      item => (
-        item.DetalleCarritoId === idObjetivo || item.detalleCarritoId === idObjetivo ||
-        item.varianteId === idObjetivo || item.productoId === idObjetivo ||
-        String(item.varianteId) === id || String(item.productoId) === id ||
-        String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id
-      )
-    );
+    const itemExistente = buscarItemPorVariante(id, itemPasado);
 
     const idDetalle = itemExistente?.DetalleCarritoId ?? itemExistente?.detalleCarritoId ?? 0;
     const cantidadActual = itemExistente?.Cantidad ?? itemExistente?.cantidad ?? 0;
@@ -133,8 +135,8 @@ export const useCart = (
     // Actualización optimista del estado local
     if (itemExistente) {
       setElementosCarritoBd(prev => prev.map(item => {
-        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
-        if ((dId > 0 && dId === idDetalle) || String(item.varianteId) === id || String(item.productoId) === id) {
+        const curVarId = item.varianteId || item.productoId || 0;
+        if (curVarId === idObjetivo || String(curVarId) === id) {
           const precioUnitario = item.PrecioUnitario ?? item.precioUnitario ?? 0;
           return {
             ...item,
@@ -181,7 +183,8 @@ export const useCart = (
         const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, cantidadSiguiente);
         if (typeof res === 'number' && res > 0) {
           setElementosCarritoBd(prev => prev.map(item => {
-            if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
+            const curVarId = item.varianteId || item.productoId || 0;
+            if (curVarId === varId || String(curVarId) === String(varId) || String(curVarId) === id) {
               return { ...item, DetalleCarritoId: res, detalleCarritoId: res };
             }
             return item;
@@ -199,7 +202,8 @@ export const useCart = (
           const res = await addToCartUseCase.execute(idUsuarioNumerico, varId, cantidadSiguiente);
           if (typeof res === 'number' && res > 0) {
             setElementosCarritoBd(prev => prev.map(item => {
-              if (String(item.varianteId) === String(varId) || String(item.productoId) === String(varId) || String(item.varianteId) === id || String(item.productoId) === id) {
+              const curVarId = item.varianteId || item.productoId || 0;
+              if (curVarId === varId || String(curVarId) === String(varId) || String(curVarId) === id) {
                 return { ...item, DetalleCarritoId: res, detalleCarritoId: res };
               }
               return item;
@@ -209,24 +213,20 @@ export const useCart = (
           console.error('Error en auto-recurso:', retryErr);
         }
       } else {
-        // Revertir estado optimista
-        setElementosCarritoBd(prev => prev.map(item => {
-          const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
-          if ((dId > 0 && dId === idDetalle) || String(item.varianteId) === id || String(item.productoId) === id) {
-            const precioUnitario = item.PrecioUnitario ?? item.precioUnitario ?? 0;
-            return {
-              ...item,
-              Cantidad: cantidadActual,
-              cantidad: cantidadActual,
-              SubTotalFila: precioUnitario * cantidadActual,
-              subTotalFila: precioUnitario * cantidadActual,
-            };
-          }
-          return item;
+        const productoCoincidente = productosCatalogo.find(p => p.id === id) || productosCarritoChatbot.find(p => p.id === id);
+        const varId = productoCoincidente?.productVariableId || idObjetivo;
+        setVariantesAgotadas(prev => ({
+          ...prev,
+          [String(id)]: true,
+          [String(varId)]: true,
+          [String(idObjetivo)]: true,
         }));
-
         const mensajeError = error?.message || 'Stock insuficiente o error al actualizar el carrito.';
-        Alert.alert('⚠️ Stock / Carrito', mensajeError);
+        if (Platform.OS === 'web') {
+          window.alert(`⚠️ Talla Agotada:\n${mensajeError}\n\nHaz clic en "Ver opciones" para elegir otra talla disponible.`);
+        } else {
+          Alert.alert('⚠️ Talla Agotada', `${mensajeError}\n\nHaz clic en "Ver opciones" para elegir otra talla disponible.`);
+        }
       }
     } finally {
       setAccionesPendientesCarrito(prev => ({ ...prev, [id]: false }));
@@ -253,14 +253,7 @@ export const useCart = (
     setAccionesPendientesCarrito(prev => ({ ...prev, [id]: true }));
 
     const idObjetivo = parseInt(id, 10);
-    const itemExistente = itemPasado || elementosCarritoBd.find(
-      item => (
-        item.DetalleCarritoId === idObjetivo || item.detalleCarritoId === idObjetivo ||
-        item.varianteId === idObjetivo || item.productoId === idObjetivo ||
-        String(item.varianteId) === id || String(item.productoId) === id ||
-        String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id
-      )
-    );
+    const itemExistente = buscarItemPorVariante(id, itemPasado);
 
     if (!itemExistente) {
       setAccionesPendientesCarrito(prev => ({ ...prev, [id]: false }));
@@ -273,8 +266,8 @@ export const useCart = (
 
     if (idDetalle > 0 && cantidadActual > 1) {
       setElementosCarritoBd(prev => prev.map(item => {
-        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
-        if (dId === idDetalle) {
+        const curVarId = item.varianteId || item.productoId || 0;
+        if (curVarId === idObjetivo || String(curVarId) === id) {
           const precioUnitario = item.PrecioUnitario ?? item.precioUnitario ?? 0;
           return {
             ...item,
@@ -298,14 +291,8 @@ export const useCart = (
       }
     } else if (itemExistente) {
       setElementosCarritoBd(prev => prev.filter(item => {
-        const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
-        return (
-          dId !== idDetalle &&
-          item.varianteId !== idObjetivo &&
-          item.productoId !== idObjetivo &&
-          String(item.varianteId) !== id &&
-          String(item.productoId) !== id
-        );
+        const curVarId = item.varianteId || item.productoId || 0;
+        return curVarId !== idObjetivo && String(curVarId) !== id;
       }));
 
       try {
@@ -322,35 +309,22 @@ export const useCart = (
     }
   };
 
-  // Eliminación completa de un ítem del carrito (Petición DELETE /api/CartDetails/{cartDetailId}/{modificatorId})
+  // Eliminación completa de un ítem del carrito
   const eliminarDelCarrito = async (id: string, itemPasado?: CartItem) => {
     if (accionesPendientesCarrito[id]) return;
     setAccionesPendientesCarrito(prev => ({ ...prev, [id]: true }));
 
     const idObjetivo = parseInt(id, 10);
-    const itemExistente = itemPasado || elementosCarritoBd.find(
-      item => (
-        item.DetalleCarritoId === idObjetivo || item.detalleCarritoId === idObjetivo ||
-        item.varianteId === idObjetivo || item.productoId === idObjetivo ||
-        String(item.varianteId) === id || String(item.productoId) === id ||
-        String(item.DetalleCarritoId) === id || String(item.detalleCarritoId) === id
-      )
-    );
+    const itemExistente = buscarItemPorVariante(id, itemPasado);
 
     const idDetalle = itemExistente?.DetalleCarritoId ?? itemExistente?.detalleCarritoId ?? itemPasado?.DetalleCarritoId ?? itemPasado?.detalleCarritoId ?? idObjetivo;
 
     console.log(`🗑️ [eliminarDelCarrito] Ejecutando DELETE /api/CartDetails/${idDetalle}/${idUsuarioNumerico}`);
 
-    // Purga optimista inmediata del estado local para actualización instantánea de la UI y de los totales monetarios
+    // Purga optimista inmediata del estado local
     setElementosCarritoBd(prev => prev.filter(item => {
-      const dId = item.DetalleCarritoId ?? item.detalleCarritoId;
-      return (
-        dId !== idDetalle &&
-        item.varianteId !== idObjetivo &&
-        item.productoId !== idObjetivo &&
-        String(item.varianteId) !== id &&
-        String(item.productoId) !== id
-      );
+      const curVarId = item.varianteId || item.productoId || 0;
+      return curVarId !== idObjetivo && String(curVarId) !== id;
     }));
 
     try {
@@ -410,6 +384,7 @@ export const useCart = (
     elementosCarritoBd,
     productosCarritoChatbot,
     accionesPendientesCarrito,
+    variantesAgotadas,
     cantidadesCarrito,
     totalElementosCarrito,
     subtotal,

@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { QUICK_REPLIES } from '../constants';
 import { Conversation, Message } from '../../../Domain/entities/Chat';
+import { Product } from '../../../Domain/entities/Product';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../../components/ProductImage';
 import { ContenedorGestoZoom } from '../../components/ContenedorGestoZoom';
+import { getProductByIdUseCase } from '../../../di/DI';
 
 interface ChatbotTabProps {
   messages: Message[];
@@ -25,6 +27,7 @@ interface ChatbotTabProps {
   onNewConversation?: () => void;
   sendMessage: (text: string) => void;
   isTyping?: boolean; // Para simular o recibir el estado de "escribiendo..." de la IA
+  products?: Product[]; // Productos del catálogo de la BD para respaldar imágenes
   onAddProductToCart?: (product: any) => void; // Integración con el carrito
   onSelectProduct?: (productId: string | number) => void; // Ver detalle del producto por ID
 }
@@ -63,11 +66,43 @@ export const ChatbotTab = ({
   onNewConversation,
   sendMessage, 
   isTyping = false,
+  products = [],
   onAddProductToCart,
   onSelectProduct,
 }: ChatbotTabProps) => {
   const [chatMessage, setChatMessage] = useState('');
+  const [imagenesResueltas, setImagenesResueltas] = useState<{ [id: string]: string }>({});
   const scrollViewRef = useRef<ScrollView>(null);
+
+  // Resolver en segundo plano la imagen oficial desde SQL Server C# API para productos de la IA
+  useEffect(() => {
+    messages.forEach(msg => {
+      if (msg.role !== 'user') {
+        const lista = Array.isArray(msg.productos) ? msg.productos : (msg.metadata?.productos || []);
+        lista.forEach(async (p: any) => {
+          const realId = p.ProductID ?? p.ProductId ?? p.productID ?? p.productId ?? p.ProductVariableID ?? p.id;
+          const idKey = realId ? String(realId) : null;
+          const imgUrl = p.ProductImageURL ?? p.ProductImageUrl ?? p.productImageURL ?? p.productImageUrl ?? p.ProductoImagenUrl ?? p.image ?? p.imageUrl;
+
+          if (idKey && (!imgUrl || !String(imgUrl).startsWith('http')) && !imagenesResueltas[idKey]) {
+            try {
+              const res = await getProductByIdUseCase.execute(idKey);
+              const data = res?.data || res;
+              const rawList: any[] = Array.isArray(data) ? data : (data?.productID ? [data] : []);
+              if (rawList.length > 0) {
+                const foundImg = rawList[0].productImageURL ?? rawList[0].ProductImageURL ?? rawList[0].image;
+                if (foundImg && typeof foundImg === 'string' && foundImg.trim().length > 0) {
+                  setImagenesResueltas(prev => ({ ...prev, [idKey]: foundImg.trim() }));
+                }
+              }
+            } catch (e) {
+              console.log('Error resolviendo imagen para chatbot:', e);
+            }
+          }
+        });
+      }
+    });
+  }, [messages]);
   
   // Animación para el indicador de escritura (tres puntitos)
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -237,7 +272,33 @@ export const ChatbotTab = ({
                             const subtitulo = producto.ProductVariableName ?? producto.subtitle ?? producto.productoDescripcion ?? '';
                             const moneda = producto.CurrencyISO ?? 'C$';
                             const precio = producto.ProductVariablePrice ?? producto.numericPrice ?? producto.price ?? 0;
-                            const imagenUrl = producto.ProductImageURL ?? producto.ProductImageUrl ?? producto.productImageURL ?? producto.productImageUrl ?? producto.ProductoImagenUrl ?? producto.productoImagenUrl ?? producto.image ?? producto.imageUrl;
+                            let imagenUrl =
+                              producto.ProductImageURL ??
+                              producto.ProductImageUrl ??
+                              producto.productImageURL ??
+                              producto.productImageUrl ??
+                              producto.ProductoImagenUrl ??
+                              producto.productoImagenUrl ??
+                              producto.product_image_url ??
+                              producto.product_image ??
+                              producto.image ??
+                              producto.imageUrl;
+
+                            const idKey = realProductId ? String(realProductId) : (idVar ? String(idVar) : null);
+                            if (idKey && imagenesResueltas[idKey]) {
+                              imagenUrl = imagenesResueltas[idKey];
+                            } else if ((!imagenUrl || String(imagenUrl).trim().length === 0) && products && products.length > 0) {
+                              const pMatch = products.find(p =>
+                                String(p.productId) === String(realProductId) ||
+                                String(p.productVariableId) === String(idVar) ||
+                                String(p.id) === String(realProductId) ||
+                                String(p.id) === String(idVar) ||
+                                p.title.trim().toLowerCase() === nombre.trim().toLowerCase()
+                              );
+                              if (pMatch && pMatch.image) {
+                                imagenUrl = pMatch.image;
+                              }
+                            }
 
                             return (
                               <View key={`${idVar}-${idx}`} style={styles.productCard}>
