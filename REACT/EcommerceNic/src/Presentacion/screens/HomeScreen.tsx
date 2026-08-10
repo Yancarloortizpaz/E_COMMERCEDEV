@@ -15,6 +15,8 @@ import { useCatalog } from '../hooks/useCatalog';
 import { useCart } from '../hooks/useCart';
 import { useChatbot } from '../hooks/useChatbot';
 import { useOrders } from '../hooks/useOrders';
+import { useUserAddresses } from '../hooks/useUserAddresses';
+import { AddressManagerModal } from './components/AddressManagerModal';
 import { COLORES } from '../theme/theme';
 
 import { CustomAlertModal } from '../components/CustomAlertModal';
@@ -27,6 +29,7 @@ interface Props {
 export const HomeScreen = ({ onLogout, user }: Props) => {
   const [currentTab, setCurrentTab] = useState<TabNombre>('home');
   const [isPaymentModalVisible, setPaymentModalVisible] = useState<boolean>(false);
+  const [isAddressModalVisible, setAddressModalVisible] = useState<boolean>(false);
   const [selectedProductId, setSelectedProductId] = useState<number | string | null>(null);
   const [isDetailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [alertaAgregarProducto, setAlertaAgregarProducto] = useState<{
@@ -50,7 +53,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
   const { productos } = useCatalog();
   const cart = useCart(user, productos, currentTab);
   const chatbot = useChatbot(user, cart.agregarProductoAlCarrito);
-  const orders = useOrders(user, currentTab);
+  const orders = useOrders(user, currentTab, productos);
+  const userAddresses = useUserAddresses(user);
 
   // Manejo de Confirmación de Pago con Registro e Inserción Real en la BD/API
   const handlePaymentSuccess = async (method: string, totalAmountFromModal?: number, addressFromModal?: string) => {
@@ -172,6 +176,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         alConfirmar={() => {
           setAlertaResultado({ ...alertaResultado, visible: false });
           if (alertaResultado.tipo === 'exito') {
+            setDetailModalVisible(false);
+            setSelectedProductId(null);
             setCurrentTab('cart');
           }
         }}
@@ -183,6 +189,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         <CatalogTab
           products={productos}
           cartQuantities={cart.cantidadesCarrito}
+          variantesAgotadas={cart.variantesAgotadas}
           addUnit={cart.agregarUnidad}
           removeUnit={cart.removerUnidad}
           setCurrentTab={setCurrentTab}
@@ -225,6 +232,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
             onNewConversation={chatbot.crearNuevaConversacion}
             sendMessage={chatbot.enviarMensaje}
             isTyping={chatbot.estaEscribiendo}
+            products={productos}
             onAddProductToCart={(producto) => {
               setAlertaAgregarProducto({
                 visible: true,
@@ -263,21 +271,61 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
         onClose={() => setPaymentModalVisible(false)}
         totalPayment={cart.totalPago}
         onPaymentSuccess={handlePaymentSuccess}
+        direccionSeleccionada={userAddresses.direccionSeleccionada}
+        direcciones={userAddresses.direcciones}
+        onAbrirGestionDirecciones={() => setAddressModalVisible(true)}
+      />
+
+      {/* Modal de Gestión de Libreta de Direcciones */}
+      <AddressManagerModal
+        visible={isAddressModalVisible}
+        onClose={() => setAddressModalVisible(false)}
+        direcciones={userAddresses.direcciones}
+        direccionSeleccionada={userAddresses.direccionSeleccionada}
+        onSeleccionar={userAddresses.seleccionarDireccionActiva}
+        onAgregarDireccion={userAddresses.agregarNuevaDireccion}
+        onEliminarDireccion={userAddresses.eliminarDireccion}
+        cargando={userAddresses.cargandoDirecciones || userAddresses.procesandoAccion}
       />
 
       {/* Modal de Detalle de Producto por ID */}
       <ProductDetailModal
         visible={isDetailModalVisible}
         productId={selectedProductId}
+        cantidadesCarrito={cart.cantidadesCarrito}
         onClose={() => {
           setDetailModalVisible(false);
           setSelectedProductId(null);
         }}
-        onAddToCart={(prod) => {
-          setAlertaAgregarProducto({
-            visible: true,
-            producto: prod,
-          });
+        onGoToCart={() => {
+          setDetailModalVisible(false);
+          setSelectedProductId(null);
+          setCurrentTab('cart');
+        }}
+        onAddToCart={async (prods) => {
+          const listaItems = Array.isArray(prods) ? prods : [prods];
+          try {
+            for (const item of listaItems) {
+              await cart.agregarProductoAlCarrito(item);
+            }
+            console.log("✅ Productos agregados con éxito a la API C#");
+            setAlertaResultado({
+              visible: true,
+              tipo: 'exito',
+              titulo: '🛒 ¡Productos Agregados!',
+              mensaje: listaItems.length === 1
+                ? `"${listaItems[0].name ?? listaItems[0].title ?? 'El producto'}" fue añadido correctamente a tu carrito de compras.`
+                : `Se añadieron ${listaItems.length} opciones distintas (${listaItems.reduce((acc, i) => acc + (i.quantity || 1), 0)} ítems en total) a tu carrito de compras.`,
+            });
+          } catch (err: any) {
+            console.error("❌ Error al agregar productos:", err);
+            setAlertaResultado({
+              visible: true,
+              tipo: 'advertencia',
+              titulo: '⚠️ Error al Agregar',
+              mensaje: err.message || 'No se pudieron registrar los productos en el carrito.',
+            });
+          }
         }}
       />
 

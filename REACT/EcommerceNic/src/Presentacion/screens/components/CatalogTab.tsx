@@ -11,6 +11,7 @@ import {
   Platform,
   Animated,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
@@ -25,6 +26,7 @@ import { BrandCarousel } from './BrandCarousel';
 interface CatalogTabProps {
   products?: Product[];
   cartQuantities: { [key: string]: number };
+  variantesAgotadas?: { [key: string]: boolean };
   addUnit: (id: string) => void;
   removeUnit: (id: string) => void;
   setCurrentTab: (tab: 'home' | 'cart' | 'chatbot' | 'nosotros') => void;
@@ -136,28 +138,41 @@ const SkeletonCard = () => {
 const ProductCardItem = React.memo(({
   product,
   currentQuantity,
+  isOutTracked,
   addUnit,
   removeUnit,
   onSelectProduct,
+  cardStyle,
+  imageWrapperStyle,
 }: {
   product: Product;
   currentQuantity: number;
+  isOutTracked?: boolean;
   addUnit: (id: string) => void;
   removeUnit: (id: string) => void;
   onSelectProduct?: (productId: string | number) => void;
+  cardStyle?: any;
+  imageWrapperStyle?: any;
 }) => {
   const targetId = product.productId ?? (product as any).productID ?? (product as any).ProductID ?? product.id ?? product.productVariableId;
+  const rawStock = product.stockAvailable ?? 0;
+  const availableStock = Math.max(0, rawStock - currentQuantity);
+  const isStockOut = !!isOutTracked || (availableStock <= 0 && currentQuantity === 0);
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, cardStyle]}>
       <TouchableOpacity 
         activeOpacity={0.8} 
         onPress={() => targetId && onSelectProduct?.(targetId)}
       >
-        <View style={styles.imageWrapper}>
-          <ProductImage url={product.image} style={styles.productImage} />
+        <View style={[styles.imageWrapper, imageWrapperStyle]}>
+          <ProductImage url={product.image} style={styles.productImage} resizeMode="contain" />
           <View style={styles.tagsContainer}>
-            {product.tag ? <Text style={styles.topTag}>{product.tag}</Text> : null}
+            {isStockOut ? (
+              <Text style={styles.outOfStockTag}>🔴 AGOTADO</Text>
+            ) : product.tag ? (
+              <Text style={styles.topTag}>{product.tag}</Text>
+            ) : null}
             <Text style={styles.brandTag}>{product.brand.toUpperCase()}</Text>
           </View>
         </View>
@@ -174,15 +189,7 @@ const ProductCardItem = React.memo(({
           <Text style={styles.productPrice}>{formatCurrency(product.numericPrice)}</Text>
         </View>
         
-        {currentQuantity === 0 ? (
-          <TouchableOpacity 
-            style={styles.addButtonCircular} 
-            activeOpacity={0.7} 
-            onPress={() => addUnit(product.id)}
-          >
-            <Text style={styles.addButtonCircularText}>+</Text>
-          </TouchableOpacity>
-        ) : (
+        {currentQuantity > 0 ? (
           <View style={styles.quantityContainerMini}>
             <TouchableOpacity style={styles.miniQtyBtn} onPress={() => removeUnit(product.id)}>
               <Text style={styles.miniQtyBtnText}>-</Text>
@@ -192,6 +199,22 @@ const ProductCardItem = React.memo(({
               <Text style={styles.miniQtyBtnText}>+</Text>
             </TouchableOpacity>
           </View>
+        ) : isStockOut ? (
+          <TouchableOpacity 
+            style={styles.seeOptionsCardButton} 
+            activeOpacity={0.8} 
+            onPress={() => targetId && onSelectProduct?.(targetId)}
+          >
+            <Text style={styles.seeOptionsCardButtonText}>🔍 Ver opciones</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            style={styles.addToCartCardButton} 
+            activeOpacity={0.8} 
+            onPress={() => addUnit(product.id)}
+          >
+            <Text style={styles.addToCartCardButtonText}>🛒 Agregar</Text>
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -314,6 +337,7 @@ const CatalogHeader = React.memo(({
 export const CatalogTab = ({
   products: initialProducts,
   cartQuantities,
+  variantesAgotadas,
   addUnit,
   removeUnit,
   setCurrentTab,
@@ -343,13 +367,30 @@ export const CatalogTab = ({
     : (initialProducts || []);
 
   const displayProducts = useMemo(() => {
-    const seen = new Set<string>();
-    let filtered = displayProductsRaw.filter(product => {
-      if (!product || !product.id) return false;
-      if (seen.has(product.id)) return false;
-      seen.add(product.id);
-      return true;
+    // Agrupar filas de variantes por modelo de producto (productId)
+    const productGroups = new Map<number, Product[]>();
+
+    displayProductsRaw.forEach(p => {
+      if (!p) return;
+      const baseId = p.productId || Number(p.id);
+      if (!productGroups.has(baseId)) {
+        productGroups.set(baseId, []);
+      }
+      productGroups.get(baseId)!.push(p);
     });
+
+    const chosenProducts: Product[] = [];
+
+    productGroups.forEach((rows) => {
+      // Tomar la variante por defecto (rows[0]) respetando su stock real devuelto por SQL Server
+      const selected = rows[0];
+
+      chosenProducts.push({
+        ...selected,
+      });
+    });
+
+    let filtered = chosenProducts;
 
     // Filtrar por Marca seleccionada
     if (marcaSeleccionadaId !== null) {
@@ -393,6 +434,34 @@ export const CatalogTab = ({
     return subCategorias.find(s => s.subCategoryId === subCategoriaSeleccionadaId);
   }, [subCategorias, subCategoriaSeleccionadaId]);
 
+  const { width: windowWidth } = useWindowDimensions();
+
+  const numColumns = useMemo(() => {
+    if (windowWidth >= 1100) return 4;
+    if (windowWidth >= 680) return 3;
+    return 2;
+  }, [windowWidth]);
+
+  const dynamicCardStyle = useMemo(() => {
+    if (windowWidth >= 1100) {
+      return { width: '23.5%', marginBottom: 18 };
+    }
+    if (windowWidth >= 680) {
+      return { width: '31.5%', marginBottom: 18 };
+    }
+    return { width: '48%', marginBottom: 16 };
+  }, [windowWidth]);
+
+  const dynamicImageWrapperStyle = useMemo(() => {
+    if (windowWidth >= 1100) {
+      return { height: 170 };
+    }
+    if (windowWidth >= 680) {
+      return { height: 155 };
+    }
+    return { height: 135 };
+  }, [windowWidth]);
+
   const renderFooter = () => {
     if (isFetchingNextPage) {
       return (
@@ -417,12 +486,15 @@ export const CatalogTab = ({
       <ProductCardItem
         product={product}
         currentQuantity={cartQuantities[product.id] || 0}
+        isOutTracked={!!(variantesAgotadas && (variantesAgotadas[product.id] || variantesAgotadas[String(product.productVariableId)] || variantesAgotadas[String(product.productId)]))}
         addUnit={addUnit}
         removeUnit={removeUnit}
         onSelectProduct={onSelectProduct}
+        cardStyle={dynamicCardStyle}
+        imageWrapperStyle={dynamicImageWrapperStyle}
       />
     ),
-    [cartQuantities, addUnit, removeUnit, onSelectProduct]
+    [cartQuantities, variantesAgotadas, addUnit, removeUnit, onSelectProduct, dynamicCardStyle, dynamicImageWrapperStyle]
   );
 
   const headerComponent = useMemo(() => (
@@ -479,10 +551,17 @@ export const CatalogTab = ({
         </View>
       ) : (
         <FlatList
+          key={`grid-cols-${numColumns}`}
           data={displayProducts}
           keyExtractor={(item) => String(item.id)}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
+          numColumns={numColumns}
+          columnWrapperStyle={[
+            styles.row,
+            {
+              justifyContent: numColumns > 2 ? 'flex-start' : 'space-between',
+              gap: numColumns > 2 ? 14 : 0,
+            },
+          ]}
           renderItem={renderItem}
           ListHeaderComponent={headerComponent}
           ListFooterComponent={renderFooter}
@@ -610,7 +689,7 @@ const styles = StyleSheet.create({
       }
     }),
   },
-  imageWrapper: { width: '100%', height: 110, backgroundColor: '#F8FAFC', borderRadius: 14, overflow: 'hidden', position: 'relative' },
+  imageWrapper: { width: '100%', height: 135, backgroundColor: '#F8FAFC', borderRadius: 14, overflow: 'hidden', position: 'relative', padding: 4 },
   productImage: { width: '100%', height: '100%' },
   tagsContainer: { position: 'absolute', top: 6, left: 6, right: 6, flexDirection: 'row', justifyContent: 'space-between' },
   topTag: { backgroundColor: '#EF4444', color: '#FFFFFF', fontSize: 9, fontWeight: '800', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, textTransform: 'uppercase' },
@@ -638,19 +717,45 @@ const styles = StyleSheet.create({
   },
   productPrice: { fontSize: 14, fontWeight: '900', color: '#4F46E5' },
   
-  addButtonCircular: {
-    width: 32,
-    height: 32,
+  addToCartCardButton: {
     backgroundColor: '#EEF2FF',
-    borderRadius: 16,
-    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  addButtonCircularText: {
+  addToCartCardButtonText: {
     color: '#4F46E5',
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: -2,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  seeOptionsCardButton: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  seeOptionsCardButtonText: {
+    color: '#DC2626',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  outOfStockTag: {
+    backgroundColor: '#EF4444',
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    textTransform: 'uppercase',
   },
   quantityContainerMini: {
     flexDirection: 'row',

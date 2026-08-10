@@ -8,15 +8,23 @@ interface Props {
   url: string | undefined | null;
   style: ImageStyle;
   containerStyle?: ViewStyle;
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
 }
 
-export const ProductImage = React.memo(({ url, style, containerStyle }: Props) => {
+export const ProductImage = React.memo(({ url, style, containerStyle, resizeMode = 'contain' }: Props) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(!!url);
 
-  let finalUrl: string | undefined = url || undefined;
-  if (finalUrl && finalUrl.startsWith('/')) {
-    finalUrl = `${API_CONFIG.BASE_URL}${finalUrl}`;
+  let finalUrl: string | undefined = url ? url.trim() : undefined;
+  if (
+    finalUrl &&
+    !finalUrl.startsWith('http://') &&
+    !finalUrl.startsWith('https://') &&
+    !finalUrl.startsWith('file://') &&
+    !finalUrl.startsWith('data:')
+  ) {
+    const path = finalUrl.startsWith('/') ? finalUrl : `/${finalUrl}`;
+    finalUrl = `${API_CONFIG.BASE_URL}${path}`;
   }
 
   const isValidUrl = Boolean(finalUrl && finalUrl.trim().length > 0 && !hasError);
@@ -33,7 +41,7 @@ export const ProductImage = React.memo(({ url, style, containerStyle }: Props) =
         <Image
           source={{ uri: finalUrl }}
           style={[StyleSheet.absoluteFill, style]}
-          resizeMode="cover"
+          resizeMode={resizeMode}
           onLoad={() => setIsLoading(false)}
           onError={() => {
             setHasError(true);
@@ -68,7 +76,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   placeholderContainer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',

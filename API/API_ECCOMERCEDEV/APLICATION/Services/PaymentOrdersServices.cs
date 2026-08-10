@@ -33,6 +33,9 @@ namespace APLICATION.Services
                 orderUserId = dto.orderUserId,
                 orderDeliveryAddress = dto.orderDeliveryAddress,
                 orderPaymentMethodId = dto.orderPaymentMethodId,
+                orderShipping = dto.orderShipping,
+                orderSubtotal = dto.orderSubtotal,
+                orderTotal = dto.orderTotal,
                 orderCreatorId = dto.orderCreatorId,
                 orderStatusId = dto.orderStatusId
             };

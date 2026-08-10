@@ -69,6 +69,67 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
     }
   };
 
+  const renderOrderTimeline = (statusId: number = 1) => {
+    if (statusId === 4) {
+      return (
+        <View style={styles.timelineCancelledBox}>
+          <Text style={styles.timelineCancelledText}>❌ Este pedido ha sido Cancelado</Text>
+        </View>
+      );
+    }
+
+    const activeStep = statusId >= 3 ? 3 : (statusId >= 2 ? 2 : 1);
+
+    return (
+      <View style={styles.timelineWrapper}>
+        <Text style={styles.timelineTitle}>Seguimiento del Pedido</Text>
+        <View style={styles.timelineContainer}>
+          {/* Paso 1: Procesando */}
+          <View style={styles.timelineStep}>
+            <View style={[styles.timelineNode, activeStep >= 1 && styles.timelineNodeActive]}>
+              <Text style={[styles.timelineNodeText, activeStep >= 1 && styles.timelineNodeTextActive]}>
+                {activeStep >= 1 ? '✓' : '1'}
+              </Text>
+            </View>
+            <Text style={[styles.timelineLabel, activeStep >= 1 && styles.timelineLabelActive]}>
+              Procesando ⏳
+            </Text>
+          </View>
+
+          {/* Linea Conectora 1-2 */}
+          <View style={[styles.timelineLine, activeStep >= 2 && styles.timelineLineActive]} />
+
+          {/* Paso 2: En Camino */}
+          <View style={styles.timelineStep}>
+            <View style={[styles.timelineNode, activeStep >= 2 && styles.timelineNodeActive]}>
+              <Text style={[styles.timelineNodeText, activeStep >= 2 && styles.timelineNodeTextActive]}>
+                {activeStep >= 2 ? '✓' : '2'}
+              </Text>
+            </View>
+            <Text style={[styles.timelineLabel, activeStep >= 2 && styles.timelineLabelActive]}>
+              En Camino 🚚
+            </Text>
+          </View>
+
+          {/* Linea Conectora 2-3 */}
+          <View style={[styles.timelineLine, activeStep >= 3 && styles.timelineLineActive]} />
+
+          {/* Paso 3: Entregado */}
+          <View style={styles.timelineStep}>
+            <View style={[styles.timelineNode, activeStep >= 3 && styles.timelineNodeActive]}>
+              <Text style={[styles.timelineNodeText, activeStep >= 3 && styles.timelineNodeTextActive]}>
+                {activeStep >= 3 ? '✓' : '3'}
+              </Text>
+            </View>
+            <Text style={[styles.timelineLabel, activeStep >= 3 && styles.timelineLabelActive]}>
+              Entregado ✅
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const formatearFecha = (fechaStr?: string) => {
     if (!fechaStr) return 'Fecha reciente';
     try {
@@ -130,7 +191,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => {
-            const rawId = item.paymentOrderId ?? item.ordenPagoId ?? 0;
+            const rawId = item.orderId ?? item.paymentOrderId ?? item.ordenPagoId ?? 0;
             const orderId = rawId > 0 ? rawId : (index + 101);
             const insignia = obtenerInsigniaEstado(item.statusId, item.statusName);
             const total = item.totalAmount ?? item.totalOrden ?? 0;
@@ -150,6 +211,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     <Text style={[styles.badgeText, { color: insignia.color }]}>{insignia.texto}</Text>
                   </View>
                 </View>
+
+                {/* Timeline de Seguimiento del Pedido */}
+                {renderOrderTimeline(item.statusId)}
 
                 <View style={styles.cardDivider} />
 
@@ -219,6 +283,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                   </View>
                 </View>
 
+                {/* Timeline de Seguimiento dentro del Modal */}
+                {renderOrderTimeline(ordenSeleccionada?.statusId)}
+
                 <Text style={styles.sectionTitle}>Artículos Comprados</Text>
                 {(() => {
                   const listaArticulos = (detallesOrdenSeleccionada && detallesOrdenSeleccionada.length > 0)
@@ -235,26 +302,36 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     );
                   }
 
-                  return listaArticulos.map((det, idx) => (
-                    <View key={idx} style={styles.detailItemRow}>
-                      <ProductImage
-                        url={det.productImageURL ?? det.productoImagenUrl}
-                        style={styles.detailImage}
-                        containerStyle={styles.detailImageContainer}
-                      />
-                      <View style={styles.detailInfo}>
-                        <Text style={styles.detailProductName} numberOfLines={2}>
-                          {det.productName ?? det.productoNombre ?? 'Producto'}
-                        </Text>
-                        <Text style={styles.detailQtyPrice}>
-                          {det.quantity ?? det.cantidad ?? 1} x {formatCurrency(det.price ?? det.precioUnitario ?? 0)}
+                  return listaArticulos.map((det, idx) => {
+                    const detailNum = det.orderDetailId ?? det.paymentOrderDetailId ?? det.detalleOrdenPagoId;
+
+                    return (
+                      <View key={idx} style={styles.detailItemRow}>
+                        <ProductImage
+                          url={det.productImageURL ?? det.productoImagenUrl}
+                          style={styles.detailImage}
+                          containerStyle={styles.detailImageContainer}
+                          resizeMode="contain"
+                        />
+                        <View style={styles.detailInfo}>
+                          {detailNum ? (
+                            <Text style={{ fontSize: 9, fontWeight: '800', color: '#64748B', marginBottom: 2 }}>
+                              Nº DETALLE: #{detailNum}
+                            </Text>
+                          ) : null}
+                          <Text style={styles.detailProductName} numberOfLines={2}>
+                            {det.productName ?? det.productoNombre ?? 'Producto'}
+                          </Text>
+                          <Text style={styles.detailQtyPrice}>
+                            {det.quantity ?? det.cantidad ?? 1} x {formatCurrency(det.price ?? det.precioUnitario ?? 0)}
+                          </Text>
+                        </View>
+                        <Text style={styles.detailTotalText}>
+                          {formatCurrency(det.total ?? det.totalFila ?? ((det.price ?? 0) * (det.quantity ?? 1)))}
                         </Text>
                       </View>
-                      <Text style={styles.detailTotalText}>
-                        {formatCurrency(det.total ?? det.totalFila ?? ((det.price ?? 0) * (det.quantity ?? 1)))}
-                      </Text>
-                    </View>
-                  ));
+                    );
+                  });
                 })()}
 
                 <View style={styles.summaryBox}>
@@ -621,5 +698,81 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1D4ED8',
+  },
+  timelineWrapper: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  timelineTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#64748B',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  timelineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  timelineStep: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  timelineNode: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  timelineNodeActive: {
+    backgroundColor: '#4F46E5',
+  },
+  timelineNodeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#64748B',
+  },
+  timelineNodeTextActive: {
+    color: '#FFFFFF',
+  },
+  timelineLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  timelineLabelActive: {
+    color: '#4F46E5',
+    fontWeight: '800',
+  },
+  timelineLine: {
+    height: 3,
+    flex: 0.6,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 16,
+  },
+  timelineLineActive: {
+    backgroundColor: '#4F46E5',
+  },
+  timelineCancelledBox: {
+    backgroundColor: '#FEE2E2',
+    padding: 8,
+    borderRadius: 10,
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  timelineCancelledText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

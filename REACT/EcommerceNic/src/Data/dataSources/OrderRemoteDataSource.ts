@@ -8,18 +8,22 @@ export class OrderRemoteDataSource {
         `${API_CONFIG.BASE_URL}/api/PaymentOrders/filtrar?userId=${userId}`
       );
       const rawData = response.data || [];
-      return rawData.map(item => ({
-        paymentOrderId: Number(item.paymentOrderId ?? item.ordenPagoId ?? item.id ?? 0),
-        ordenPagoId: Number(item.paymentOrderId ?? item.ordenPagoId ?? item.id ?? 0),
-        userId: Number(item.userId ?? item.usuarioId ?? userId),
-        orderDate: item.orderDate ?? item.fechaOrden ?? item.createdDate ?? new Date().toISOString(),
-        statusId: Number(item.statusId ?? item.estadoId ?? 1),
-        statusName: item.statusName ?? item.estadoNombre ?? 'Procesando ⏳',
-        paymentMethodName: item.paymentMethodName ?? item.metodoPagoNombre ?? 'Efectivo contra entrega',
-        addressText: item.addressText ?? item.direccionTexto ?? 'Dirección de Entrega Principal',
-        totalAmount: Number(item.totalAmount ?? item.totalOrden ?? item.total ?? 0),
-        currencyISO: item.currencyISO ?? item.monedaISO ?? 'USD',
-      }));
+      return rawData.map(item => {
+        const idCalculado = Number(item.orderId ?? item.paymentOrderId ?? item.ordenPagoId ?? item.id ?? 0);
+        return {
+          orderId: idCalculado,
+          paymentOrderId: idCalculado,
+          ordenPagoId: idCalculado,
+          userId: Number(item.userId ?? item.usuarioId ?? userId),
+          orderDate: item.orderDate ?? item.fechaOrden ?? item.createdDate ?? new Date().toISOString(),
+          statusId: Number(item.statusId ?? item.estadoId ?? 1),
+          statusName: item.statusName ?? item.estadoNombre ?? 'Procesando ⏳',
+          paymentMethodName: item.paymentMethodName ?? item.metodoPagoNombre ?? 'Efectivo contra entrega',
+          addressText: item.addressText ?? item.direccionTexto ?? 'Dirección de Entrega Principal',
+          totalAmount: Number(item.totalAmount ?? item.totalOrden ?? item.total ?? 0),
+          currencyISO: item.currencyISO ?? item.monedaISO ?? 'USD',
+        };
+      });
     } catch (error: any) {
       if (error?.message && (error.message.includes('404') || error.message.includes('No se encontraron'))) {
         return [];
@@ -31,24 +35,32 @@ export class OrderRemoteDataSource {
 
   async getOrderDetails(orderId: number): Promise<OrderDetail[]> {
     try {
+      // Intentar primero con la ruta de filtro por orden
       const response = await safeFetch<{ codigo: number; msj: string; data: any[] }>(
-        `${API_CONFIG.BASE_URL}/api/PaymentOrderDetails/filtrar?paymentOrderId=${orderId}`
+        `${API_CONFIG.BASE_URL}/api/PaymentOrderDetails/filtrar?orderId=${orderId}`
       );
       const rawData = response.data || [];
       return rawData.map(item => ({
-        paymentOrderDetailId: Number(item.paymentOrderDetailId ?? item.detalleOrdenPagoId ?? 0),
-        paymentOrderId: Number(item.paymentOrderId ?? item.ordenPagoId ?? orderId),
+        orderDetailId: Number(item.orderDetailId ?? item.paymentOrderDetailId ?? item.detalleOrdenPagoId ?? 0),
+        paymentOrderDetailId: Number(item.orderDetailId ?? item.paymentOrderDetailId ?? item.detalleOrdenPagoId ?? 0),
+        orderId: Number(item.orderId ?? item.paymentOrderId ?? item.ordenPagoId ?? orderId),
+        paymentOrderId: Number(item.orderId ?? item.paymentOrderId ?? item.ordenPagoId ?? orderId),
         productVariableId: Number(item.productVariableId ?? item.varianteId ?? 0),
         productName: item.productName ?? item.productoNombre ?? 'Producto',
         productDescription: item.productDescription ?? item.productoDescripcion ?? '',
+        categoryName: item.categoryName,
+        subCategoryName: item.subCategoryName,
+        markName: item.markName,
+        providerName: item.providerName,
         productImageURL: item.productImageURL ?? item.productoImagenUrl,
         price: Number(item.price ?? item.precioUnitario ?? 0),
         quantity: Number(item.quantity ?? item.cantidad ?? 1),
+        subTotal: Number(item.subtotal ?? item.subTotal ?? 0),
+        tax: Number(item.tax ?? 0),
         total: Number(item.total ?? item.totalFila ?? 0),
         currencyISO: item.currencyISO ?? item.monedaISO ?? 'USD',
       }));
     } catch (error: any) {
-      // Silenciar log de error 404 para pedidos recientemente procesados que aún no tienen desglose registrado en BD
       return [];
     }
   }
@@ -70,6 +82,7 @@ export class OrderRemoteDataSource {
     const shippingFee = totalAmount > subtotalCalculado ? totalAmount - subtotalCalculado : (totalAmount > 0 ? 350 : 0);
 
     const nuevaOrden: Order = {
+      orderId: newId,
       paymentOrderId: newId,
       ordenPagoId: newId,
       userId,
@@ -90,6 +103,9 @@ export class OrderRemoteDataSource {
         orderUserId: userId,
         orderDeliveryAddress: 1,
         orderPaymentMethodId: 1,
+        orderShipping: shippingFee,
+        orderSubtotal: subtotalCalculado,
+        orderTotal: totalAmount,
         orderCreatorId: userId,
         orderStatusId: 1,
         subTotal: totalAmount,
@@ -109,6 +125,7 @@ export class OrderRemoteDataSource {
       );
 
       if (response && response.templateId) {
+        nuevaOrden.orderId = response.templateId;
         nuevaOrden.paymentOrderId = response.templateId;
         nuevaOrden.ordenPagoId = response.templateId;
       }

@@ -12,12 +12,16 @@ import {
   ScrollView,
 } from 'react-native';
 import { formatCurrency } from '../constants';
+import { UserAddress } from '../../../Domain/entities/UserAddress';
 
 interface PaymentModalProps {
   isVisible: boolean;
   onClose: () => void;
   totalPayment: number;
   onPaymentSuccess: (method: string, totalAmount?: number, deliveryAddress?: string) => void;
+  direccionSeleccionada?: UserAddress | null;
+  direcciones?: UserAddress[];
+  onAbrirGestionDirecciones?: () => void;
 }
 
 export const PaymentModal = ({
@@ -25,6 +29,9 @@ export const PaymentModal = ({
   onClose,
   totalPayment,
   onPaymentSuccess,
+  direccionSeleccionada,
+  direcciones = [],
+  onAbrirGestionDirecciones,
 }: PaymentModalProps) => {
   const [paymentStep, setPaymentStep] = useState<'select' | 'card' | 'transfer' | 'cash'>('select');
   
@@ -34,14 +41,14 @@ export const PaymentModal = ({
   const [cardCvv, setCardCvv] = useState('');
   
   // Cash form local state
-  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryAddressText, setDeliveryAddressText] = useState('');
 
   const resetForm = () => {
     setPaymentStep('select');
     setCardNumber('');
     setCardExpiry('');
     setCardCvv('');
-    setDeliveryAddress('');
+    setDeliveryAddressText('');
   };
 
   const handleClose = () => {
@@ -64,39 +71,41 @@ export const PaymentModal = ({
         return;
       }
     }
-    if (method === 'Efectivo' && !deliveryAddress.trim()) {
-      Alert.alert('Dirección requerida', 'Por favor ingresá tu dirección de entrega.');
+    
+    const direccionFinal = deliveryAddressText.trim() ||
+      direccionSeleccionada?.userAddressDescription ||
+      'Managua - Dirección de Entrega Principal';
+
+    if (method === 'Efectivo' && !direccionFinal) {
+      Alert.alert('Dirección requerida', 'Por favor ingresá o seleccioná una dirección de entrega.');
       return;
     }
 
-    const finalAddress = deliveryAddress.trim() || 'Managua - Dirección de Entrega Principal';
-
-    // Callback to parent screen with the payment method, exact total payment and delivery address
-    onPaymentSuccess(method, totalPayment, finalAddress);
+    onPaymentSuccess(method, totalPayment, direccionFinal);
     resetForm();
   };
 
   // Helper formatting for credit card
   const formatCardNumber = (text: string) => {
-    const cleanText = text.replace(/\D/g, '');
-    let formatted = '';
-    for (let i = 0; i < cleanText.length; i++) {
-      if (i > 0 && i % 4 === 0) {
-        formatted += ' ';
-      }
-      formatted += cleanText[i];
-    }
+    const cleaned = text.replace(/\D/g, '');
+    const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
     setCardNumber(formatted);
   };
 
   const formatExpiry = (text: string) => {
-    const cleanText = text.replace(/\D/g, '');
-    if (cleanText.length > 2) {
-      setCardExpiry(`${cleanText.slice(0, 2)}/${cleanText.slice(2, 4)}`);
+    const cleaned = text.replace(/\D/g, '');
+    if (cleaned.length >= 2) {
+      setCardExpiry(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`);
     } else {
-      setCardExpiry(cleanText);
+      setCardExpiry(cleaned);
     }
   };
+
+  const tieneDireccionGuardada = Boolean(deliveryAddressText.trim() || direccionSeleccionada?.userAddressDescription);
+
+  const direccionTextoFinal = deliveryAddressText.trim() ||
+    direccionSeleccionada?.userAddressDescription ||
+    '';
 
   return (
     <Modal
@@ -106,21 +115,49 @@ export const PaymentModal = ({
       onRequestClose={handleClose}
     >
       <View style={styles.modalOverlay}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%' }}>
           <View style={styles.modalContent}>
 
             {/* PANTALLA: Selección de método */}
             {paymentStep === 'select' && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Método de Pago</Text>
+                  <Text style={styles.modalTitle}>Confirmar y Pagar</Text>
                   <Text style={styles.modalSubtitle}>
                     Total a pagar: <Text style={styles.modalTotalAmount}>{formatCurrency(totalPayment)}</Text>
                   </Text>
                 </View>
 
+                {/* Bloque Interactivo de Dirección de Entrega */}
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: tieneDireccionGuardada ? '#F8FAFC' : '#FEF2F2',
+                    borderRadius: 16,
+                    padding: 14,
+                    marginBottom: 16,
+                    borderWidth: 1.5,
+                    borderColor: tieneDireccionGuardada ? '#6366F1' : '#EF4444',
+                  }}
+                  onPress={onAbrirGestionDirecciones}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '900', color: tieneDireccionGuardada ? '#4F46E5' : '#DC2626', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      📍 Dirección de Entrega
+                    </Text>
+                    <View style={{ backgroundColor: tieneDireccionGuardada ? '#EEF2FF' : '#FEE2E2', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: tieneDireccionGuardada ? '#4F46E5' : '#EF4444' }}>
+                        ⚙️ {tieneDireccionGuardada ? 'Cambiar / Gestionar' : '➕ Seleccionar / Agregar'}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: tieneDireccionGuardada ? '#0F172A' : '#EF4444' }}>
+                    {tieneDireccionGuardada ? direccionTextoFinal : '⚠️ Toca aquí para seleccionar o agregar tu dirección de entrega'}
+                  </Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.paymentOption} onPress={() => setPaymentStep('card')} activeOpacity={0.7}>
-                  <View style={styles.paymentIconBox}>
+                  <View style={[styles.paymentIconBox, { backgroundColor: '#EEF2FF' }]}>
                     <Text style={styles.paymentIconEmoji}>💳</Text>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -131,7 +168,7 @@ export const PaymentModal = ({
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.paymentOption} onPress={() => setPaymentStep('transfer')} activeOpacity={0.7}>
-                  <View style={styles.paymentIconBox}>
+                  <View style={[styles.paymentIconBox, { backgroundColor: '#FEF3C7' }]}>
                     <Text style={styles.paymentIconEmoji}>🏦</Text>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -142,7 +179,7 @@ export const PaymentModal = ({
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.paymentOption} onPress={() => setPaymentStep('cash')} activeOpacity={0.7}>
-                  <View style={styles.paymentIconBox}>
+                  <View style={[styles.paymentIconBox, { backgroundColor: '#D1FAE5' }]}>
                     <Text style={styles.paymentIconEmoji}>💵</Text>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -250,20 +287,14 @@ export const PaymentModal = ({
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Transferencia Bancaria</Text>
                   <Text style={styles.modalSubtitle}>
-                    Monto total: <Text style={styles.modalTotalAmount}>{formatCurrency(totalPayment)}</Text>
+                    Monto exacto a transferir: <Text style={styles.modalTotalAmount}>{formatCurrency(totalPayment)}</Text>
                   </Text>
                 </View>
 
-                <ScrollView style={{ maxHeight: 250 }} showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ maxHeight: 180, marginBottom: 12 }} showsVerticalScrollIndicator={false}>
                   <View style={styles.bankInfoCard}>
                     <Text style={styles.bankName}>🏦 BAC Credomatic</Text>
-                    <Text style={styles.bankDetail}>Cuenta Corriente C$: <Text style={styles.bankNumber}>100-232456-7</Text></Text>
-                    <Text style={styles.bankDetail}>A nombre de: <Text style={styles.bankNumber}>Nic Store S.A.</Text></Text>
-                  </View>
-
-                  <View style={styles.bankInfoCard}>
-                    <Text style={styles.bankName}>🏦 Banpro Grupo Promerica</Text>
-                    <Text style={styles.bankDetail}>Cuenta Ahorro C$: <Text style={styles.bankNumber}>2004-5678-9321</Text></Text>
+                    <Text style={styles.bankDetail}>Cuenta Corriente C$: <Text style={styles.bankNumber}>365-9012-345</Text></Text>
                     <Text style={styles.bankDetail}>A nombre de: <Text style={styles.bankNumber}>Nic Store S.A.</Text></Text>
                   </View>
 
@@ -299,13 +330,21 @@ export const PaymentModal = ({
                   </Text>
                 </View>
 
-                <Text style={styles.payFormLabel}>Dirección de Entrega en Nicaragua</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <Text style={styles.payFormLabel}>Dirección de Entrega en Nicaragua</Text>
+                  {onAbrirGestionDirecciones && (
+                    <TouchableOpacity onPress={onAbrirGestionDirecciones}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: '#4F46E5' }}>⚙️ Cambiar / Libreta</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
                 <TextInput
                   style={[styles.payFormInput, styles.payFormInputMulti]}
                   placeholder="Ej: De donde fue el Cine González 2 cuadras abajo, 1 cuadra al sur. Managua, Nicaragua."
                   placeholderTextColor="#94A3B8"
-                  value={deliveryAddress}
-                  onChangeText={setDeliveryAddress}
+                  value={deliveryAddressText || direccionSeleccionada?.userAddressDescription || ''}
+                  onChangeText={setDeliveryAddressText}
                   multiline
                   numberOfLines={3}
                 />

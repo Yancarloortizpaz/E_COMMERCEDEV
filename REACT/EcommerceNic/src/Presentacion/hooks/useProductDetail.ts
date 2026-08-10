@@ -25,6 +25,8 @@ export interface ProductDetailItem {
 
 export const useProductDetail = (productId: number | string | null) => {
   const [productDetail, setProductDetail] = useState<ProductDetailItem | null>(null);
+  const [allVariants, setAllVariants] = useState<ProductDetailItem[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<ProductDetailItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,17 +37,18 @@ export const useProductDetail = (productId: number | string | null) => {
     try {
       const response = await getProductByIdUseCase.execute(idToFetch);
       const rawData = response?.data || response;
-      const item = Array.isArray(rawData) ? rawData[0] : (rawData?.productID ? rawData : null);
+      const rawList: any[] = Array.isArray(rawData) ? rawData : (rawData?.productID ? [rawData] : []);
 
-      if (item) {
-        setProductDetail({
+      if (rawList.length > 0) {
+        // Mapear 100% dinámicamente desde SQL Server
+        const mappedList: ProductDetailItem[] = rawList.map(item => ({
           productID: item.productID ?? item.ProductID,
           productName: item.productName ?? item.ProductName ?? 'Producto',
           productVariableID: item.productVariableID ?? item.ProductVariableID,
           productVariableName: item.productVariableName ?? item.ProductVariableName ?? '',
           productVariablePrice: item.productVariablePrice ?? item.ProductVariablePrice ?? 0,
           currencyID: item.currencyID ?? item.CurrencyID,
-          currencyISO: item.currencyISO ?? item.CurrencyISO ?? 'C$',
+          currencyISO: item.currencyISO ?? item.CurrencyISO ?? 'USD',
           categoryID: item.categoryID ?? item.CategoryID,
           categoryName: item.categoryName ?? item.CategoryName ?? 'General',
           subcategoryID: item.subcategoryID ?? item.SubcategoryID,
@@ -53,13 +56,38 @@ export const useProductDetail = (productId: number | string | null) => {
           segmentID: item.segmentID ?? item.SegmentID,
           segmentName: item.segmentName ?? item.SegmentName ?? '',
           markID: item.markID ?? item.MarkID,
-          markName: item.markName ?? item.MarkName ?? 'NIC STORE',
+          markName: item.markName ?? item.MarkName ?? '',
           providerID: item.providerID ?? item.ProviderID,
           providerName: item.providerName ?? item.ProviderName ?? '',
           stockAvilable: item.stockAvilable ?? item.StockAvilable ?? 0,
           productImageURL: item.productImageURL ?? item.ProductImageURL ?? item.image ?? '',
+        }));
+
+        // Agrupar y consolidar por NOMBRE ÚNICO DE VARIANTE (Talla/Color) sumando stock real
+        const uniqueMap = new Map<string, ProductDetailItem>();
+
+        mappedList.forEach(item => {
+          const nameKey = (item.productVariableName || '').trim().toLowerCase();
+          const keyToUse = nameKey || String(item.productVariableID || item.productID || 0);
+
+          if (uniqueMap.has(keyToUse)) {
+            const existing = uniqueMap.get(keyToUse)!;
+            existing.stockAvilable = (existing.stockAvilable || 0) + (item.stockAvilable || 0);
+          } else {
+            uniqueMap.set(keyToUse, { ...item });
+          }
         });
+
+        const uniqueVariants = Array.from(uniqueMap.values());
+        const firstInStockVariant = uniqueVariants.find(v => (v.stockAvilable || 0) > 0) || uniqueVariants[0];
+
+        setAllVariants(uniqueVariants);
+        setProductDetail(firstInStockVariant);
+        setSelectedVariant(firstInStockVariant);
       } else {
+        setAllVariants([]);
+        setProductDetail(null);
+        setSelectedVariant(null);
         setError('No se encontraron detalles para este producto.');
       }
     } catch (err: any) {
@@ -75,11 +103,21 @@ export const useProductDetail = (productId: number | string | null) => {
       fetchDetail(productId);
     } else {
       setProductDetail(null);
+      setAllVariants([]);
+      setSelectedVariant(null);
     }
   }, [productId, fetchDetail]);
 
+  const selectVariant = (variant: ProductDetailItem) => {
+    setSelectedVariant(variant);
+    setProductDetail(variant);
+  };
+
   return {
-    productDetail,
+    productDetail: selectedVariant || productDetail,
+    selectedVariant: selectedVariant || productDetail,
+    allVariants,
+    selectVariant,
     isLoading,
     error,
     refetch: () => productId && fetchDetail(productId),
