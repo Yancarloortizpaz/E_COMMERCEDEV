@@ -76,7 +76,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.pantallaCarga}>
         <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={styles.textoCarga}>Cargando EcommerceNic...</Text>
+        <Text style={styles.textoCarga}>Cargando Nic Store...</Text>
       </SafeAreaView>
     );
   }

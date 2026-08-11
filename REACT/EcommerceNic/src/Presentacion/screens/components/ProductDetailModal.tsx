@@ -10,6 +10,7 @@ import {
   Platform,
   SafeAreaView,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { ProductImage } from '../../components/ProductImage';
 import { useProductDetail } from '../../hooks/useProductDetail';
@@ -461,6 +462,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0,
   },
   header: {
     flexDirection: 'row',
