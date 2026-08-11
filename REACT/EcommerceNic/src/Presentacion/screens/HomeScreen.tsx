@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Platform, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Platform, Alert, StatusBar } from 'react-native';
 import { User } from '../../Domain/entities/User';
 import { formatCurrency } from './constants';
 import { CatalogTab } from './components/CatalogTab';
@@ -98,8 +98,8 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     await cart.vaciarCarrito();
 
     Alert.alert(
-      '📦 ¡Pedido Procesado con Éxito!',
-      `Monto: ${formatCurrency(montoTotalPagado)}\nMétodo: ${method}\n\nPronto nos pondremos en contacto para coordinar la entrega. ¡Gracias por comprar en Nic Store!`,
+      '¡Pedido Procesado con Éxito!',
+      `Monto: ${formatCurrency(montoTotalPagado)}\nMétodo: ${method}\n\n¡Tu pedido va en camino! El repartidor de Nic Store te entregará en las próximas horas o minutos y te llamará a tu teléfono cuando esté cerca.`,
       [{ text: 'Ver Mis Pedidos', onPress: () => setCurrentTab('pedidos') }]
     );
   };
@@ -344,5 +344,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORES.fondo,
     paddingBottom: 60,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0,
   },
 });

@@ -351,7 +351,7 @@ export const PaymentModal = ({
 
                 <View style={styles.transferNoteContainer}>
                   <Text style={styles.transferNote}>
-                    🛵 El repartidor de Nic Store llegará en 24 a 48 horas hábiles. Asegúrate de tener el monto exacto listo al recibir tu paquete.
+                    ¡Tu pedido llegará muy pronto! El repartidor de Nic Store te entregará en las próximas horas o minutos y te llamará a tu teléfono cuando esté cerca para notificarte.
                   </Text>
                 </View>
 

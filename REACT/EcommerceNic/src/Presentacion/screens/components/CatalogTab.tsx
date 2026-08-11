@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   scrollPadding: { paddingBottom: 20 },
   headerWrapper: { backgroundColor: '#FFFFFF', paddingBottom: 4 },
   row: { justifyContent: 'space-between', paddingHorizontal: 16 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 10, marginBottom: 16 },
   profileSection: { flexDirection: 'row', alignItems: 'center' },
   logoImage: { width: 42, height: 42, borderRadius: 12 },
   textContainer: { marginLeft: 12 },

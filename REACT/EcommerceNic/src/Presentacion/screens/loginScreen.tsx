@@ -96,7 +96,7 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
           </View>
         </View>
 
-        <Text style={styles.welcomeText}>Bienvenido de vuelta</Text>
+        <Text style={styles.welcomeText}>Bienvenido a</Text>
         <Text style={styles.brandTitle}>Nic Store</Text>
         <Text style={styles.subtitle}>La mejor tecnología al alcance de tus manos en Nicaragua</Text>
 
@@ -187,45 +187,53 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoBackground: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: '#EEF2FF', // soft blue/indigo-50 background for logo
+    width: 96,
+    height: 96,
+    borderRadius: 28,
+    backgroundColor: '#0F172A',
+    borderWidth: 2.5,
+    borderColor: '#6366F1',
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#4F46E5',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 2,
+        elevation: 6,
       },
-      default: {},
+      default: {
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 16,
+      },
     }),
   },
   logoImage: { 
-    width: 60, 
-    height: 60, 
-    borderRadius: 12 
+    width: 80, 
+    height: 80, 
+    borderRadius: 20 
   },
   welcomeText: { 
-    fontSize: 14, 
-    fontWeight: '700', 
-    color: '#64748B', // Slate-500
+    fontSize: 12, 
+    fontWeight: '800', 
+    color: '#6366F1',
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
   brandTitle: { 
-    fontSize: 32, 
+    fontSize: 34, 
     fontWeight: '900', 
-    color: '#0F172A', // Slate-900
+    color: '#0F172A',
     textAlign: 'center', 
     marginBottom: 8,
     marginTop: 2,
+    letterSpacing: 0.5,
   },
   subtitle: { 
     fontSize: 13, 
