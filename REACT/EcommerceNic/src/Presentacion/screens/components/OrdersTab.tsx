@@ -10,10 +10,14 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Order, OrderDetail } from '../../../Domain/entities/Order';
 import { formatCurrency } from '../constants';
 import { COLORES, ESTILOS_SOMBRA } from '../../theme/theme';
 import { ProductImage } from '../../components/ProductImage';
+
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 
 interface OrdersTabProps {
   ordenes: Order[];
@@ -38,33 +42,38 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
   refetch,
   setCurrentTab,
 }) => {
+  const insets = useSafeAreaInsets(); // ✅ Hook dentro del componente
 
   const obtenerInsigniaEstado = (statusId?: number, statusName?: string) => {
     switch (statusId) {
       case 2:
         return {
-          texto: statusName || 'Enviado 🚚',
+          texto: statusName || 'Enviado',
           fondo: '#DBEAFE',
           color: '#3B82F6',
+          icono: 'truck' as FeatherIconName,
         };
       case 3:
         return {
-          texto: statusName || 'Entregado ✅',
+          texto: statusName || 'Entregado',
           fondo: '#D1FAE5',
           color: '#10B981',
+          icono: 'check-circle' as FeatherIconName,
         };
       case 4:
         return {
-          texto: statusName || 'Cancelado ❌',
+          texto: statusName || 'Cancelado',
           fondo: '#FEE2E2',
           color: '#EF4444',
+          icono: 'x-circle' as FeatherIconName,
         };
       case 1:
       default:
         return {
-          texto: statusName || 'Procesando ⏳',
+          texto: statusName || 'Procesando',
           fondo: '#FEF3C7',
           color: '#F59E0B',
+          icono: 'clock' as FeatherIconName,
         };
     }
   };
@@ -73,7 +82,8 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
     if (statusId === 4) {
       return (
         <View style={styles.timelineCancelledBox}>
-          <Text style={styles.timelineCancelledText}>❌ Este pedido ha sido Cancelado</Text>
+          <Feather name="x-circle" size={14} color="#EF4444" style={{ marginRight: 6 }} />
+          <Text style={styles.timelineCancelledText}>Este pedido ha sido Cancelado</Text>
         </View>
       );
     }
@@ -87,13 +97,18 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           {/* Paso 1: Procesando */}
           <View style={styles.timelineStep}>
             <View style={[styles.timelineNode, activeStep >= 1 && styles.timelineNodeActive]}>
-              <Text style={[styles.timelineNodeText, activeStep >= 1 && styles.timelineNodeTextActive]}>
-                {activeStep >= 1 ? '✓' : '1'}
+              {activeStep >= 1 ? (
+                <Feather name="check" size={12} color="#FFFFFF" />
+              ) : (
+                <Text style={styles.timelineNodeText}>1</Text>
+              )}
+            </View>
+            <View style={styles.timelineLabelRow}>
+              <Feather name="clock" size={12} color={activeStep >= 1 ? '#4F46E5' : '#94A3B8'} style={{ marginRight: 4 }} />
+              <Text style={[styles.timelineLabel, activeStep >= 1 && styles.timelineLabelActive]}>
+                Procesando
               </Text>
             </View>
-            <Text style={[styles.timelineLabel, activeStep >= 1 && styles.timelineLabelActive]}>
-              Procesando ⏳
-            </Text>
           </View>
 
           {/* Linea Conectora 1-2 */}
@@ -102,13 +117,18 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           {/* Paso 2: En Camino */}
           <View style={styles.timelineStep}>
             <View style={[styles.timelineNode, activeStep >= 2 && styles.timelineNodeActive]}>
-              <Text style={[styles.timelineNodeText, activeStep >= 2 && styles.timelineNodeTextActive]}>
-                {activeStep >= 2 ? '✓' : '2'}
+              {activeStep >= 2 ? (
+                <Feather name="check" size={12} color="#FFFFFF" />
+              ) : (
+                <Text style={styles.timelineNodeText}>2</Text>
+              )}
+            </View>
+            <View style={styles.timelineLabelRow}>
+              <Feather name="truck" size={12} color={activeStep >= 2 ? '#4F46E5' : '#94A3B8'} style={{ marginRight: 4 }} />
+              <Text style={[styles.timelineLabel, activeStep >= 2 && styles.timelineLabelActive]}>
+                En Camino
               </Text>
             </View>
-            <Text style={[styles.timelineLabel, activeStep >= 2 && styles.timelineLabelActive]}>
-              En Camino 🚚
-            </Text>
           </View>
 
           {/* Linea Conectora 2-3 */}
@@ -117,13 +137,18 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
           {/* Paso 3: Entregado */}
           <View style={styles.timelineStep}>
             <View style={[styles.timelineNode, activeStep >= 3 && styles.timelineNodeActive]}>
-              <Text style={[styles.timelineNodeText, activeStep >= 3 && styles.timelineNodeTextActive]}>
-                {activeStep >= 3 ? '✓' : '3'}
+              {activeStep >= 3 ? (
+                <Feather name="check" size={12} color="#FFFFFF" />
+              ) : (
+                <Text style={styles.timelineNodeText}>3</Text>
+              )}
+            </View>
+            <View style={styles.timelineLabelRow}>
+              <Feather name="package" size={12} color={activeStep >= 3 ? '#4F46E5' : '#94A3B8'} style={{ marginRight: 4 }} />
+              <Text style={[styles.timelineLabel, activeStep >= 3 && styles.timelineLabelActive]}>
+                Entregado
               </Text>
             </View>
-            <Text style={[styles.timelineLabel, activeStep >= 3 && styles.timelineLabelActive]}>
-              Entregado ✅
-            </Text>
           </View>
         </View>
       </View>
@@ -152,15 +177,15 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header de la Pestaña */}
+      {/* Header sin cajita ni subtítulo */}
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
-          <Text style={styles.headerTitle}>📦 Mis Compras</Text>
+          <Text style={styles.headerTitle}>MIS COMPRAS</Text>
           <TouchableOpacity style={styles.refreshButton} onPress={refetch} activeOpacity={0.7}>
-            <Text style={styles.refreshText}>🔄 Actualizar</Text>
+            <Feather name="refresh-cw" size={14} color="#4F46E5" style={{ marginRight: 4 }} />
+            <Text style={styles.refreshText}>Actualizar</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerSubtitle}>Historial y seguimiento de tus pedidos en Nic Store</Text>
       </View>
 
       {/* Contenido Principal */}
@@ -172,7 +197,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
       ) : ordenes.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconBackground}>
-            <Text style={styles.emptyEmoji}>📦</Text>
+            <Feather name="package" size={36} color="#3B82F6" />
           </View>
           <Text style={styles.emptyTitle}>Aún no has realizado compras</Text>
           <Text style={styles.emptySubtitle}>¡Explora el catálogo, agrega tus productos favoritos y realiza tu primer pedido!</Text>
@@ -188,7 +213,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
         <FlatList<Order>
           data={ordenes}
           keyExtractor={(item, index) => `${item.paymentOrderId ?? item.ordenPagoId ?? index}-${index}`}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: 60 + insets.bottom }, // ✅ Espacio extra para no tapar la última tarjeta
+          ]}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => {
             const rawId = item.orderId ?? item.paymentOrderId ?? item.ordenPagoId ?? 0;
@@ -208,6 +236,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                     <Text style={styles.orderDateText}>{formatearFecha(item.orderDate)}</Text>
                   </View>
                   <View style={[styles.badgeContainer, { backgroundColor: insignia.fondo }]}>
+                    <Feather name={insignia.icono} size={12} color={insignia.color} style={styles.badgeIcon} />
                     <Text style={[styles.badgeText, { color: insignia.color }]}>{insignia.texto}</Text>
                   </View>
                 </View>
@@ -230,7 +259,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 </View>
 
                 <View style={styles.viewDetailRow}>
-                  <Text style={styles.viewDetailText}>Ver detalle del pedido →</Text>
+                  <View style={styles.viewDetailContent}>
+                    <Text style={styles.viewDetailText}>Ver detalle del pedido</Text>
+                    <Feather name="arrow-right" size={14} color="#4F46E5" style={{ marginLeft: 4 }} />
+                  </View>
                 </View>
               </TouchableOpacity>
             );
@@ -253,12 +285,15 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 <Text style={styles.modalTitle}>
                   Detalle del Pedido #{ordenSeleccionada?.paymentOrderId ?? ordenSeleccionada?.ordenPagoId}
                 </Text>
-                <Text style={styles.modalSubtitle}>
-                  📅 {formatearFecha(ordenSeleccionada?.orderDate)}
-                </Text>
+                <View style={styles.modalSubtitleRow}>
+                  <Feather name="calendar" size={12} color="#64748B" style={{ marginRight: 4 }} />
+                  <Text style={styles.modalSubtitle}>
+                    {formatearFecha(ordenSeleccionada?.orderDate)}
+                  </Text>
+                </View>
               </View>
               <TouchableOpacity style={styles.closeButton} onPress={cerrarModalDetalle}>
-                <Text style={styles.closeButtonText}>✕</Text>
+                <Feather name="x" size={18} color="#64748B" />
               </TouchableOpacity>
             </View>
 
@@ -274,11 +309,13 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                 {/* Bloque de Información de Entrega y Pago */}
                 <View style={styles.modalInfoBox}>
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>📍 Dirección de Entrega:</Text>
+                    <Feather name="map-pin" size={14} color="#4F46E5" style={styles.infoIcon} />
+                    <Text style={styles.infoLabel}>Dirección de Entrega:</Text>
                     <Text style={styles.infoValue}>{ordenSeleccionada?.addressText || 'Managua - Dirección de Entrega Principal'}</Text>
                   </View>
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>💳 Método de Pago:</Text>
+                    <Feather name="credit-card" size={14} color="#4F46E5" style={styles.infoIcon} />
+                    <Text style={styles.infoLabel}>Método de Pago:</Text>
                     <Text style={styles.infoValue}>{ordenSeleccionada?.paymentMethodName || 'Efectivo contra entrega'}</Text>
                   </View>
                 </View>
@@ -295,8 +332,9 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                   if (listaArticulos.length === 0) {
                     return (
                       <View style={styles.noDetailsBox}>
+                        <Feather name="package" size={16} color="#64748B" style={{ marginRight: 6 }} />
                         <Text style={styles.noDetailsText}>
-                          📦 Pedido registrado con éxito en Nic Store. Tus artículos se encuentran en proceso de preparación y despacho por nuestro equipo.
+                          Pedido registrado con éxito en Nic Store. Tus artículos se encuentran en proceso de preparación y despacho por nuestro equipo.
                         </Text>
                       </View>
                     );
@@ -347,7 +385,10 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({
                           <Text style={styles.summarySubValue}>{formatCurrency(subtotalVal)}</Text>
                         </View>
                         <View style={styles.summaryRowItem}>
-                          <Text style={styles.summarySubLabel}>🚚 Tarifa de Envío (Managua):</Text>
+                          <View style={styles.summarySubLabelRow}>
+                            <Feather name="truck" size={14} color="#4F46E5" style={{ marginRight: 4 }} />
+                            <Text style={styles.summarySubLabel}>Tarifa de Envío (Managua):</Text>
+                          </View>
                           <Text style={styles.summarySubValue}>{formatCurrency(envioVal)}</Text>
                         </View>
                         <View style={styles.summaryDivider} />
@@ -377,26 +418,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
   },
   headerTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    position: 'relative',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 18, // Si quieres el mismo tamaño que "Pedidos", pon 12
     fontWeight: 'bold',
     color: '#0F172A',
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
+    textAlign: 'center',
+    textTransform: 'uppercase',
   },
   refreshButton: {
+    position: 'absolute',
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -405,7 +444,7 @@ const styles = StyleSheet.create({
   refreshText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#4F46E5',
   },
   centeredContainer: {
     flex: 1,
@@ -431,9 +470,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-  },
-  emptyEmoji: {
-    fontSize: 44,
   },
   emptyTitle: {
     fontSize: 18,
@@ -485,9 +521,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  badgeIcon: {
+    marginRight: 4,
   },
   badgeText: {
     fontSize: 12,
@@ -527,10 +568,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignItems: 'flex-end',
   },
+  viewDetailContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   viewDetailText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#3B82F6',
+    color: '#4F46E5',
   },
   modalOverlay: {
     flex: 1,
@@ -558,6 +603,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0F172A',
   },
+  modalSubtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   modalSubtitle: {
     fontSize: 13,
     color: '#64748B',
@@ -569,11 +619,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#64748B',
   },
   modalLoadingContainer: {
     paddingVertical: 40,
@@ -601,6 +646,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
+  infoIcon: {
+    marginRight: 6,
+    marginTop: 1,
+  },
   infoLabel: {
     fontSize: 13,
     fontWeight: 'bold',
@@ -614,6 +663,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   noDetailsBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
     backgroundColor: '#F8FAFC',
     borderRadius: 12,
@@ -622,6 +673,7 @@ const styles = StyleSheet.create({
   noDetailsText: {
     fontSize: 13,
     color: '#64748B',
+    flex: 1,
   },
   detailItemRow: {
     flexDirection: 'row',
@@ -669,6 +721,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  summarySubLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   summarySubLabel: {
     fontSize: 13,
@@ -741,8 +798,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#64748B',
   },
-  timelineNodeTextActive: {
-    color: '#FFFFFF',
+  timelineLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   timelineLabel: {
     fontSize: 10,
@@ -764,11 +823,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5',
   },
   timelineCancelledBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FEE2E2',
     padding: 8,
     borderRadius: 10,
     marginVertical: 8,
-    alignItems: 'center',
+    justifyContent: 'center',
   },
   timelineCancelledText: {
     color: '#EF4444',

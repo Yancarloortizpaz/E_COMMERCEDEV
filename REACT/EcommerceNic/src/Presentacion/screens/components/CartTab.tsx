@@ -8,15 +8,13 @@ import {
   Image,
   Platform,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
 import { CartItem } from '../../../Domain/entities/CartItem';
 import { CustomAlertModal } from '../../components/CustomAlertModal';
 import { API_CONFIG } from '../../../Data/dataSources/apiConfig';
 
-/**
- * Interfaz de TypeScript que coincide exactamente con el JSON del backend SQL Server / C# API
- */
 export interface DetalleCarrito {
   DetalleCarritoId: number;
   ProductoNombre: string;
@@ -54,7 +52,6 @@ export const CartTab = ({
   openPaymentModal,
   totalItemsInCart,
 }: CartTabProps) => {
-  // Estado para controlar el modal de alerta elegante reutilizable
   const [alertaModal, setAlertaModal] = useState<{
     visible: boolean;
     itemKey?: string;
@@ -62,7 +59,6 @@ export const CartTab = ({
     nombreProducto?: string;
   }>({ visible: false });
 
-  // Si cartItems contiene elementos de la API C#, usarlos directamente
   let effectiveCartItems: CartItem[] = [];
 
   if (cartItems && cartItems.length > 0) {
@@ -88,7 +84,6 @@ export const CartTab = ({
     });
     effectiveCartItems = Array.from(uniqueMap.values());
   } else {
-    // Fallback: mapear desde productos + cartQuantities
     const cartProductsMap = new Map<string, Product>();
     [...products, ...extraProducts].forEach((p) => {
       if (p && p.id && !cartProductsMap.has(p.id)) {
@@ -120,7 +115,6 @@ export const CartTab = ({
       });
   }
 
-  // Cálculo de Subtotal y Envío basado en los datos reales del backend (SubTotalFila o PrecioUnitario * Cantidad)
   const subtotal = effectiveCartItems.reduce((acc, item) => {
     const itemSubtotal = item.SubTotalFila ?? item.subTotalFila ?? ((item.PrecioUnitario ?? item.precioUnitario ?? 0) * (item.Cantidad ?? item.cantidad ?? 0));
     return acc + itemSubtotal;
@@ -136,11 +130,6 @@ export const CartTab = ({
     addUnit(itemKey, item);
   };
 
-  /**
-   * Manejo del botón "-" con bifurcación:
-   * - Si Cantidad > 1: Petición PUT al endpoint actualizar (removeUnit)
-   * - Si Cantidad === 1: Muestra CustomAlertModal elegante de eliminación
-   */
   const handleDecrement = (item: CartItem) => {
     const detailId = item.DetalleCarritoId ?? item.detalleCarritoId;
     const currentQuantity = item.Cantidad ?? item.cantidad ?? 0;
@@ -161,11 +150,16 @@ export const CartTab = ({
 
   return (
     <View style={styles.tabContent}>
+      {/* Encabezado: botón atrás + título centrado */}
       <View style={styles.cartHeader}>
         <TouchableOpacity style={styles.backButton} onPress={() => setCurrentTab('chatbot')}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Feather name="arrow-left" size={18} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.cartHeaderTitle}>Tu Carrito</Text>
+        <Text style={styles.cartHeaderTitle}>MI CARRITO</Text>
+      </View>
+
+      {/* Contador de items debajo, centrado */}
+      <View style={styles.itemsCountBadgeRow}>
         <View style={styles.itemsCountBadge}>
           <Text style={styles.itemsCountText}>{totalItemsCount} items</Text>
         </View>
@@ -190,7 +184,7 @@ export const CartTab = ({
       {effectiveCartItems.length === 0 ? (
         <View style={styles.emptyCartContainer}>
           <View style={styles.emptyCartIconBackground}>
-            <Text style={styles.emptyTextEmoji}>🛒</Text>
+            <Feather name="shopping-cart" size={36} color="#4F46E5" />
           </View>
           <Text style={styles.emptyTextTitle}>Tu carrito está vacío</Text>
           <Text style={styles.emptyTextSub}>¡Agrega productos del catálogo para habilitar el pago!</Text>
@@ -238,7 +232,7 @@ export const CartTab = ({
                         disabled={isPending}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
-                        <Text style={styles.deleteTrashIcon}>🗑️</Text>
+                        <Feather name="trash-2" size={13} color="#EF4444" />
                       </TouchableOpacity>
                     </View>
                     
@@ -283,7 +277,6 @@ export const CartTab = ({
             style={styles.cartItemsList}
           />
 
-          {/* Premium Resumen de Pago */}
           <View style={styles.checkoutFooterCard}>
             <View style={styles.checkoutSummaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -299,7 +292,8 @@ export const CartTab = ({
               <Text style={styles.totalValue}>{formatCurrency(totalPayment)}</Text>
             </View>
             <TouchableOpacity style={styles.payButton} activeOpacity={0.8} onPress={openPaymentModal}>
-              <Text style={styles.payButtonText}>Proceder al Pago →</Text>
+              <Text style={styles.payButtonText}>Proceder al Pago</Text>
+              <Feather name="arrow-right" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
             </TouchableOpacity>
           </View>
         </>
@@ -310,12 +304,46 @@ export const CartTab = ({
 
 const styles = StyleSheet.create({
   tabContent: { flex: 1, paddingBottom: 0 },
-  cartHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, marginBottom: 8 },
-  backButton: { width: 38, height: 38, backgroundColor: '#FFFFFF', borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: '#F1F5F9' },
-  backButtonText: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
-  cartHeaderTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#0F172A', marginLeft: 16, marginRight: 16 },
-  itemsCountBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-  itemsCountText: { color: '#4F46E5', fontSize: 12, fontWeight: '800' },
+  cartHeader: {
+    position: 'relative',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    marginBottom: 4,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 12,
+    width: 38,
+    height: 38,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#F1F5F9',
+  },
+  cartHeaderTitle: {
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  itemsCountBadgeRow: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  itemsCountBadge: {
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  itemsCountText: {
+    color: '#4F46E5',
+    fontSize: 12,
+    fontWeight: '800',
+  },
   cartItemsList: { paddingHorizontal: 20, flex: 1, marginBottom: 4 },
   cartItemCard: { 
     flexDirection: 'row', 
@@ -355,7 +383,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteTrashIcon: { fontSize: 12 },
   cartItemTitle: { fontSize: 14, fontWeight: '800', color: '#0F172A', marginTop: 4 },
   cartItemSubtitle: { fontSize: 11, color: '#64748B', marginTop: 1 },
   cartItemRowFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 },
@@ -420,15 +447,16 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 15, fontWeight: '900', color: '#0F172A' },
   totalValue: { fontSize: 20, fontWeight: '900', color: '#4F46E5' },
   payButton: { 
-    backgroundColor: '#4F46E5', 
+    backgroundColor: '#3B82F6', 
     height: 46, 
     borderRadius: 20, 
     justifyContent: 'center', 
     alignItems: 'center', 
     marginTop: 10,
+    flexDirection: 'row',
     ...Platform.select({
       ios: {
-        shadowColor: '#4F46E5',
+        shadowColor: '#3B82F6',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -449,7 +477,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  emptyTextEmoji: { fontSize: 36 },
   emptyTextTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
   emptyTextSub: { fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 6, marginBottom: 24, lineHeight: 18 },
   returnButton: { backgroundColor: '#EEF2FF', paddingHorizontal: 24, height: 40, borderRadius: 20, justifyContent: 'center' },

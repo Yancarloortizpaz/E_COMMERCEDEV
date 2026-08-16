@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-
 import {
   View,
   Text,
   StyleSheet,
-  Platform,
   Image,
   TouchableOpacity,
 } from 'react-native';
@@ -37,22 +35,22 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail) {
-      setError('📧 Por favor, ingresa tu correo electrónico.');
+      setError(' Por favor, ingresa tu correo electrónico.');
       return;
     }
 
     if (!validateEmail(trimmedEmail)) {
-      setError('格式 🛑 El correo electrónico no tiene un formato válido (ej. usuario@dominio.com).');
+      setError('El correo electrónico no tiene un formato válido.');
       return;
     }
 
     if (!trimmedPassword) {
-      setError('🔑 Por favor, ingresa tu contraseña.');
+      setError('Por favor ingresa tu contraseña.');
       return;
     }
 
     if (trimmedPassword.length < 6) {
-      setError('🔒 La contraseña debe tener al menos 6 caracteres.');
+      setError('La contraseña debe tener al menos 6 caracteres.');
       return;
     }
 
@@ -66,14 +64,13 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
         name: loggedUser.data?.userFullName ?? trimmedEmail,
         role: 'user',
       };
-      
-      // Persistir la sesión del usuario localmente
+
       await guardarSesionUseCase.execute(normalizedUser, token);
 
-      console.log("✅ Login Exitoso para:", normalizedUser.name, "Rol:", normalizedUser.role);
+      console.log("Inicio de sesión exitoso para:", normalizedUser.name, "Rol:", normalizedUser.role);
       onLoginSuccess(normalizedUser);
     } catch (err: any) {
-      setError(`🛑 ${err.message || 'Error al iniciar sesión. Verifica tus credenciales.'}`);
+      setError(` ${err.message || 'Error al iniciar sesión. Verifica tus credenciales.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -84,34 +81,28 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
       estiloContenedor={styles.container}
       estiloScroll={styles.scrollContainer}
     >
-      <View style={styles.cardContainer}>
-        
-        <View style={styles.logoWrapper}>
-          <View style={styles.logoBackground}>
-            <Image
-              source={require('../../../assets/logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
-        </View>
+      <View style={styles.content}>
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
-        <Text style={styles.welcomeText}>Bienvenido a</Text>
-        <Text style={styles.brandTitle}>Nic Store</Text>
-        <Text style={styles.subtitle}>La mejor tecnología al alcance de tus manos en Nicaragua</Text>
+        <Text style={styles.brandTitle}>NIC STORE</Text>
+        <Text style={styles.subtitle}>Lo mejor en tecnología al alcance de tus manos</Text>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.inputLabel}>Correo Electrónico</Text>
+        <View style={styles.fieldSpacing}>
           <CustomInput
-            placeholder="tucorreo@email.com"
+            placeholder="Correo electrónico"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
           />
+        </View>
 
-          <Text style={styles.inputLabel}>Contraseña</Text>
+        <View style={styles.fieldSpacing}>
           <CustomInput
             placeholder="Contraseña"
             value={password}
@@ -119,171 +110,89 @@ export const LoginScreen = ({ onLoginSuccess, onNavigateToRegister }: Props) => 
             secureTextEntry
             autoComplete="current-password"
           />
-
-          {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
-          <View style={styles.buttonContainer}>
-            <CustomButton title="Iniciar Sesión" onPress={handleLoginSubmit} loading={isLoading} />
-          </View>
         </View>
 
-        <TouchableOpacity onPress={onNavigateToRegister} style={styles.registerContainer} activeOpacity={0.7}>
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : null}
+
+        <View style={styles.buttonContainer}>
+          <CustomButton title="Iniciar Sesión" onPress={handleLoginSubmit} loading={isLoading} />
+        </View>
+
+        <TouchableOpacity
+          onPress={onNavigateToRegister}
+          style={styles.registerLinkContainer}
+          activeOpacity={0.7}
+        >
           <Text style={styles.registerText}>
-            ¿No tienes cuenta todavía? <Text style={styles.registerLink}>Regístrate ahora</Text>
+            ¿No tienes cuenta? <Text style={styles.registerLink}>Regístrate</Text>
           </Text>
         </TouchableOpacity>
-
       </View>
     </ContenedorFormularioTeclado>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#F8FAFC' // Slate-50 main premium background
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
   },
-  scrollContainer: { 
+  scrollContainer: {
     flexGrow: 1,
-    paddingVertical: 50, 
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
   },
-  cardContainer: { 
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingHorizontal: 28,
-    paddingVertical: 32,
+  content: {
     width: '100%',
     maxWidth: 420,
     alignSelf: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9', // subtle border
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.05,
-        shadowRadius: 24,
-      },
-      android: {
-        elevation: 4,
-      },
-      default: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.05,
-        shadowRadius: 24,
-      }
-    }),
   },
-  logoWrapper: {
-    alignItems: 'center',
-    marginBottom: 20,
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 0,
   },
-  logoBackground: {
-    width: 96,
-    height: 96,
-    borderRadius: 28,
-    backgroundColor: '#0F172A',
-    borderWidth: 2.5,
-    borderColor: '#6366F1',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#6366F1',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 6,
-      },
-      default: {
-        shadowColor: '#6366F1',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-      },
-    }),
-  },
-  logoImage: { 
-    width: 80, 
-    height: 80, 
-    borderRadius: 20 
-  },
-  welcomeText: { 
-    fontSize: 12, 
-    fontWeight: '800', 
-    color: '#6366F1',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  brandTitle: { 
-    fontSize: 34, 
-    fontWeight: '900', 
+  brandTitle: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#0F172A',
-    textAlign: 'center', 
-    marginBottom: 8,
-    marginTop: 2,
-    letterSpacing: 0.5,
+    textAlign: 'center',
+    letterSpacing: -0.5,
   },
-  subtitle: { 
-    fontSize: 13, 
-    color: '#64748B', // Slate-500
-    textAlign: 'center', 
-    marginBottom: 28, 
-    lineHeight: 18,
-    paddingHorizontal: 10 
-  },
-  formContainer: {
-    width: '100%',
-  },
-  inputLabel: { 
-    fontSize: 13, 
-    fontWeight: '700', 
-    color: '#334155', // Slate-700
-    marginBottom: 6, 
-    marginTop: 14,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  buttonContainer: { 
-    marginTop: 24 
-  },
-  registerContainer: { 
-    marginTop: 28, 
-    alignItems: 'center' 
-  },
-  registerText: { 
-    fontSize: 13, 
+  subtitle: {
+    fontSize: 14,
     color: '#64748B',
-    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 20,
   },
-  registerLink: { 
-    fontWeight: '700', 
-    color: '#4F46E5' // Indigo-600 premium brand link
+  fieldSpacing: {
+    marginBottom: 16,
   },
-  errorContainer: {
-    marginTop: 16,
-    backgroundColor: '#FEF2F2', // soft light red
-    borderWidth: 1,
-    borderColor: '#FEE2E2',
-    borderRadius: 12,
-    padding: 12,
+  errorText: {
+    color: '#EF4444',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 8,
   },
-  errorText: { 
-    color: '#EF4444', 
-    fontSize: 13, 
-    fontWeight: '600', 
-    textAlign: 'center', 
-    lineHeight: 18,
-  }
+  buttonContainer: {
+    marginTop: 8,
+  },
+  registerLinkContainer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  registerText: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  registerLink: {
+    fontWeight: '600',
+    color: '#4F46E5',
+  },
 });

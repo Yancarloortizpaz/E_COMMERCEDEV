@@ -6,15 +6,15 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Animated,
 } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { QUICK_REPLIES } from '../constants';
 import { Conversation, Message } from '../../../Domain/entities/Chat';
 import { Product } from '../../../Domain/entities/Product';
-import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../../components/ProductImage';
 import { ContenedorGestoZoom } from '../../components/ContenedorGestoZoom';
 import { getProductByIdUseCase } from '../../../di/DI';
@@ -26,11 +26,13 @@ interface ChatbotTabProps {
   onSelectConversation?: (conversationId: string) => void;
   onNewConversation?: () => void;
   sendMessage: (text: string) => void;
-  isTyping?: boolean; // Para simular o recibir el estado de "escribiendo..." de la IA
-  products?: Product[]; // Productos del catálogo de la BD para respaldar imágenes
-  onAddProductToCart?: (product: any) => void; // Integración con el carrito
-  onSelectProduct?: (productId: string | number) => void; // Ver detalle del producto por ID
+  isTyping?: boolean;
+  products?: Product[];
+  onAddProductToCart?: (product: any) => void;
+  onSelectProduct?: (productId: string | number) => void;
 }
+
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
 
 const AnimatedMessageBubble = ({ children }: { children: React.ReactNode }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -58,6 +60,16 @@ const AnimatedMessageBubble = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const getQuickReplyIcon = (reply: string): FeatherIconName => {
+  const text = reply.toLowerCase();
+  if (text.includes('celular')) return 'smartphone';
+  if (text.includes('consola')) return 'hard-drive';
+  if (text.includes('hardware') || text.includes('pc')) return 'cpu';
+  if (text.includes('audio') || text.includes('sonido')) return 'headphones';
+  if (text.includes('monitor')) return 'monitor';
+  return 'message-square';
+};
+
 export const ChatbotTab = ({ 
   messages, 
   conversations = [],
@@ -73,8 +85,8 @@ export const ChatbotTab = ({
   const [chatMessage, setChatMessage] = useState('');
   const [imagenesResueltas, setImagenesResueltas] = useState<{ [id: string]: string }>({});
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
-  // Resolver en segundo plano la imagen oficial desde SQL Server C# API para productos de la IA
   useEffect(() => {
     messages.forEach(msg => {
       if (msg.role !== 'user') {
@@ -103,8 +115,7 @@ export const ChatbotTab = ({
       }
     });
   }, [messages]);
-  
-  // Animación para el indicador de escritura (tres puntitos)
+
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
@@ -153,48 +164,25 @@ export const ChatbotTab = ({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* Header */}
       <View style={styles.chatHeader}>
         <View style={styles.chatBotIconHeader}>
-          <Text style={styles.botEmojiLogo}>🤖</Text>
+          <MaterialCommunityIcons name="robot-outline" size={24} color="#4F46E5" />
         </View>
         <View style={styles.chatHeaderTextContainer}>
           <View style={styles.headerTitleRow}>
-            <Text style={styles.chatHeaderTitle}>NicaBot IA</Text>
+            <Text style={styles.chatHeaderTitle}>NICABOT IA</Text>
             <View style={styles.proBadge}>
               <Text style={styles.proBadgeText}>AGENTE</Text>
             </View>
           </View>
-          <Text style={styles.chatHeaderOnline}>● Activo ahora</Text>
+          <View style={styles.chatHeaderOnlineRow}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.chatHeaderOnline}>Activo ahora</Text>
+          </View>
         </View>
       </View>
       <View style={styles.headerDivider} />
-      {/*
-      <View style={styles.historyBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
-          {conversations.map((conversation) => (
-            <TouchableOpacity
-              key={conversation.id}
-              style={[
-                styles.historyPill,
-                activeConversationId === conversation.id && styles.historyPillActive,
-              ]}
-              onPress={() => onSelectConversation?.(conversation.id)}
-            >
-              <Text style={[
-                styles.historyPillText,
-                activeConversationId === conversation.id && styles.historyPillTextActive,
-              ]}>
-                {conversation.title ?? 'Conversación'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        <TouchableOpacity style={styles.newConversationButton} onPress={() => onNewConversation?.()}>
-          <Text style={styles.newConversationText}>+ Nueva</Text>
-        </TouchableOpacity>
-      </View>
-        */}
+
       <ContenedorGestoZoom>
         <ScrollView
           ref={scrollViewRef}
@@ -202,21 +190,31 @@ export const ChatbotTab = ({
           contentContainerStyle={styles.chatScrollPadding}
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
-          {/* Tarjeta de Bienvenida */}
           <View style={styles.welcomeCard}>
-            <Text style={styles.welcomeBadge}>⚡ Soporte Inteligente</Text>
+            <View style={styles.welcomeBadgeRow}>
+              <Feather name="zap" size={12} color="#4F46E5" />
+              <Text style={styles.welcomeBadge}>Soporte Inteligente</Text>
+            </View>
             <Text style={styles.welcomeTitle}>Asistente de Compras</Text>
             <Text style={styles.welcomeSubtitle}>
               ¡Hola, chele! Estoy listo para ayudarte a encontrar celulares, consolas, hardware de PC, audio y monitores. ¡Pregúntame lo que quieras!
             </Text>
             <View style={styles.welcomeFeatures}>
-              <Text style={styles.welcomeFeatureItem}>🔍 Búsqueda rápida por marca o tipo</Text>
-              <Text style={styles.welcomeFeatureItem}>🛒 Agrega productos directamente al carrito</Text>
-              <Text style={styles.welcomeFeatureItem}>💬 Respuestas instantáneas con IA</Text>
+              <View style={styles.welcomeFeatureItem}>
+                <Feather name="search" size={14} color="#4F46E5" style={styles.featureIcon} />
+                <Text style={styles.welcomeFeatureText}>Búsqueda rápida por marca o tipo</Text>
+              </View>
+              <View style={styles.welcomeFeatureItem}>
+                <Feather name="shopping-cart" size={14} color="#4F46E5" style={styles.featureIcon} />
+                <Text style={styles.welcomeFeatureText}>Agrega productos directamente al carrito</Text>
+              </View>
+              <View style={styles.welcomeFeatureItem}>
+                <Feather name="message-circle" size={14} color="#4F46E5" style={styles.featureIcon} />
+                <Text style={styles.welcomeFeatureText}>Respuestas instantáneas con IA</Text>
+              </View>
             </View>
           </View>
 
-          {/* Mensajes */}
           {messages.map((msg) => {
             const isUser = msg.role === 'user';
 
@@ -230,7 +228,7 @@ export const ChatbotTab = ({
                 >
                   {!isUser && (
                     <View style={styles.messageBotAvatar}>
-                      <Text style={styles.botAvatarText}>🤖</Text>
+                      <MaterialCommunityIcons name="robot-outline" size={20} color="#4F46E5" />
                     </View>
                   )}
 
@@ -252,7 +250,6 @@ export const ChatbotTab = ({
                             tieneProductos && styles.messageBubbleConProductos,
                           ]}
                         >
-                          {/* Mostrar texto si no contiene productos */}
                           {msg.tipo !== 'productos' && !tieneProductos && (
                             <Text
                               style={[
@@ -264,7 +261,6 @@ export const ChatbotTab = ({
                             </Text>
                           )}
 
-                          {/* Tarjetas de productos compactas e idénticas para conversaciones nuevas e historial */}
                           {!isUser && tieneProductos && listaProductos.map((producto: any, idx: number) => {
                             const idVar = producto.ProductVariableID ?? producto.ProductVariableId ?? producto.ProductID ?? producto.ProductId ?? producto.productVariableId ?? producto.id ?? idx;
                             const realProductId = producto.ProductID ?? producto.ProductId ?? producto.productID ?? producto.productId ?? producto.ProductVariableID ?? producto.ProductVariableId ?? producto.id;
@@ -324,7 +320,10 @@ export const ChatbotTab = ({
                                     onPress={() => realProductId && onSelectProduct?.(realProductId)}
                                     activeOpacity={0.8}
                                   >
-                                    <Text style={styles.productDetailButtonText}>🔍 Ver detalle</Text>
+                                    <View style={styles.productButtonContent}>
+                                      <Feather name="search" size={14} color="#4F46E5" />
+                                      <Text style={styles.productDetailButtonText}>Ver detalle</Text>
+                                    </View>
                                   </TouchableOpacity>
 
                                   <TouchableOpacity
@@ -344,14 +343,16 @@ export const ChatbotTab = ({
                                     }
                                     activeOpacity={0.8}
                                   >
-                                    <Text style={styles.productAddButtonText}>🛒 Agregar</Text>
+                                    <View style={styles.productButtonContent}>
+                                      <Feather name="shopping-cart" size={14} color="#FFFFFF" />
+                                      <Text style={styles.productAddButtonText}>Agregar</Text>
+                                    </View>
                                   </TouchableOpacity>
                                 </View>
                               </View>
                             );
                           })}
 
-                          {/* Hora */}
                           {msg.timestamp && (
                             <Text
                               style={[
@@ -376,11 +377,10 @@ export const ChatbotTab = ({
             );
           })}
 
-          {/* Indicador de escritura animado */}
           {isTyping && (
             <View style={[styles.messageRow, styles.messageRowLeft]}>
               <View style={styles.messageBotAvatar}>
-                <Text style={styles.botAvatarText}>🤖</Text>
+                <MaterialCommunityIcons name="robot-outline" size={20} color="#4F46E5" />
               </View>
               <View style={[styles.messageBubble, styles.messageBubbleBot, styles.typingBubble]}>
                 <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot1.interpolate({ inputRange: [0, 1], outputRange: [0, -6] }) }] }]} />
@@ -392,9 +392,12 @@ export const ChatbotTab = ({
         </ScrollView>
       </ContenedorGestoZoom>
 
-      {/* Input de Chat y Respuestas Rápidas */}
-      <View style={styles.chatInputContainer}>
-        {/* Quick Replies */}
+      <View
+        style={[
+          styles.chatInputContainer,
+          { paddingBottom: Platform.OS === 'ios' ? 12 : 12 + insets.bottom },
+        ]}
+      >
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false} 
@@ -407,12 +410,14 @@ export const ChatbotTab = ({
               style={styles.quickReplyPill} 
               onPress={() => handleSend(reply)}
             >
-              <Text style={styles.quickReplyText}>{reply}</Text>
+              <View style={styles.quickReplyPillContent}>
+                <Feather name={getQuickReplyIcon(reply)} size={14} color="#4F46E5" style={styles.quickReplyIcon} />
+                <Text style={styles.quickReplyText}>{reply}</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Fila de Input */}
         <View style={styles.inputRow}>
           <TextInput
             style={styles.chatInput}
@@ -421,9 +426,11 @@ export const ChatbotTab = ({
             value={chatMessage}
             onChangeText={setChatMessage}
             onSubmitEditing={() => handleSend(chatMessage)}
+            multiline
+            textAlignVertical="top"
           />
           <TouchableOpacity style={styles.sendButton} onPress={() => handleSend(chatMessage)}>
-            <Text style={styles.sendIcon}>➤</Text>
+            <Feather name="send" size={18} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       </View>
@@ -459,15 +466,12 @@ const styles = StyleSheet.create({
   chatBotIconHeader: { 
     width: 44, 
     height: 44, 
-    backgroundColor: '#EEF2F6', 
+    backgroundColor: '#EEF2FF', 
     borderRadius: 14, 
     justifyContent: 'center', 
     alignItems: 'center', 
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
-  },
-  botEmojiLogo: {
-    fontSize: 22,
   },
   chatHeaderTextContainer: { 
     marginLeft: 12,
@@ -480,7 +484,8 @@ const styles = StyleSheet.create({
   chatHeaderTitle: { 
     fontSize: 16, 
     fontWeight: '800', 
-    color: '#0F172A' 
+    color: '#0F172A',
+    letterSpacing: 0.5,
   },
   proBadge: {
     backgroundColor: '#EEF2FF',
@@ -496,59 +501,30 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontWeight: '800',
   },
+  chatHeaderOnlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  onlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+    marginRight: 4,
+  },
   chatHeaderOnline: { 
     fontSize: 12, 
     color: '#10B981', 
     fontWeight: '600',
-    marginTop: 1,
   },
   headerDivider: { 
     height: 1, 
     backgroundColor: '#E2E8F0' 
   },
-  historyBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  historyScroll: { flex: 1 },
-  historyPill: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    marginRight: 8,
-  },
-  historyPillActive: {
-    backgroundColor: '#4F46E5',
-  },
-  historyPillText: {
-    color: '#475569',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  historyPillTextActive: {
-    color: '#FFFFFF',
-  },
-  newConversationButton: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginLeft: 6,
-  },
-  newConversationText: {
-    color: '#4F46E5',
-    fontSize: 12,
-    fontWeight: '800',
-  },
   chatScrollPadding: { 
     padding: 16, 
-    paddingBottom: 40 
+    paddingBottom: 20 
   },
   welcomeCard: { 
     backgroundColor: '#FFFFFF', 
@@ -569,19 +545,17 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  welcomeBadge: { 
-    backgroundColor: '#EEF2FF', 
+  welcomeBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+  },
+  welcomeBadge: {
     color: '#4F46E5',
     fontWeight: '700', 
     fontSize: 11,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 10,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: '#C7D2FE',
+    marginLeft: 4,
   },
   welcomeTitle: { 
     fontSize: 20, 
@@ -602,10 +576,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   welcomeFeatureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  featureIcon: {
+    marginRight: 8,
+  },
+  welcomeFeatureText: {
     fontSize: 12,
     color: '#475569',
     fontWeight: '600',
-    marginVertical: 4,
   },
   messageRow: { 
     flexDirection: 'row', 
@@ -629,9 +610,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-  },
-  botAvatarText: {
-    fontSize: 18,
   },
   bubbleContainer: {
     flex: 1,
@@ -733,7 +711,6 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     marginTop: 2,
   },
-  // ESTILO AGREGADO PARA SOLUCIONAR EL ERROR
   productDescription: {
     fontSize: 12,
     color: '#64748B',
@@ -760,11 +737,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   productDetailButtonText: {
     color: '#4F46E5',
     fontSize: 12,
     fontWeight: '700',
+    marginLeft: 4,
   },
   productAddButton: {
     flex: 1,
@@ -772,22 +751,25 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
   },
   productAddButtonText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+    marginLeft: 4,
+  },
+  productButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chatInputContainer: { 
     backgroundColor: '#FFFFFF', 
     borderTopWidth: 1, 
     borderColor: '#E2E8F0', 
     paddingVertical: 12,
-    ...Platform.select({
-      ios: {
-        paddingBottom: 20,
-      },
-    }),
   },
   quickRepliesScroll: { 
     maxHeight: 38, 
@@ -806,6 +788,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 0.5,
     borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quickReplyPillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  quickReplyIcon: {
+    marginRight: 6,
   },
   quickReplyText: { 
     color: '#4F46E5', 
@@ -815,7 +806,7 @@ const styles = StyleSheet.create({
   inputRow: { 
     flexDirection: 'row', 
     paddingHorizontal: 16, 
-    alignItems: 'center' 
+    alignItems: 'flex-end',
   },
   chatInput: { 
     flex: 1, 
@@ -823,10 +814,13 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: '#E2E8F0', 
     borderRadius: 24, 
-    height: 48, 
+    height: 88,
     paddingHorizontal: 18, 
+    paddingTop: 12,
+    paddingBottom: 12,
     fontSize: 14, 
-    color: '#0F172A' 
+    color: '#0F172A',
+    textAlignVertical: 'top',
   },
   sendButton: { 
     width: 44, 
@@ -835,12 +829,7 @@ const styles = StyleSheet.create({
     borderRadius: 22, 
     justifyContent: 'center', 
     alignItems: 'center', 
-    marginLeft: 10 
-  },
-  sendIcon: { 
-    color: '#FFFFFF', 
-    fontSize: 16, 
-    fontWeight: '900', 
-    transform: [{ rotate: '45deg' }] 
+    marginLeft: 10,
+    marginBottom: 4,
   },
 });

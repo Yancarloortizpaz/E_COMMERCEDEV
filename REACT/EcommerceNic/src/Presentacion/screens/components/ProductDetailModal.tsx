@@ -12,6 +12,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ProductImage } from '../../components/ProductImage';
 import { useProductDetail } from '../../hooks/useProductDetail';
 import { formatCurrency } from '../constants';
@@ -25,12 +26,45 @@ interface ProductDetailModalProps {
   cantidadesCarrito?: { [key: string]: number };
 }
 
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+type MaterialIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
 const formatPriceWithISO = (price: number, iso?: string) => {
   const cleanIso = (iso || '').trim().toUpperCase();
   if (cleanIso === 'USD') {
     return `$${price.toFixed(2)}`;
   }
   return formatCurrency(price);
+};
+
+const getCategoryIcon = (name: string): MaterialIconName => {
+  const clean = name.toLowerCase();
+  if (clean.includes('calzado')) return 'shoe-sneaker';
+  if (clean.includes('tecnología') || clean.includes('tecnologia')) return 'cellphone';
+  if (clean.includes('ropa')) return 'hanger';
+  if (clean.includes('computadora')) return 'monitor';
+  return 'shape';
+};
+
+const getSubCategoryIcon = (name: string): MaterialIconName => {
+  const clean = name.toLowerCase();
+  if (clean.includes('femenino')) return 'face-woman';
+  if (clean.includes('masculino')) return 'face-man';
+  if (clean.includes('niñ')) return 'human-child';
+  if (clean.includes('celular')) return 'cellphone';
+  if (clean.includes('computadora')) return 'monitor';
+  if (clean.includes('componente')) return 'cpu-64-bit';
+  if (clean.includes('calzado')) return 'shoe-sneaker';
+  if (clean.includes('consola')) return 'gamepad-variant';
+  return 'tag';
+};
+
+const getSegmentIcon = (name: string): MaterialIconName => {
+  const clean = name.toLowerCase();
+  if (clean.includes('deportivo')) return 'soccer';
+  if (clean.includes('premium')) return 'crown';
+  if (clean.includes('casual')) return 'star';
+  return 'tag';
 };
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -68,9 +102,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           ? `Ya tienes ${cartQty} en tu Carrito. Solo quedan ${availableStock} disponibles adicionales (máximo ${rawDbStock} en inventario).`
           : `Solo hay ${availableStock} ${availableStock === 1 ? 'unidad disponible' : 'unidades disponibles'} en inventario.`;
         if (Platform.OS === 'web') {
-          window.alert(`⚠️ Límite de Stock Alcanzado:\n${msg}`);
+          window.alert(`Límite de Stock Alcanzado:\n${msg}`);
         } else {
-          Alert.alert('⚠️ Límite de Stock', msg);
+          Alert.alert('Límite de Stock', msg);
         }
         return prev;
       }
@@ -119,9 +153,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       if (vAvailStock <= 0 || qtyToAdd > vAvailStock) {
         const msg = `Para ${matchingVariant.productVariableName || matchingVariant.productName}: Solo quedan ${vAvailStock} disponibles.`;
         if (Platform.OS === 'web') {
-          window.alert(`⚠️ Stock Insuficiente:\n${msg}`);
+          window.alert(`Stock Insuficiente:\n${msg}`);
         } else {
-          Alert.alert('⚠️ Stock Insuficiente', msg);
+          Alert.alert('Stock Insuficiente', msg);
         }
         continue;
       }
@@ -154,10 +188,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* Header Superior */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-            <Text style={styles.closeButtonText}>← Volver</Text>
+            <Feather name="arrow-left" size={18} color="#4F46E5" />
+            <Text style={styles.closeButtonText}>Volver</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle} numberOfLines={1}>Detalle del Producto</Text>
           <View style={{ width: 60 }} />
@@ -170,7 +204,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </View>
         ) : error ? (
           <View style={styles.centerContainer}>
-            <Text style={styles.errorIcon}>📡</Text>
+            <Feather name="wifi-off" size={40} color="#64748B" />
             <Text style={styles.errorTitle}>Error al consultar la API</Text>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={refetch}>
@@ -180,7 +214,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         ) : productDetail ? (
           <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              {/* Contenedor de Imagen del Producto */}
               <View style={styles.imageCard}>
                 <ProductImage
                   url={productDetail.productImageURL}
@@ -190,31 +223,33 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 />
               </View>
 
-              {/* Insignias / Segmentación (Marca, Categoría, Subcategoría, Segmento) */}
               <View style={styles.badgesRow}>
                 {!!productDetail.markName && (
                   <View style={[styles.badge, styles.brandBadge]}>
-                    <Text style={styles.brandBadgeText}>🏷️ {productDetail.markName.toUpperCase()}</Text>
+                    <MaterialCommunityIcons name="tag" size={12} color="#0F172A" style={styles.badgeIcon} />
+                    <Text style={styles.brandBadgeText}>{productDetail.markName.toUpperCase()}</Text>
                   </View>
                 )}
                 {!!productDetail.categoryName && (
                   <View style={[styles.badge, styles.categoryBadge]}>
-                    <Text style={styles.badgeText}>📂 {productDetail.categoryName}</Text>
+                    <MaterialCommunityIcons name={getCategoryIcon(productDetail.categoryName)} size={12} color="#64748B" style={styles.badgeIcon} />
+                    <Text style={styles.badgeText}>{productDetail.categoryName}</Text>
                   </View>
                 )}
                 {!!productDetail.subcategoryName && (
                   <View style={[styles.badge, styles.subCategoryBadge]}>
-                    <Text style={styles.badgeText}>⚡ {productDetail.subcategoryName}</Text>
+                    <MaterialCommunityIcons name={getSubCategoryIcon(productDetail.subcategoryName)} size={12} color="#D97706" style={styles.badgeIcon} />
+                    <Text style={styles.badgeText}>{productDetail.subcategoryName}</Text>
                   </View>
                 )}
                 {!!productDetail.segmentName && (
                   <View style={[styles.badge, styles.segmentBadge]}>
-                    <Text style={styles.badgeText}>🎯 {productDetail.segmentName}</Text>
+                    <MaterialCommunityIcons name={getSegmentIcon(productDetail.segmentName)} size={12} color="#059669" style={styles.badgeIcon} />
+                    <Text style={styles.badgeText}>{productDetail.segmentName}</Text>
                   </View>
                 )}
               </View>
 
-              {/* Información Principal del Producto */}
               <View style={styles.detailsCard}>
                 <Text style={styles.productTitle}>{productDetail.productName}</Text>
 
@@ -222,19 +257,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <Text style={styles.productSubtitle}>{productDetail.productVariableName}</Text>
                 )}
 
-                {/* Precio y Moneda */}
                 <View style={styles.priceContainer}>
-                  <Text style={styles.priceLabel}>PRECIO</Text>
+                  <Text style={styles.priceLabel}>Precio</Text>
                   <Text style={styles.priceValue}>
                     {formatPriceWithISO(productDetail.productVariablePrice, productDetail.currencyISO)}
                   </Text>
                 </View>
 
-                {/* Selector Interactivo de Variantes (Tallas, Colores, Opciones) */}
                 {allVariants && allVariants.length >= 1 && (
                   <View style={styles.variantsSection}>
                     <View style={styles.variantsSectionHeader}>
-                      <Text style={styles.variantsSectionTitle}>⚙️ OPCIÓN </Text>
+                      <Text style={styles.variantsSectionTitle}>Opciones</Text>
                       <Text style={styles.variantsSectionCount}>{allVariants.length} {allVariants.length === 1 ? 'Opción disponible' : 'Opciones disponibles'}</Text>
                     </View>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.variantsScroll}>
@@ -257,12 +290,20 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             activeOpacity={0.8}
                           >
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                              <Text style={[styles.variantPillText, isSelected && styles.variantPillTextActive]}>
-                                {isSelected ? '🔘 ' : '⚪ '}{v.productVariableName || `Opción #${idx + 1}`}
-                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Feather
+                                  name={isSelected ? 'check-circle' : 'circle'}
+                                  size={13}
+                                  color={isSelected ? '#4F46E5' : '#64748B'}
+                                  style={{ marginRight: 4 }}
+                                />
+                                <Text style={[styles.variantPillText, isSelected && styles.variantPillTextActive]}>
+                                  {v.productVariableName || `Opción #${idx + 1}`}
+                                </Text>
+                              </View>
                               
                               {isOut ? (
-                                <Text style={styles.variantOutBadge}>🔴 Agotado</Text>
+                                <Text style={styles.variantOutBadge}>Agotado</Text>
                               ) : vDraftQty === 0 ? (
                                 <TouchableOpacity 
                                   style={styles.pillAddButton}
@@ -272,7 +313,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                                     setVariantQuantities(prev => ({ ...prev, [vIdKey]: 1 }));
                                   }}
                                 >
-                                  <Text style={styles.pillAddButtonText}>🛒 Agregar</Text>
+                                  <Feather name="shopping-cart" size={10} color="#4F46E5" />
+                                  <Text style={styles.pillAddButtonText}>Agregar</Text>
                                 </TouchableOpacity>
                               ) : (
                                 <View style={styles.pillQtyContainer}>
@@ -317,7 +359,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                                 {formatPriceWithISO(v.productVariablePrice, v.currencyISO)}
                               </Text>
                               {!isOut && vStock <= 5 && (
-                                <Text style={styles.variantLowBadge}>🔥 ¡Pocas!</Text>
+                                <View style={styles.variantLowBadge}>
+                                  <Feather name="alert-triangle" size={9} color="#D97706" />
+                                  <Text style={styles.variantLowBadgeText}>Pocas</Text>
+                                </View>
                               )}
                             </View>
                           </TouchableOpacity>
@@ -329,28 +374,30 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 <View style={styles.divider} />
 
-                {/* Disponibilidad y Proveedor */}
                 <View style={styles.infoGrid}>
                   <View style={styles.infoBox}>
-                    <Text style={styles.infoBoxLabel}>DISPONIBILIDAD DE VARIANTE</Text>
+                    <Text style={styles.infoBoxLabel}>Disponibilidad</Text>
                     {availableStock > 0 ? (
                       availableStock <= 5 ? (
                         <View style={styles.stockStatusLow}>
+                          <Feather name="alert-triangle" size={12} color="#D97706" style={{ marginRight: 4 }} />
                           <Text style={styles.stockTextLow}>
-                            🔥 ¡Últimas {availableStock} {availableStock === 1 ? 'unidad disponible' : 'unidades disponibles'}!{cartQty > 0 ? ` (${cartQty} en Carrito)` : ''}
+                            Últimas {availableStock} {availableStock === 1 ? 'unidad disponible' : 'unidades disponibles'}{cartQty > 0 ? ` (${cartQty} en Carrito)` : ''}
                           </Text>
                         </View>
                       ) : (
                         <View style={styles.stockStatusIn}>
+                          <Feather name="check-circle" size={12} color="#059669" style={{ marginRight: 4 }} />
                           <Text style={styles.stockTextIn}>
-                            ● En Stock ({availableStock} disponibles{cartQty > 0 ? ` — ${cartQty} en Carrito` : ''})
+                            En Stock ({availableStock} disponibles{cartQty > 0 ? ` — ${cartQty} en Carrito` : ''})
                           </Text>
                         </View>
                       )
                     ) : (
                       <View style={styles.stockStatusOut}>
+                        <Feather name="x-circle" size={12} color="#EF4444" style={{ marginRight: 4 }} />
                         <Text style={styles.stockTextOut}>
-                          ● {cartQty >= rawDbStock && rawDbStock > 0
+                          {cartQty >= rawDbStock && rawDbStock > 0
                             ? `Límite Alcanzado (${cartQty} de ${rawDbStock} en Carrito)`
                             : 'Agotado'}
                         </Text>
@@ -366,28 +413,32 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         }}
                         activeOpacity={0.8}
                       >
-                        <Text style={styles.goToCartButtonInlineText}>🛒 Ver en Carrito ({cartQty}) →</Text>
+                        <Feather name="shopping-cart" size={12} color="#4F46E5" />
+                        <Text style={styles.goToCartButtonInlineText}>Ver en Carrito ({cartQty})</Text>
                       </TouchableOpacity>
                     )}
                   </View>
 
                   {!!productDetail.providerName && (
                     <View style={styles.infoBox}>
-                      <Text style={styles.infoBoxLabel}>PROVEEDOR OFICIAL</Text>
-                      <Text style={styles.infoBoxValue}>🏭 {productDetail.providerName}</Text>
+                      <Text style={styles.infoBoxLabel}>Proveedor</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Feather name="truck" size={13} color="#0F172A" style={{ marginRight: 6 }} />
+                        <Text style={styles.infoBoxValue}>{productDetail.providerName}</Text>
+                      </View>
                     </View>
                   )}
                 </View>
               </View>
             </ScrollView>
 
-            {/* Footer con Selector de Cantidad y Botón de Agregar al Carrito */}
             <View style={styles.footerContainer}>
               <View style={styles.quantityRow}>
                 <Text style={styles.quantityLabel}>Cantidad:</Text>
                 {availableStock <= 0 ? (
                   <View style={styles.stockStatusOutMini}>
-                    <Text style={styles.stockTextOutMini}>🔴 Agotado</Text>
+                    <Feather name="x-circle" size={11} color="#EF4444" />
+                    <Text style={styles.stockTextOutMini}>Agotado</Text>
                   </View>
                 ) : (variantQuantities[currentVarId] || 0) === 0 ? (
                   <TouchableOpacity 
@@ -395,7 +446,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     activeOpacity={0.8}
                     onPress={() => setVariantQuantities(prev => ({ ...prev, [currentVarId]: 1 }))}
                   >
-                    <Text style={styles.addToCartCardButtonModalText}>🛒 Agregar</Text>
+                    <Feather name="shopping-cart" size={12} color="#4F46E5" />
+                    <Text style={styles.addToCartCardButtonModalText}>Agregar</Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={styles.qtyControls}>
@@ -440,14 +492,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 disabled={availableStock <= 0 && totalDraftedItems === 0}
                 activeOpacity={0.8}
               >
+                <Feather name="shopping-cart" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.addToCartButtonText}>
                   {totalDraftedVariantsCount > 1
-                    ? `🛒 Agregar ${totalDraftedVariantsCount} Opciones (${totalDraftedItems} ítems)`
+                    ? `Agregar ${totalDraftedVariantsCount} Opciones (${totalDraftedItems} ítems)`
                     : (variantQuantities[currentVarId] || 0) > 0
-                    ? `🛒 Agregar al Carrito (${variantQuantities[currentVarId]})`
+                    ? `Agregar al Carrito (${variantQuantities[currentVarId]})`
                     : totalDraftedItems > 0
-                    ? `🛒 Agregar al Carrito (${totalDraftedItems})`
-                    : `🛒 Agregar al Carrito (1)`}
+                    ? `Agregar al Carrito (${totalDraftedItems})`
+                    : `Agregar al Carrito`}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -473,19 +526,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderColor: '#E2E8F0',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
   },
   closeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: '#EEF2FF',
@@ -495,6 +539,7 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontWeight: '800',
     fontSize: 13,
+    marginLeft: 4,
   },
   headerTitle: {
     fontSize: 16,
@@ -515,14 +560,11 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '600',
   },
-  errorIcon: {
-    fontSize: 40,
-    marginBottom: 12,
-  },
   errorTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: '#0F172A',
+    marginTop: 12,
   },
   errorText: {
     fontSize: 13,
@@ -576,38 +618,26 @@ const styles = StyleSheet.create({
     marginHorizontal: -4,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginHorizontal: 4,
     marginBottom: 8,
   },
-  brandBadge: {
-    backgroundColor: '#0F172A',
-  },
+  brandBadge: {},
   brandBadgeText: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 10,
     fontWeight: '800',
   },
-  categoryBadge: {
-    backgroundColor: '#EEF2FF',
-    borderWidth: 0.5,
-    borderColor: '#C7D2FE',
-  },
-  subCategoryBadge: {
-    backgroundColor: '#FEF3C7',
-    borderWidth: 0.5,
-    borderColor: '#FDE68A',
-  },
-  segmentBadge: {
-    backgroundColor: '#ECFDF5',
-    borderWidth: 0.5,
-    borderColor: '#A7F3D0',
+  categoryBadge: {},
+  subCategoryBadge: {},
+  segmentBadge: {},
+  badgeIcon: {
+    marginRight: 4,
   },
   badgeText: {
     fontSize: 11,
-    color: '#1E293B',
+    color: '#64748B',
     fontWeight: '700',
   },
   detailsCard: {
@@ -677,7 +707,7 @@ const styles = StyleSheet.create({
   variantsSection: { marginTop: 14, marginBottom: 10 },
   variantsSectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   variantsSectionTitle: { fontSize: 11, fontWeight: '900', color: '#475569', letterSpacing: 0.5 },
-  variantsSectionCount: { fontSize: 11, fontWeight: '700', color: '#6366F1' },
+  variantsSectionCount: { fontSize: 11, fontWeight: '700', color: '#4F46E5' },
   variantsScroll: { flexDirection: 'row', paddingVertical: 4 },
   variantPill: {
     backgroundColor: '#FFFFFF',
@@ -697,9 +727,20 @@ const styles = StyleSheet.create({
   variantPillTextActive: { color: '#4F46E5' },
   variantPillPrice: { fontSize: 12, fontWeight: '700', color: '#64748B' },
   variantPillPriceActive: { color: '#4F46E5' },
-  variantOutBadge: { backgroundColor: '#FEE2E2', color: '#EF4444', fontSize: 9, fontWeight: '800', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4, marginLeft: 6 },
-  variantLowBadge: { backgroundColor: '#FEF3C7', color: '#D97706', fontSize: 9, fontWeight: '800', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4, marginLeft: 6 },
+  variantOutBadge: { color: '#EF4444', fontSize: 9, fontWeight: '800', marginLeft: 6 },
+  variantLowBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginLeft: 6,
+  },
+  variantLowBadgeText: { color: '#D97706', fontSize: 9, fontWeight: '800', marginLeft: 2 },
   pillAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#EEF2FF',
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -710,6 +751,7 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 10,
     fontWeight: '800',
+    marginLeft: 3,
   },
   addToCartCardButtonModal: {
     backgroundColor: '#EEF2FF',
@@ -724,8 +766,11 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 12,
     fontWeight: '800',
+    marginLeft: 4,
   },
   stockStatusOutMini: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FEF2F2',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -735,6 +780,7 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 11,
     fontWeight: '800',
+    marginLeft: 4,
   },
   pillQtyContainer: {
     flexDirection: 'row',
@@ -765,6 +811,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   stockStatusLow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: '#FEF3C7',
     paddingHorizontal: 10,
@@ -779,6 +827,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   stockStatusIn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: '#ECFDF5',
     paddingHorizontal: 10,
@@ -791,6 +841,8 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   stockStatusOut: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: '#FEF2F2',
     paddingHorizontal: 10,
@@ -803,8 +855,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   goToCartButtonInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#EEF2FF',
-    borderColor: '#818CF8',
+    borderColor: '#4F46E5',
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -816,6 +870,7 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 12,
     fontWeight: '800',
+    marginLeft: 4,
   },
   footerContainer: {
     backgroundColor: '#FFFFFF',
@@ -878,9 +933,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   addToCartButton: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#3B82F6',
     height: 48,
     borderRadius: 16,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },

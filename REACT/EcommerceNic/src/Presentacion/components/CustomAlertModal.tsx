@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Modal,
   SafeAreaView,
-  Platform,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { COLORES, ESTILOS_SOMBRA } from '../theme/theme';
 
 export type TipoAlerta = 'eliminacion' | 'exito' | 'advertencia' | 'informacion';
@@ -24,6 +24,16 @@ export interface PropsAlertaModal {
   alCerrar: () => void;
 }
 
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
+interface ConfiguracionTipo {
+  icono: FeatherIconName;
+  fondoIcono: string;
+  colorIcono: string;
+  colorBotonConfirmar: string;
+  textoBotonPorDefecto: string;
+}
+
 export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
   visible,
   tipo,
@@ -37,12 +47,11 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
 }) => {
   if (!visible) return null;
 
-  // Configuración de colores e íconos por tipo de alerta
-  const obtenerConfiguracionTipo = () => {
+  const obtenerConfiguracionTipo = (): ConfiguracionTipo => {
     switch (tipo) {
       case 'eliminacion':
         return {
-          icono: '🗑️',
+          icono: 'trash-2',
           fondoIcono: '#FEE2E2',
           colorIcono: '#EF4444',
           colorBotonConfirmar: '#EF4444',
@@ -50,7 +59,7 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
         };
       case 'exito':
         return {
-          icono: '🛒',
+          icono: 'check-circle',
           fondoIcono: '#DBEAFE',
           colorIcono: '#3B82F6',
           colorBotonConfirmar: '#3B82F6',
@@ -58,7 +67,7 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
         };
       case 'advertencia':
         return {
-          icono: '⚠️',
+          icono: 'alert-triangle',
           fondoIcono: '#FEF3C7',
           colorIcono: '#F59E0B',
           colorBotonConfirmar: '#F59E0B',
@@ -67,7 +76,7 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
       case 'informacion':
       default:
         return {
-          icono: 'ℹ️',
+          icono: 'info',
           fondoIcono: '#DBEAFE',
           colorIcono: '#3B82F6',
           colorBotonConfirmar: '#3B82F6',
@@ -104,16 +113,13 @@ export const CustomAlertModal: React.FC<PropsAlertaModal> = ({
       <View style={styles.contenedorFondoOverlay}>
         <SafeAreaView style={styles.contenedorModalCentrado}>
           <View style={[styles.tarjetaModal, ESTILOS_SOMBRA.tarjeta]}>
-            {/* Ícono Ilustrativo */}
             <View style={[styles.circuloIcono, { backgroundColor: config.fondoIcono }]}>
-              <Text style={styles.textoIcono}>{config.icono}</Text>
+              <Feather name={config.icono} size={28} color={config.colorIcono} />
             </View>
 
-            {/* Título y Mensaje */}
             <Text style={styles.tituloModal}>{titulo}</Text>
             <Text style={styles.mensajeModal}>{mensaje}</Text>
 
-            {/* Botones de Acción */}
             <View style={styles.filaBotones}>
               {esModoConfirmacion && (
                 <TouchableOpacity
@@ -171,9 +177,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  textoIcono: {
-    fontSize: 32,
   },
   tituloModal: {
     fontSize: 20,

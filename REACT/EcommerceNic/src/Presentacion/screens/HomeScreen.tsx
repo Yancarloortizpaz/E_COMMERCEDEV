@@ -119,7 +119,7 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
     }
 
     Alert.alert(
-      'Cerrar Sesión',
+      'Cerrar sesión',
       '¿Estás seguro que querés salir, bro?',
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -144,19 +144,19 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
           if (prodTarget) {
             try {
               await cart.agregarProductoAlCarrito(prodTarget);
-              console.log("✅ Producto agregado con éxito a la API C#");
+              console.log("Producto agregado con éxito a la API C#");
               setAlertaResultado({
                 visible: true,
                 tipo: 'exito',
-                titulo: '🛒 ¡Producto Agregado!',
+                titulo: '¡Producto Agregado!',
                 mensaje: `"${prodTarget.name ?? prodTarget.title ?? 'El producto'}" fue añadido correctamente a tu carrito de compras.`,
               });
             } catch (err: any) {
-              console.error("❌ Error al agregar producto:", err);
+              console.error("Error al agregar producto:", err);
               setAlertaResultado({
                 visible: true,
                 tipo: 'advertencia',
-                titulo: '⚠️ Error al Agregar',
+                titulo: 'Error al Agregar',
                 mensaje: err.message || 'No se pudo registrar el producto en el carrito.',
               });
             }
@@ -308,21 +308,21 @@ export const HomeScreen = ({ onLogout, user }: Props) => {
             for (const item of listaItems) {
               await cart.agregarProductoAlCarrito(item);
             }
-            console.log("✅ Productos agregados con éxito a la API C#");
+            console.log("Productos agregados con éxito a la API C#");
             setAlertaResultado({
               visible: true,
               tipo: 'exito',
-              titulo: '🛒 ¡Productos Agregados!',
+              titulo: '¡Productos Agregados!',
               mensaje: listaItems.length === 1
                 ? `"${listaItems[0].name ?? listaItems[0].title ?? 'El producto'}" fue añadido correctamente a tu carrito de compras.`
                 : `Se añadieron ${listaItems.length} opciones distintas (${listaItems.reduce((acc, i) => acc + (i.quantity || 1), 0)} ítems en total) a tu carrito de compras.`,
             });
           } catch (err: any) {
-            console.error("❌ Error al agregar productos:", err);
+            console.error("Error al agregar productos:", err);
             setAlertaResultado({
               visible: true,
               tipo: 'advertencia',
-              titulo: '⚠️ Error al Agregar',
+              titulo: 'Error al Agregar',
               mensaje: err.message || 'No se pudieron registrar los productos en el carrito.',
             });
           }

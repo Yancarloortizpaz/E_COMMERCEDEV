@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { formatCurrency } from '../constants';
 import { Product } from '../../../Domain/entities/Product';
 import { SubCategory } from '../../../Domain/entities/SubCategory';
@@ -34,17 +35,19 @@ interface CatalogTabProps {
   onSelectProduct?: (productId: string | number) => void;
 }
 
-const SUBCATEGORY_ICONS: { [key: string]: string } = {
-  masculino: '👕',
-  femenino: '👗',
-  niños: '👦',
-  niñas: '👧',
-  celulares: '📱',
-  computadoras: '💻',
-  componentes: '🖥️',
-  hardware: '🖥️',
-  calzado: '👟',
-  consolas: '🎮',
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
+const SUBCATEGORY_ICONS: { [key: string]: FeatherIconName } = {
+  masculino: 'user',
+  femenino: 'user',
+  niños: 'users',
+  niñas: 'users',
+  celulares: 'smartphone',
+  computadoras: 'monitor',
+  componentes: 'cpu',
+  hardware: 'cpu',
+  calzado: 'shopping-bag',
+  consolas: 'hard-drive',
 };
 
 const SUBCATEGORY_KEYWORDS: { [key: string]: string[] } = {
@@ -60,14 +63,14 @@ const SUBCATEGORY_KEYWORDS: { [key: string]: string[] } = {
   niñas: ['ropa niñas', 'vestido niñas'],
 };
 
-const getSubCategoryIcon = (name: string): string => {
+const getSubCategoryIcon = (name: string): FeatherIconName => {
   const clean = (name || '').toLowerCase();
   for (const key in SUBCATEGORY_ICONS) {
     if (clean.includes(key)) {
       return SUBCATEGORY_ICONS[key];
     }
   }
-  return '📦';
+  return 'package';
 };
 
 const matchesSubCategory = (product: Product, subCategoryName: string): boolean => {
@@ -169,7 +172,7 @@ const ProductCardItem = React.memo(({
           <ProductImage url={product.image} style={styles.productImage} resizeMode="contain" />
           <View style={styles.tagsContainer}>
             {isStockOut ? (
-              <Text style={styles.outOfStockTag}>🔴 AGOTADO</Text>
+              <Text style={styles.outOfStockTag}>AGOTADO</Text>
             ) : product.tag ? (
               <Text style={styles.topTag}>{product.tag}</Text>
             ) : null}
@@ -205,7 +208,10 @@ const ProductCardItem = React.memo(({
             activeOpacity={0.8} 
             onPress={() => targetId && onSelectProduct?.(targetId)}
           >
-            <Text style={styles.seeOptionsCardButtonText}>🔍 Ver opciones</Text>
+            <View style={styles.buttonContent}>
+              <Feather name="search" size={14} color="#DC2626" />
+              <Text style={styles.seeOptionsCardButtonText}>Ver opciones</Text>
+            </View>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity 
@@ -213,7 +219,10 @@ const ProductCardItem = React.memo(({
             activeOpacity={0.8} 
             onPress={() => addUnit(product.id)}
           >
-            <Text style={styles.addToCartCardButtonText}>🛒 Agregar</Text>
+            <View style={styles.buttonContent}>
+              <Feather name="shopping-cart" size={14} color="#4F46E5" />
+              <Text style={styles.addToCartCardButtonText}>Agregar</Text>
+            </View>
           </TouchableOpacity>
         )}
       </View>
@@ -253,16 +262,19 @@ const CatalogHeader = React.memo(({
         <View style={styles.profileSection}>
           <Image source={require('../../../../assets/logo.png')} style={styles.logoImage} resizeMode="contain" />
           <View style={styles.textContainer}>
-            <Text style={styles.storeName}>Nic Store</Text>
-            <Text style={styles.onlineStatus}>● En línea</Text>
+            <Text style={styles.storeName}>NIC STORE</Text>
+            <View style={styles.onlineStatusContainer}>
+              <View style={styles.onlineDot} />
+              <Text style={styles.onlineStatus}>En línea</Text>
+            </View>
           </View>
         </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton}>
-            <Text style={styles.emojiIcon}>🔔</Text>
+            <Feather name="bell" size={20} color="#64748B" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => setCurrentTab('cart')}>
-            <Text style={styles.emojiIcon}>🛒</Text>
+            <Feather name="shopping-cart" size={20} color="#64748B" />
             {totalItemsInCart > 0 && (
               <View style={styles.cartBadge}>
                 <Text style={styles.cartBadgeText}>{totalItemsInCart}</Text>
@@ -274,7 +286,7 @@ const CatalogHeader = React.memo(({
 
       {/* Buscador Inmutable */}
       <View style={styles.searchContainer}>
-        <Text style={styles.searchIcon}>🔍</Text>
+        <Feather name="search" size={18} color="#94A3B8" style={styles.searchIcon} />
         <TextInput
           placeholder="Buscar productos..."
           placeholderTextColor="#94A3B8"
@@ -292,9 +304,12 @@ const CatalogHeader = React.memo(({
             style={[styles.categoryPill, subCategoriaSeleccionadaId === null && styles.categoryPillActive]}
             activeOpacity={0.8}
           >
-            <Text style={[styles.categoryText, subCategoriaSeleccionadaId === null && styles.categoryTextActive]}>
-              ⚡ Todo
-            </Text>
+            <View style={styles.categoryPillContent}>
+              <Feather name="grid" size={14} color={subCategoriaSeleccionadaId === null ? '#FFFFFF' : '#64748B'} />
+              <Text style={[styles.categoryText, subCategoriaSeleccionadaId === null && styles.categoryTextActive]}>
+                Todo
+              </Text>
+            </View>
           </TouchableOpacity>
 
           {subCategorias.map((sub) => {
@@ -308,9 +323,12 @@ const CatalogHeader = React.memo(({
                 style={[styles.categoryPill, isSelected && styles.categoryPillActive]}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>
-                  {icon} {sub.subCategoryName}
-                </Text>
+                <View style={styles.categoryPillContent}>
+                  <Feather name={icon} size={14} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                  <Text style={[styles.categoryText, isSelected && styles.categoryTextActive]}>
+                    {sub.subCategoryName}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -350,7 +368,6 @@ export const CatalogTab = ({
   const { marcas, marcaSeleccionadaId, seleccionarMarca } = useMarks();
   const { subCategorias, subCategoriaSeleccionadaId, seleccionarSubCategoria } = useSubCategories();
 
-  // Consultar API pasando solo la búsqueda por texto del usuario para no limitar la consulta
   const {
     data,
     fetchNextPage,
@@ -367,7 +384,6 @@ export const CatalogTab = ({
     : (initialProducts || []);
 
   const displayProducts = useMemo(() => {
-    // Agrupar filas de variantes por modelo de producto (productId)
     const productGroups = new Map<number, Product[]>();
 
     displayProductsRaw.forEach(p => {
@@ -382,9 +398,7 @@ export const CatalogTab = ({
     const chosenProducts: Product[] = [];
 
     productGroups.forEach((rows) => {
-      // Tomar la variante por defecto (rows[0]) respetando su stock real devuelto por SQL Server
       const selected = rows[0];
-
       chosenProducts.push({
         ...selected,
       });
@@ -392,7 +406,6 @@ export const CatalogTab = ({
 
     let filtered = chosenProducts;
 
-    // Filtrar por Marca seleccionada
     if (marcaSeleccionadaId !== null) {
       const marcaObj = marcas.find(m => m.markId === marcaSeleccionadaId);
       if (marcaObj) {
@@ -407,7 +420,6 @@ export const CatalogTab = ({
       }
     }
 
-    // Filtrar por Subcategoría seleccionada con sistema inteligente de palabras clave
     if (subCategoriaSeleccionadaId !== null) {
       const subObj = subCategorias.find(s => s.subCategoryId === subCategoriaSeleccionadaId);
       if (subObj) {
@@ -474,7 +486,10 @@ export const CatalogTab = ({
     if (!hasNextPage && displayProducts.length > 0) {
       return (
         <View style={styles.footerEnd}>
-          <Text style={styles.footerEndText}>📦 Has visto todos los productos disponibles</Text>
+          <View style={styles.footerEndContent}>
+            <Feather name="package" size={14} color="#94A3B8" />
+            <Text style={styles.footerEndText}>Has visto todos los productos disponibles</Text>
+          </View>
         </View>
       );
     }
@@ -539,7 +554,7 @@ export const CatalogTab = ({
         <View style={{ flex: 1 }}>
           {headerComponent}
           <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 40, marginBottom: 12 }}>📡</Text>
+            <Feather name="wifi-off" size={40} color="#64748B" style={{ marginBottom: 12 }} />
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A' }}>Error al cargar productos</Text>
             <Text style={{ fontSize: 13, color: '#64748B', marginTop: 4, textAlign: 'center', paddingHorizontal: 20 }}>
               {(error as any)?.message || 'No se pudo conectar con el servidor.'}
@@ -567,9 +582,12 @@ export const CatalogTab = ({
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={{ fontSize: 40, marginBottom: 12 }}>
-                {subCategoriaSeleccionadaId !== null ? '📱' : '🔍'}
-              </Text>
+              <Feather
+                name={subCategoriaSeleccionadaId !== null ? 'package' : 'search'}
+                size={40}
+                color="#64748B"
+                style={{ marginBottom: 12 }}
+              />
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>
                 {subCategoriaSeleccionadaId !== null && subObjActivo
                   ? `Sin resultados para "${subObjActivo.subCategoryName}"`
@@ -584,7 +602,10 @@ export const CatalogTab = ({
                 style={styles.retryButton}
                 onPress={handleLimpiarTodo}
               >
-                <Text style={styles.retryButtonText}>✨ Ver todos los productos</Text>
+                <View style={styles.retryButtonContent}>
+                  <Feather name="refresh-cw" size={16} color="#FFFFFF" />
+                  <Text style={styles.retryButtonText}>Ver todos los productos</Text>
+                </View>
               </TouchableOpacity>
             </View>
           }
@@ -612,22 +633,23 @@ const styles = StyleSheet.create({
   logoImage: { width: 42, height: 42, borderRadius: 12 },
   textContainer: { marginLeft: 12 },
   storeName: { fontSize: 17, fontWeight: '900', color: '#0F172A' },
-  onlineStatus: { fontSize: 11, color: '#10B981', fontWeight: '700', marginTop: 1 },
+  onlineStatusContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  onlineDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', marginRight: 4 },
+  onlineStatus: { fontSize: 11, color: '#10B981', fontWeight: '700' },
   headerIcons: { flexDirection: 'row', position: 'relative' },
   iconButton: { width: 42, height: 42, backgroundColor: '#F1F5F9', borderRadius: 21, justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
-  emojiIcon: { fontSize: 18 },
   cartBadge: { position: 'absolute', top: -3, right: -3, backgroundColor: '#4F46E5', width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
   cartBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
-  searchContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20, 
-    height: 48, 
+    marginHorizontal: 20,
+    height: 48,
     borderRadius: 16,
-    paddingHorizontal: 16, 
-    marginBottom: 20, 
-    borderWidth: 1.5, 
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    borderWidth: 1.5,
     borderColor: '#F1F5F9',
     ...Platform.select({
       ios: {
@@ -641,10 +663,10 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  searchIcon: { fontSize: 15, marginRight: 10 },
-  searchInput: { 
-    flex: 1, 
-    fontSize: 14, 
+  searchIcon: { marginRight: 10 },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
     color: '#0F172A',
     fontWeight: '500',
     backgroundColor: 'transparent',
@@ -653,23 +675,24 @@ const styles = StyleSheet.create({
         outlineStyle: 'none',
       } as any,
     }),
-  },  
+  },
   categoriesContainer: { marginBottom: 20 },
   categoryPill: { paddingHorizontal: 18, height: 38, backgroundColor: '#F1F5F9', borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 10, flexDirection: 'row' },
   categoryPillActive: { backgroundColor: '#4F46E5' },
-  categoryText: { fontSize: 13, color: '#64748B', fontWeight: '700' },
+  categoryPillContent: { flexDirection: 'row', alignItems: 'center' },
+  categoryText: { fontSize: 13, color: '#64748B', fontWeight: '700', marginLeft: 6 },
   categoryTextActive: { color: '#FFFFFF' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 16 },
   sectionTitle: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
   seeAllLink: { fontSize: 13, color: '#4F46E5', fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 16, justifyContent: 'space-between' },
-  card: { 
-    width: '48%', 
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 20, 
-    padding: 10, 
-    marginBottom: 16, 
-    borderWidth: 1, 
+  card: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 10,
+    marginBottom: 16,
+    borderWidth: 1,
     borderColor: '#F1F5F9',
     ...Platform.select({
       ios: {
@@ -698,7 +721,7 @@ const styles = StyleSheet.create({
   productBrand: { fontSize: 9, fontWeight: '800', color: '#64748B', letterSpacing: 0.5, marginBottom: 2 },
   productTitle: { fontSize: 14, fontWeight: '800', color: '#0F172A' },
   productSubtitle: { fontSize: 11, color: '#64748B', marginTop: 1, height: 16 },
-  
+
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -716,7 +739,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   productPrice: { fontSize: 14, fontWeight: '900', color: '#4F46E5' },
-  
+
   addToCartCardButton: {
     backgroundColor: '#EEF2FF',
     paddingHorizontal: 10,
@@ -730,22 +753,29 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontSize: 12,
     fontWeight: '800',
+    marginLeft: 6,
   },
   seeOptionsCardButton: {
     backgroundColor: '#FEF2F2',
     borderColor: '#FCA5A5',
     borderWidth: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 6,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 8,
   },
   seeOptionsCardButtonText: {
     color: '#DC2626',
     fontSize: 11,
     fontWeight: '800',
+    marginLeft: 6,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   outOfStockTag: {
     backgroundColor: '#EF4444',
@@ -796,11 +826,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   retryButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 13,
+    marginLeft: 8,
+  },
+  retryButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   footerLoading: {
     paddingVertical: 16,
@@ -818,9 +856,14 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
   },
+  footerEndContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   footerEndText: {
     fontSize: 12,
     color: '#94A3B8',
     fontWeight: '600',
+    marginLeft: 8,
   },
 });

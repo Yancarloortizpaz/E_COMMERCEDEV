@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORES, ESTILOS_SOMBRA } from '../theme/theme';
 
 export type TabNombre = 'home' | 'cart' | 'chatbot' | 'pedidos' | 'nosotros';
@@ -15,14 +17,29 @@ export const BottomTabBar: React.FC<Props> = ({
   alSeleccionarPestaña,
   totalElementosCarrito = 0,
 }) => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={[styles.barraNavegacion, ESTILOS_SOMBRA.navegacion]}>
+    <View
+      style={[
+        styles.barraNavegacion,
+        ESTILOS_SOMBRA.navegacion,
+        {
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
       <TouchableOpacity
         style={styles.itemTab}
         onPress={() => alSeleccionarPestaña('home')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.iconoBase, pestañaActual === 'home' && styles.iconoActivo]}>🏠</Text>
+        <Feather
+          name="home"
+          size={22}
+          color={pestañaActual === 'home' ? COLORES.primario : COLORES.textoSecundario}
+        />
         <Text style={[styles.textoTab, pestañaActual === 'home' && styles.textoTabActivo]}>
           Inicio
         </Text>
@@ -39,9 +56,11 @@ export const BottomTabBar: React.FC<Props> = ({
             pestañaActual === 'chatbot' && styles.contenedorIconoBotActivo,
           ]}
         >
-          <Text style={[styles.iconoBase, pestañaActual === 'chatbot' && styles.iconoActivoBot]}>
-            💬
-          </Text>
+          <Feather
+            name="message-circle"
+            size={20}
+            color={pestañaActual === 'chatbot' ? COLORES.primario : COLORES.textoSecundario}
+          />
         </View>
         <Text style={[styles.textoTab, pestañaActual === 'chatbot' && styles.textoTabActivo]}>
           Chatbot
@@ -54,7 +73,11 @@ export const BottomTabBar: React.FC<Props> = ({
         activeOpacity={0.7}
       >
         <View style={styles.contenedorCarrito}>
-          <Text style={[styles.iconoBase, pestañaActual === 'cart' && styles.iconoActivo]}>🛒</Text>
+          <Feather
+            name="shopping-cart"
+            size={22}
+            color={pestañaActual === 'cart' ? COLORES.primario : COLORES.textoSecundario}
+          />
           {totalElementosCarrito > 0 && (
             <View style={styles.insigniaContador}>
               <Text style={styles.textoInsignia}>{totalElementosCarrito}</Text>
@@ -71,7 +94,11 @@ export const BottomTabBar: React.FC<Props> = ({
         onPress={() => alSeleccionarPestaña('pedidos')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.iconoBase, pestañaActual === 'pedidos' && styles.iconoActivo]}>📦</Text>
+        <Feather
+          name="package"
+          size={22}
+          color={pestañaActual === 'pedidos' ? COLORES.primario : COLORES.textoSecundario}
+        />
         <Text style={[styles.textoTab, pestañaActual === 'pedidos' && styles.textoTabActivo]}>
           Pedidos
         </Text>
@@ -82,9 +109,11 @@ export const BottomTabBar: React.FC<Props> = ({
         onPress={() => alSeleccionarPestaña('nosotros')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.iconoBase, pestañaActual === 'nosotros' && styles.iconoActivo]}>
-          ℹ️
-        </Text>
+        <Feather
+          name="info"
+          size={22}
+          color={pestañaActual === 'nosotros' ? COLORES.primario : COLORES.textoSecundario}
+        />
         <Text style={[styles.textoTab, pestañaActual === 'nosotros' && styles.textoTabActivo]}>
           Nosotros
         </Text>
@@ -99,7 +128,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 60,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -110,16 +138,6 @@ const styles = StyleSheet.create({
   itemTab: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconoBase: {
-    fontSize: 22,
-    color: COLORES.textoSecundario,
-  },
-  iconoActivo: {
-    color: COLORES.primario,
-  },
-  iconoActivoBot: {
-    color: COLORES.primario,
   },
   textoTab: {
     fontSize: 12,

@@ -18,7 +18,12 @@
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/logo.png"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.elopez08.nicstore"
     },
     "web": {
       "favicon": "./assets/logo.png"

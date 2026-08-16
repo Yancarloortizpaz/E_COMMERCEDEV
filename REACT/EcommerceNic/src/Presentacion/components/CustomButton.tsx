@@ -28,16 +28,15 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 54,
-    backgroundColor: '#3B82F6', // El azul exacto de tu botón "Iniciar Sesión"
-    borderRadius: 16,          // Muy redondeado como el Figma
+    backgroundColor: '#3B82F6',
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    // Sombrita suave abajo del botón
     shadowColor: '#3B82F6',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 4, 
+    elevation: 4,
   },
   buttonText: {
     color: '#FFFFFF',

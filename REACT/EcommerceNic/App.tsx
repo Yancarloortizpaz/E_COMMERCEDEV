@@ -1,5 +1,6 @@
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, StatusBar, ActivityIndicator, View, Text } from 'react-native';
+import { StyleSheet, StatusBar, ActivityIndicator, View, Text } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LoginScreen } from './src/Presentacion/screens/loginScreen';
 import { RegisterScreen } from './src/Presentacion/screens/RegisterScreen';
@@ -72,18 +73,16 @@ export default function App() {
     }
   };
 
-  if (estaVerificandoSesion) {
     return (
-      <SafeAreaView style={styles.pantallaCarga}>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+      {estaVerificandoSesion ? (
+      <SafeAreaView style={styles.pantallaCarga} edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color="#2563EB" />
         <Text style={styles.textoCarga}>Cargando Nic Store...</Text>
       </SafeAreaView>
-    );
-  }
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaView style={styles.container}>
+    ) : (
+      <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
         {currentScreen === 'login' && (
@@ -107,7 +106,9 @@ export default function App() {
         {currentScreen === 'admin' && (
           <AdminDashboardScreen onLogout={handleLogout} />
         )}
-      </SafeAreaView>
+      </View>
+      )}
+      </SafeAreaProvider>
     </QueryClientProvider>
   );
 }

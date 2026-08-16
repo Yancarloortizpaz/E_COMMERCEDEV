@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
   View,
@@ -6,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Mark } from '../../../Domain/entities/Mark';
 import { COLORES, ESTILOS_SOMBRA } from '../../theme/theme';
 
@@ -15,15 +17,17 @@ interface BrandCarouselProps {
   onSeleccionarMarca: (id: number | null) => void;
 }
 
-const BRAND_ICONS: { [key: string]: string } = {
-  nike: '👟',
-  apple: '🍏',
-  samsung: '📱',
-  sony: '🎧',
-  dell: '💻',
-  adidas: '👟',
-  puma: '👟',
-  infinix: '📱',
+type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+const BRAND_ICONS: { [key: string]: IconName } = {
+  nike: 'shoe-sneaker',
+  apple: 'cellphone',
+  samsung: 'cellphone',
+  sony: 'headphones',
+  dell: 'monitor',
+  adidas: 'shoe-sneaker',
+  puma: 'shoe-sneaker',
+  infinix: 'cellphone',
 };
 
 export const BrandCarousel = ({
@@ -31,23 +35,27 @@ export const BrandCarousel = ({
   marcaSeleccionadaId,
   onSeleccionarMarca,
 }: BrandCarouselProps) => {
-  const getBrandIcon = (name: string): string => {
+  const getBrandIcon = (name: string): IconName => {
     const clean = (name || '').toLowerCase();
     for (const key in BRAND_ICONS) {
       if (clean.includes(key)) {
         return BRAND_ICONS[key];
       }
     }
-    return '🏷️';
+    return 'tag';
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>🏷️ Marcas Destacadas</Text>
+        <View style={styles.titleContainer}>
+          <Feather name="tag" size={16} color="#0F172A" />
+          <Text style={styles.title}>Marcas Destacadas</Text>
+        </View>
         {marcaSeleccionadaId !== null && (
-          <TouchableOpacity onPress={() => onSeleccionarMarca(null)} activeOpacity={0.7}>
-            <Text style={styles.resetText}>Limpiar Filtro ✕</Text>
+          <TouchableOpacity onPress={() => onSeleccionarMarca(null)} activeOpacity={0.7} style={styles.resetButton}>
+            <Text style={styles.resetText}>Limpiar Filtro</Text>
+            <Feather name="x" size={12} color={COLORES.primario} />
           </TouchableOpacity>
         )}
       </View>
@@ -57,7 +65,6 @@ export const BrandCarousel = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Chip por defecto: TODAS */}
         <TouchableOpacity
           style={[
             styles.chip,
@@ -67,7 +74,12 @@ export const BrandCarousel = ({
           onPress={() => onSeleccionarMarca(null)}
           activeOpacity={0.8}
         >
-          <Text style={styles.chipEmoji}>⭐</Text>
+          <MaterialCommunityIcons
+            name="grid"
+            size={14}
+            color={marcaSeleccionadaId === null ? '#FFFFFF' : '#334155'}
+            style={styles.chipIcon}
+          />
           <Text
             style={[
               styles.chipText,
@@ -78,7 +90,6 @@ export const BrandCarousel = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Chips de Marcas provenientes de SQL Server */}
         {marcas.map((marca) => {
           const isSelected = marcaSeleccionadaId === marca.markId;
           const icon = getBrandIcon(marca.markName);
@@ -94,7 +105,12 @@ export const BrandCarousel = ({
               onPress={() => onSeleccionarMarca(marca.markId)}
               activeOpacity={0.8}
             >
-              <Text style={styles.chipEmoji}>{icon}</Text>
+              <MaterialCommunityIcons
+                name={icon}
+                size={14}
+                color={isSelected ? '#FFFFFF' : '#334155'}
+                style={styles.chipIcon}
+              />
               <Text
                 style={[
                   styles.chipText,
@@ -122,16 +138,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 8,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#0F172A',
     letterSpacing: -0.3,
+    marginLeft: 6,
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   resetText: {
     fontSize: 12,
     fontWeight: '600',
     color: COLORES.primario,
+    marginRight: 4,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -154,8 +180,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderColor: '#E2E8F0',
   },
-  chipEmoji: {
-    fontSize: 14,
+  chipIcon: {
     marginRight: 6,
   },
   chipText: {
